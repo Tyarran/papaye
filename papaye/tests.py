@@ -10,7 +10,7 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPTemporaryRedirect
 from pyramid.response import FileResponse
 from pyramid.threadlocal import get_current_request, get_current_registry
 
-from papaye.views import SimpleView, PackageNotFoundException
+from papaye.views import SimpleView, PackageNotFoundException, ReleaseNotFoundException
 
 
 class FakeMatchedDict(object):
@@ -30,7 +30,7 @@ class SimpleTestView(unittest.TestCase):
         self.config.add_route('simple', 'simple/', static=True)
         mkdir(join(self.repository, 'package2'))
         mkdir(join(self.repository, 'package1'))
-        open(join(self.repository, 'package1', 'file1.tar.gz'), 'w').close()
+        open(join(self.repository, 'package1', 'file-1.0.tar.gz'), 'w').close()
         open(join(self.repository, 'package1', 'file2.data'), 'w').close()  # a bad file
 
     def tearDown(self):
@@ -54,7 +54,7 @@ class SimpleTestView(unittest.TestCase):
         self.assertTrue(len(response) == 2)
         self.assertIsInstance(response[0], types.GeneratorType)
         self.assertEqual([p for p in response[0]],
-                         [('file1.tar.gz', '/simple/package1/file1.tar.gz', )])
+                         [('file-1.0.tar.gz', '/simple/package1/file-1.0.tar.gz', )])
         self.assertEqual(response[1], 'package1')
 
     def test_list_releases_with_bad_package(self):
@@ -66,10 +66,18 @@ class SimpleTestView(unittest.TestCase):
     def test_download_release(self):
         request = get_current_request()
         request.matchdict['package'] = 'package1'
-        request.matchdict['release'] = 'file1.tar.gz'
+        request.matchdict['release'] = 'file-1.0.tar.gz'
         view = SimpleView(request)
         response = view.download_release()
         self.assertIsInstance(response, FileResponse)
+
+    def test_download_release_with_bad_release(self):
+        request = get_current_request()
+        request.matchdict['package'] = 'package1'
+        request.matchdict['release'] = 'file1.tar.gz'
+        view = SimpleView(request)
+        #response = view.download_release()
+        self.assertRaises(ReleaseNotFoundException, view.download_release)
 
     def test__call__simple_route(self):
         request = get_current_request()
@@ -113,7 +121,7 @@ class SimpleTestView(unittest.TestCase):
         request = get_current_request()
         request.matched_route = FakeMatchedDict('download_release')
         request.matchdict['package'] = 'package1'
-        request.matchdict['release'] = 'file1.tar.gz'
+        request.matchdict['release'] = 'file-1.0.tar.gz'
         view = SimpleView(request)
         result = view()
         self.assertIsInstance(result, FileResponse)

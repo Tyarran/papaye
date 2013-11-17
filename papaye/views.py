@@ -18,7 +18,18 @@ LOG = logging.getLogger(__name__)
 
 
 class PackageNotFoundException(Exception):
-    pass
+
+    def __init__(self, message, redirect_to, package):
+        super(PackageNotFoundException, self).__init__(message)
+        self.redirect_to = redirect_to
+        self.package = package
+
+
+class ReleaseNotFoundException(PackageNotFoundException):
+
+    def __init__(self, message, redirect_to, package, release):
+        super(ReleaseNotFoundException, self).__init__(message, redirect_to, package)
+        self.release = release
 
 
 @view_config(route_name="simple", renderer="simple.jinja2")
@@ -48,14 +59,32 @@ class SimpleView(object):
                             or e[-7:] in SUPPORTED_PACKAGE_FORMAT)
             return releases_gen, package
         else:
-            LOG.info('Package "{}" not found'.format(package))
-            raise PackageNotFoundException()
+            message = 'Package "{}" not found'.format(package)
+            LOG.info(message)
+            raise PackageNotFoundException(
+                message,
+                redirect_to='http://pypi.python.org/simple/{}/'.format(package),
+                package=package,
+            )
 
     def download_release(self):
         package = self.request.matchdict['package']
         release = self.request.matchdict['release']
-        file_path = join(self.repository, package, release)
-        return FileResponse(file_path)
+        if len(release.split('-')) > 1:
+            file_path = join(self.repository, package, release)
+        else:
+            file_path = join(self.repository, package, '{}-{}.{}'.format(release, package, 'tar.gz'))
+        if exists(file_path):
+            return FileResponse(file_path)
+        else:
+            message = 'Release "{}" for package "{}" not found'.format(release, package)
+            LOG.info(message)
+            raise ReleaseNotFoundException(
+                message,
+                redirect_to='http://pypi.python.org/simple/{}/{}/'.format(package, release),
+                package=package,
+                release=release,
+            )
 
     def __call__(self):
         try:
@@ -66,10 +95,15 @@ class SimpleView(object):
                 return {'objects': objs, 'package': package}
             else:
                 return self.download_release()
-        except PackageNotFoundException:
+        except PackageNotFoundException as ex:
             if self.proxy:
-                package = self.request.matchdict['package']
-                LOG.info('Proxify "{}" package'.format(package))
-                return HTTPTemporaryRedirect('http://pypi.python.org/simple/{}/'.format(package))
+                LOG.info('Proxify "{}" package'.format(ex.package))
+                return HTTPTemporaryRedirect(ex.redirect_to)
             else:
                 return HTTPNotFound('Package doesn\'t exists')
+        except ReleaseNotFoundException as ex:
+            if self.proxy:
+                LOG.info('Proxify "{}" release for package "{}"'.format(ex.release, ex.package))
+                return HTTPTemporaryRedirect(ex.redirect_to)
+            else:
+                return HTTPNotFound('Release doesn\'t exists')
