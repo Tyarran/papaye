@@ -7,11 +7,12 @@ import unittest
 from os import mkdir
 from os.path import join
 from pyramid import testing
+from pyramid.httpexceptions import HTTPNotFound, HTTPTemporaryRedirect
 from pyramid.response import FileResponse
 from pyramid.threadlocal import get_current_request, get_current_registry
 
 from .models import DBSession
-from papaye.views import SimpleView
+from papaye.views import SimpleView, PackageNotFoundException
 
 
 class FakeMatchedDict(object):
@@ -32,7 +33,7 @@ class SimpleTestView(unittest.TestCase):
         mkdir(join(self.repository, 'package2'))
         mkdir(join(self.repository, 'package1'))
         open(join(self.repository, 'package1', 'file1.tar.gz'), 'w').close()
-        open(join(self.repository, 'package1', 'file2.data'), 'w').close() # a bad file
+        open(join(self.repository, 'package1', 'file2.data'), 'w').close()  # a bad file
 
     def tearDown(self):
         shutil.rmtree(self.repository)
@@ -58,6 +59,12 @@ class SimpleTestView(unittest.TestCase):
                          [('file1.tar.gz', '/simple/package1/file1.tar.gz', )])
         self.assertEqual(response[1], 'package1')
 
+    def test_list_releases_with_bad_package(self):
+        request = get_current_request()
+        request.matchdict['package'] = 'package10'
+        view = SimpleView(request)
+        self.assertRaises(PackageNotFoundException, view.list_releases)
+
     def test_download_release(self):
         request = get_current_request()
         request.matchdict['package'] = 'package1'
@@ -66,7 +73,7 @@ class SimpleTestView(unittest.TestCase):
         response = view.download_release()
         self.assertIsInstance(response, FileResponse)
 
-    def test__call__with_simple_route(self):
+    def test__call__simple_route(self):
         request = get_current_request()
         request.matched_route = FakeMatchedDict('simple')
         view = SimpleView(request)
@@ -74,7 +81,7 @@ class SimpleTestView(unittest.TestCase):
         self.assertIsInstance(result, dict)
         self.assertIn('objects', result)
 
-    def test__call__with_simple_release_route(self):
+    def test__call__simple_release_route(self):
         request = get_current_request()
         request.matched_route = FakeMatchedDict('simple_release')
         request.matchdict['package'] = 'package1'
@@ -85,7 +92,26 @@ class SimpleTestView(unittest.TestCase):
         self.assertIn('package', result)
         self.assertEqual(result['package'], 'package1')
 
-    def test__call_with_download_release_route(self):
+    def test__call__simple_release_route_with_bad_package_without_proxy(self):
+        request = get_current_request()
+        request.matched_route = FakeMatchedDict('simple_release')
+        request.matchdict['package'] = 'package10'
+        view = SimpleView(request)
+        result = view()
+        self.assertIsInstance(result, HTTPNotFound)
+
+    def test__call__simple_release_route_with_bad_package_with_proxy(self):
+        request = get_current_request()
+        request.matched_route = FakeMatchedDict('simple_release')
+        request.matchdict['package'] = 'package10'
+        registry = get_current_registry()
+        registry.settings['papaye.proxy'] = 'true'
+        view = SimpleView(request)
+        result = view()
+        self.assertIsInstance(result, HTTPTemporaryRedirect)
+        self.assertEqual(result.location, 'http://pypi.python.org/simple/package10/')
+
+    def test__call__download_release_route(self):
         request = get_current_request()
         request.matched_route = FakeMatchedDict('download_release')
         request.matchdict['package'] = 'package1'
