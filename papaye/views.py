@@ -38,6 +38,7 @@ class ReleaseNotFoundException(PackageNotFoundException):
 class SimpleView(object):
 
     def __init__(self, request):
+        LOG.debug('Dispatch {} route as {}'.format(request.matched_route.name, request.path))
         self.request = request
         self.settings = request.registry.settings
         self.repository = self.settings.get('papaye.repository')

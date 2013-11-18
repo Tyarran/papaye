@@ -19,10 +19,17 @@ class FakeMatchedDict(object):
         self.name = name
 
 
+class TestRequest(testing.DummyRequest):
+
+    def __init__(self, *args, **kwargs):
+        super(TestRequest, self).__init__(*args, **kwargs)
+        self.matched_route = FakeMatchedDict('')
+
+
 class SimpleTestView(unittest.TestCase):
 
     def setUp(self):
-        request = testing.DummyRequest()
+        request = TestRequest()
         self.config = testing.setUp(request=request)
         self.repository = tempfile.mkdtemp('repository')
         registry = get_current_registry()
@@ -76,7 +83,6 @@ class SimpleTestView(unittest.TestCase):
         request.matchdict['package'] = 'package1'
         request.matchdict['release'] = 'file1.tar.gz'
         view = SimpleView(request)
-        #response = view.download_release()
         self.assertRaises(ReleaseNotFoundException, view.download_release)
 
     def test__call__simple_route(self):
