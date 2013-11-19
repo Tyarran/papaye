@@ -9,6 +9,7 @@ from pyramid import testing
 from pyramid.httpexceptions import HTTPNotFound, HTTPTemporaryRedirect
 from pyramid.response import FileResponse
 from pyramid.threadlocal import get_current_request, get_current_registry
+from pyramid_beaker import set_cache_regions_from_settings
 
 from papaye.views import SimpleView, PackageNotFoundException, ReleaseNotFoundException
 
@@ -33,7 +34,14 @@ class SimpleTestView(unittest.TestCase):
         self.config = testing.setUp(request=request)
         self.repository = tempfile.mkdtemp('repository')
         registry = get_current_registry()
-        registry.settings = {'papaye.repository': self.repository}
+        registry.settings = {
+            'papaye.repository': self.repository,
+            'cache.regions': 'pypi',
+            'cache.type': 'memory',
+            'cache.second.expire': '1',
+            'cache.pypi': '5',
+        }
+        set_cache_regions_from_settings(registry.settings)
         self.config.add_route('simple', 'simple/', static=True)
         mkdir(join(self.repository, 'package2'))
         mkdir(join(self.repository, 'package1'))
