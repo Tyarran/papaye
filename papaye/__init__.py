@@ -2,6 +2,7 @@ from os import makedirs
 from os.path import exists
 from pyramid.config import Configurator, ConfigurationError
 from pyramid.httpexceptions import HTTPNotFound
+from pyramid_beaker import set_cache_regions_from_settings
 from sqlalchemy import engine_from_config
 
 from .models import (
@@ -25,6 +26,7 @@ def main(global_config, **settings):
         makedirs(repository)
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
+    set_cache_regions_from_settings(settings)
     config = Configurator(settings=settings)
     config.include('pyramid_jinja2')
     config.add_jinja2_search_path("papaye:templates")
