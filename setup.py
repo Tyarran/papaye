@@ -7,7 +7,6 @@ README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
-    'SQLAlchemy',
     'pyramid',
     'pyramid_beaker',
     'pyramid_debugtoolbar',
@@ -15,7 +14,6 @@ requires = [
     'pyramid_tm',
     'transaction',
     'waitress',
-    'zope.sqlalchemy',
 ]
 
 setup(name='papaye',

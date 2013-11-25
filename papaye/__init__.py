@@ -3,12 +3,6 @@ from os.path import exists
 from pyramid.config import Configurator, ConfigurationError
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid_beaker import set_cache_regions_from_settings
-from sqlalchemy import engine_from_config
-
-from .models import (
-    DBSession,
-    Base,
-)
 
 
 def notfound(request):
@@ -18,14 +12,11 @@ def notfound(request):
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    engine = engine_from_config(settings, 'sqlalchemy.')
     repository = settings.get('papaye.repository', None)
     if not repository:
         raise ConfigurationError('Variable {} missing in settings'.format('papaye.repository'))
     elif not exists(repository):
         makedirs(repository)
-    DBSession.configure(bind=engine)
-    Base.metadata.bind = engine
     set_cache_regions_from_settings(settings)
     config = Configurator(settings=settings)
     config.include('pyramid_jinja2')

@@ -9,8 +9,4 @@ Getting Started
 
 - $venv/bin/python setup.py develop
 
-- $venv/bin/initialize_papaye_db development.ini
-
 - $venv/bin/pserve development.ini
-
-
