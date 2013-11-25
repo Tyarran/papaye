@@ -11,7 +11,7 @@ from pyramid.response import FileResponse
 from pyramid.threadlocal import get_current_request, get_current_registry
 from pyramid_beaker import set_cache_regions_from_settings
 
-from papaye.views import SimpleView, PackageNotFoundException, ReleaseNotFoundException
+from papaye.views import SimpleView
 
 
 class FakeMatchedDict(object):
@@ -55,8 +55,10 @@ class SimpleTestView(unittest.TestCase):
         request = get_current_request()
         view = SimpleView(request)
         response = view.list_packages()
-        self.assertIsInstance(response, types.GeneratorType)
-        self.assertEqual([p for p in response],
+        self.assertIsInstance(response, dict)
+        self.assertIn('objects', response)
+        self.assertIsInstance(response['objects'], types.GeneratorType)
+        self.assertEqual([p for p in response['objects']],
                          [('package1', '/simple/package1'),
                           ('package2', '/simple/package2')])
 
@@ -65,18 +67,31 @@ class SimpleTestView(unittest.TestCase):
         request.matchdict['package'] = 'package1'
         view = SimpleView(request)
         response = view.list_releases()
-        self.assertIsInstance(response, tuple)
-        self.assertTrue(len(response) == 2)
-        self.assertIsInstance(response[0], types.GeneratorType)
-        self.assertEqual([p for p in response[0]],
+        self.assertIsInstance(response, dict)
+        self.assertIn('objects', response)
+        self.assertIn('package', response)
+        self.assertIsInstance(response['objects'], types.GeneratorType)
+        self.assertEqual([p for p in response['objects']],
                          [('file-1.0.tar.gz', '/simple/package1/file-1.0.tar.gz', )])
-        self.assertEqual(response[1], 'package1')
+        self.assertEqual(response['package'], 'package1')
 
     def test_list_releases_with_bad_package(self):
         request = get_current_request()
         request.matchdict['package'] = 'package10'
         view = SimpleView(request)
-        self.assertRaises(PackageNotFoundException, view.list_releases)
+        result = view.list_releases()
+        self.assertIsInstance(result, HTTPNotFound)
+
+    def test_list_releases_with_bad_package_and_actived_proxy(self):
+        request = get_current_request()
+        registry = get_current_registry()
+        registry.settings['papaye.proxy'] = 'true'
+        package = 'package10'
+        request.matchdict['package'] = package
+        view = SimpleView(request)
+        result = view.list_releases()
+        self.assertIsInstance(result, HTTPTemporaryRedirect)
+        self.assertEqual(result.location, 'http://pypi.python.org/simple/{}/'.format(package))
 
     def test_download_release(self):
         request = get_current_request()
@@ -86,56 +101,24 @@ class SimpleTestView(unittest.TestCase):
         response = view.download_release()
         self.assertIsInstance(response, FileResponse)
 
-    def test_download_release_with_bad_release(self):
+    def test_download_bad_release(self):
         request = get_current_request()
         request.matchdict['package'] = 'package1'
         request.matchdict['release'] = 'file1.tar.gz'
         view = SimpleView(request)
-        self.assertRaises(ReleaseNotFoundException, view.download_release)
-
-    def test__call__simple_route(self):
-        request = get_current_request()
-        request.matched_route = FakeMatchedDict('simple')
-        view = SimpleView(request)
-        result = view()
-        self.assertIsInstance(result, dict)
-        self.assertIn('objects', result)
-
-    def test__call__simple_release_route(self):
-        request = get_current_request()
-        request.matched_route = FakeMatchedDict('simple_release')
-        request.matchdict['package'] = 'package1'
-        view = SimpleView(request)
-        result = view()
-        self.assertIsInstance(result, dict)
-        self.assertIn('objects', result)
-        self.assertIn('package', result)
-        self.assertEqual(result['package'], 'package1')
-
-    def test__call__simple_release_route_with_bad_package_without_proxy(self):
-        request = get_current_request()
-        request.matched_route = FakeMatchedDict('simple_release')
-        request.matchdict['package'] = 'package10'
-        view = SimpleView(request)
-        result = view()
+        result = view.download_release()
         self.assertIsInstance(result, HTTPNotFound)
 
-    def test__call__simple_release_route_with_bad_package_with_proxy(self):
+    def test_download_bad_release_with_proxy(self):
         request = get_current_request()
-        request.matched_route = FakeMatchedDict('simple_release')
-        request.matchdict['package'] = 'package10'
         registry = get_current_registry()
         registry.settings['papaye.proxy'] = 'true'
-        view = SimpleView(request)
-        result = view()
-        self.assertIsInstance(result, HTTPTemporaryRedirect)
-        self.assertEqual(result.location, 'http://pypi.python.org/simple/package10/')
-
-    def test__call__download_release_route(self):
-        request = get_current_request()
-        request.matched_route = FakeMatchedDict('download_release')
         request.matchdict['package'] = 'package1'
-        request.matchdict['release'] = 'file-1.0.tar.gz'
+        request.matchdict['release'] = 'file1.tar.gz'
         view = SimpleView(request)
-        result = view()
-        self.assertIsInstance(result, FileResponse)
+        result = view.download_release()
+        self.assertIsInstance(result, HTTPTemporaryRedirect)
+        self.assertEqual(result.location, 'http://pypi.python.org/simple/{}/{}/'.format(
+            request.matchdict['package'],
+            request.matchdict['release'],
+        ))
