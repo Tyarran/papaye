@@ -3,10 +3,10 @@ import logging
 import requests
 
 from beaker.cache import cache_region
-from os import listdir
+from os import listdir, mkdir
 from os.path import isdir, join, exists
-from pyramid.httpexceptions import HTTPNotFound, HTTPTemporaryRedirect
-from pyramid.response import FileResponse
+from pyramid.httpexceptions import HTTPNotFound, HTTPTemporaryRedirect, HTTPBadRequest
+from pyramid.response import FileResponse, Response
 from pyramid.view import view_config
 from requests import ConnectionError
 
@@ -16,21 +16,34 @@ SUPPORTED_PACKAGE_FORMAT = (
     '.tar.gz',
     '.whl',
     '.zip',
+    '.gz',
 )
 
+
 LOG = logging.getLogger(__name__)
+
+
+def is_supported_package_format(filename):
+    for e in SUPPORTED_PACKAGE_FORMAT:
+        if filename.endswith(e):
+            return e
+    return None
 
 
 class SimpleView(object):
 
     def __init__(self, request):
-        LOG.debug('Dispatch "{}" route as {}'.format(request.matched_route.name, request.path))
+        LOG.debug('Dispatch "{}" route as {} with {} method'.format(
+            request.matched_route.name,
+            request.path,
+            request.method
+        ))
         self.request = request
         self.settings = request.registry.settings
         self.repository = self.settings.get('papaye.repository')
         self.proxy = self.settings.get('papaye.proxy', False)
 
-    @view_config(route_name="simple", renderer="simple.jinja2")
+    @view_config(route_name="simple", renderer="simple.jinja2", permission='install', request_method="GET")
     def list_packages(self):
         packages = ((e, self.request.route_path('simple', e))
                     for e in sorted(listdir(self.repository))
@@ -77,7 +90,7 @@ class SimpleView(object):
         else:
             return HTTPNotFound('Release doesn\'t exists')
 
-    @view_config(route_name="simple_release", renderer="simple.jinja2")
+    @view_config(route_name="simple_release", renderer="simple.jinja2", permission='install')
     def list_releases(self):
         package = self.request.matchdict['package']
         package_dir = join(self.repository, package)
@@ -96,7 +109,7 @@ class SimpleView(object):
         else:
             return self.package_not_found(package)
 
-    @view_config(route_name="download_release")
+    @view_config(route_name="download_release", permission='install')
     def download_release(self):
         package = self.request.matchdict['package']
         release = self.request.matchdict['release']
@@ -110,3 +123,21 @@ class SimpleView(object):
             message = 'Release "{}" for package "{}" not found'.format(release, package)
             LOG.info(message)
             return self.release_not_found(package, release)
+
+    @view_config(route_name="simple", permission='publish', request_method='POST')
+    def upload_release(self):
+        response = HTTPBadRequest()
+        if not 'content' in self.request.POST:
+            return response
+        filename = self.request.POST['content'].filename
+        ext = is_supported_package_format(filename)
+        if ext:
+            package = filename.split(ext)[0].split('-')[0]
+            directory = join(self.repository, package)
+            path = join(directory, filename)
+            if not exists(directory):
+                mkdir(directory)
+            with open(path, 'wb') as release_file:
+                release_file.write(self.request.POST['content'].file.read())
+            return Response()
+        return response

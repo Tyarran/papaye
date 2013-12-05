@@ -3,6 +3,46 @@ from os.path import exists
 from pyramid.config import Configurator, ConfigurationError
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid_beaker import set_cache_regions_from_settings
+from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.authorization import ACLAuthorizationPolicy
+#from pyramid.security import Allow
+from pyramid.security import Allow, Everyone
+
+authn_policy = AuthTktAuthenticationPolicy('seekrit', hashalg='sha512')
+authz_policy = ACLAuthorizationPolicy()
+
+
+class RootFactory(object):
+    """
+    Pyramid root factory that contains the ACL.
+    """
+    __name__ = None
+    __parent__ = None
+    root = None
+
+    class Root(object):
+        __acl__ = None
+
+    def __init__(self, settings):
+        self.root = self.root if self.root is not None else self.Root()
+        if self.root.__acl__ is None:
+            self.root.__acl__ = self.read_acl_from_settings()
+
+    def __call__(self, request):
+        return self.root
+
+    def read_acl_from_settings(self):
+        #credentials = [
+        #    (Allow, 'group:Admin', ALL_PERMISSIONS),
+        #    (Allow, 'group:Publisher', 'publish'),
+        #    (Allow, 'group:Installer', 'install'),
+        #    (Allow, Authenticated, 'install'),
+        #]
+        credentials = [
+            (Allow, Everyone, 'install'),
+            (Allow, Everyone, 'publish'),
+        ]
+        return credentials
 
 
 def notfound(request):
@@ -18,7 +58,9 @@ def main(global_config, **settings):
     elif not exists(repository):
         makedirs(repository)
     set_cache_regions_from_settings(settings)
-    config = Configurator(settings=settings)
+    config = Configurator(settings=settings, root_factory=RootFactory(settings))
+    config.set_authentication_policy(authn_policy)
+    config.set_authorization_policy(authz_policy)
     config.include('pyramid_jinja2')
     config.add_jinja2_search_path("papaye:templates")
     config.add_static_view('static', 'static', cache_max_age=3600)

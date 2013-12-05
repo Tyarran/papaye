@@ -2,12 +2,14 @@ import shutil
 import tempfile
 import types
 import unittest
+import StringIO
 
+from cgi import FieldStorage
 from os import mkdir
-from os.path import join
+from os.path import join, exists
 from pyramid import testing
 from pyramid.httpexceptions import HTTPNotFound, HTTPTemporaryRedirect
-from pyramid.response import FileResponse
+from pyramid.response import FileResponse, Response
 from pyramid.threadlocal import get_current_request, get_current_registry
 from pyramid_beaker import set_cache_regions_from_settings
 
@@ -122,3 +124,49 @@ class SimpleTestView(unittest.TestCase):
             request.matchdict['package'],
             request.matchdict['release'],
         ))
+
+    def test_upload_release(self):
+        # Create a fake test file
+        uploaded_file = StringIO.StringIO()
+        uploaded_file.write("content")
+        storage = FieldStorage()
+        storage.filename = 'foo.tar.gz'
+        storage.file = uploaded_file
+
+        #Simulate file upload
+        request = get_current_request()
+        request.POST = {
+            "content": storage,
+        }
+
+        view = SimpleView(request)
+        result = view.upload_release()
+        self.assertIsInstance(result, Response)
+        self.assertEqual(result.status_int, 200)
+        self.assertTrue(exists(join(self.repository, 'foo')))
+        self.assertTrue(exists(join(self.repository, 'foo', 'foo.tar.gz')))
+
+    def test_upload_release_without_file(self):
+        request = get_current_request()
+        view = SimpleView(request)
+        result = view.upload_release()
+
+        self.assertEqual(result.status_int, 400)
+
+    def test_upload_release_with_unothaurized_extension(self):
+        uploaded_file = StringIO.StringIO()
+        uploaded_file.write("content")
+        storage = FieldStorage()
+        storage.filename = 'foo.bar'
+        storage.file = uploaded_file
+
+        #Simulate file upload
+        request = get_current_request()
+        request.POST = {
+            "content": storage,
+        }
+        request = get_current_request()
+        view = SimpleView(request)
+        result = view.upload_release()
+
+        self.assertEqual(result.status_int, 400)
