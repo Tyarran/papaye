@@ -5,11 +5,26 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid_beaker import set_cache_regions_from_settings
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
-#from pyramid.security import Allow
+from CodernityDB.database import Database
 from pyramid.security import Allow, Everyone
+
+from papaye.indexes import INDEXES
 
 authn_policy = AuthTktAuthenticationPolicy('seekrit', hashalg='sha512')
 authz_policy = ACLAuthorizationPolicy()
+
+
+def get_db(request):
+    database_path = request.registry.settings['codernity.url'][7:]
+    db = Database(database_path)
+    if not db.exists():
+        db.create()
+        for name, index_class in INDEXES:
+            index = index_class(db.path, name)
+            db.add_index(index)
+    else:
+        db.open()
+    return db
 
 
 class RootFactory(object):
@@ -70,5 +85,6 @@ def main(global_config, **settings):
     config.add_route('simple_release', '/simple/{package}/')
     config.add_route('download_release', '/simple/{package}/{release}')
     config.add_notfound_view(notfound, append_slash=True)
+    config.add_request_method(get_db, 'db', reify=True)
     config.scan()
     return config.make_wsgi_app()
