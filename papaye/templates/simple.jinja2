@@ -3,8 +3,8 @@
         <title>Papaye Simple Index</title>
     </head>
     <body>
-    {% for obj, url in objects %}
-    <a href="{{ url }}">{{ obj }}</a></br>
+    {% for obj in objects %}
+    <a href="{{ root_url }}{{ obj['name'] }}">{{ obj['name'] }}</a></br>
     {% endfor %}
     </body>
 </html>

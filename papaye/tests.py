@@ -5,6 +5,7 @@ import unittest
 import StringIO
 
 from cgi import FieldStorage
+from hashlib import md5
 from os import mkdir
 from os.path import join, exists
 from pyramid import testing
@@ -14,6 +15,39 @@ from pyramid.threadlocal import get_current_request, get_current_registry
 from pyramid_beaker import set_cache_regions_from_settings
 
 from papaye.views import SimpleView
+
+
+def create_test_documents(db):
+    package1 = {
+        'type': 'package',
+        'name': 'package1',
+    }
+    package2 = {
+        'type': 'package',
+        'name': 'package2',
+    }
+    release1 = {
+        'type': 'release',
+        'name': 'file-1.0.tar.gz',
+        'package': 'package1',
+    }
+    for document in (package1, package2, release1):
+        db.insert(document)
+
+
+def create_db():
+    from CodernityDB.database import Database
+    db = Database('test_papaye')
+    if not db.exists():
+        db.create()
+        from papaye.indexes import INDEXES
+        for name, cls in INDEXES:
+            index = cls(db.path, name)
+            db.add_index(index)
+        create_test_documents(db)
+    else:
+        db.open()
+    return db
 
 
 class FakeMatchedDict(object):
@@ -32,8 +66,9 @@ class TestRequest(testing.DummyRequest):
 class SimpleTestView(unittest.TestCase):
 
     def setUp(self):
-        request = TestRequest()
-        self.config = testing.setUp(request=request)
+        self.request = TestRequest()
+        self.request.db = create_db()
+        self.config = testing.setUp(request=self.request)
         self.repository = tempfile.mkdtemp('repository')
         registry = get_current_registry()
         registry.settings = {
@@ -52,6 +87,10 @@ class SimpleTestView(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.repository)
+        db = self.request.db
+        for elem in db.all('id'):
+            db.delete(elem)
+        db.destroy()
 
     def test_list_packages(self):
         request = get_current_request()
@@ -60,9 +99,7 @@ class SimpleTestView(unittest.TestCase):
         self.assertIsInstance(response, dict)
         self.assertIn('objects', response)
         self.assertIsInstance(response['objects'], types.GeneratorType)
-        self.assertEqual([p for p in response['objects']],
-                         [('package1', '/simple/package1'),
-                          ('package2', '/simple/package2')])
+        self.assertEqual([p['name'] for p in response['objects']], ['package1', 'package2'])
 
     def test_list_releases(self):
         request = get_current_request()
@@ -73,9 +110,9 @@ class SimpleTestView(unittest.TestCase):
         self.assertIn('objects', response)
         self.assertIn('package', response)
         self.assertIsInstance(response['objects'], types.GeneratorType)
-        self.assertEqual([p for p in response['objects']],
-                         [('file-1.0.tar.gz', '/simple/package1/file-1.0.tar.gz', )])
-        self.assertEqual(response['package'], 'package1')
+        self.assertEqual([p['name'] for p in response['objects']],
+                         ['file-1.0.tar.gz', ])
+        self.assertEqual(response['package']['name'], 'package1')
 
     def test_list_releases_with_bad_package(self):
         request = get_current_request()
