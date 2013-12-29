@@ -14,6 +14,6 @@ Getting Started
 - $venv/bin/pserve development.ini
 
 
-.. _CodernityDB: http://www.codernitylab.com/codernitydb
+.. _CodernityDB: http://labs.codernity.com/codernitydb/
 .. _Pyramid Web Framework: http://www.pylonsproject.org
 .. _Beaker Cache: http://beaker.readthedocs.org
