@@ -1,6 +1,6 @@
 papaye README
 ==================
-A basic PyPi server clone written in `Pyramid Web Framework`_,  `CodernityDB`_ and `Beaker Cache`_.
+A basic PyPi server clone written in `Pyramid Web Framework`_, using `CodernityDB`_ and `Beaker Cache`_.
 
 **This is EXPERIMENTAL. Do not install Papaye in production!**
 
@@ -10,6 +10,8 @@ Getting Started
 - cd <directory containing this file>
 
 - $venv/bin/python setup.py develop
+
+- $venv/bin/papaye_init development.ini
 
 - $venv/bin/pserve development.ini
 
