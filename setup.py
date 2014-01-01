@@ -40,6 +40,6 @@ setup(name='papaye',
       [paste.app_factory]
       main = papaye:main
       [console_scripts]
-      initialize_papaye_db = papaye.scripts.initializedb:main
+      papaye_init = papaye.scripts.initialize:main
       """,
       )
