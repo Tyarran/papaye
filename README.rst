@@ -1,3 +1,5 @@
+.. image:: https://travis-ci.org/rcommande/papaye.png?branch=master   :target: https://travis-ci.org/rcommande/papaye
+
 papaye README
 ==================
 A basic PyPi server clone written in `Pyramid Web Framework`_, using `CodernityDB`_ and `Beaker Cache`_.
