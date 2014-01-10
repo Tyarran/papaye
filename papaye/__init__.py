@@ -64,7 +64,7 @@ class RootFactory(object):
 
 
 def notfound(request):
-    return HTTPNotFound('Not found, bro.')
+    return HTTPNotFound('Not found.')
 
 
 def main(global_config, **settings):

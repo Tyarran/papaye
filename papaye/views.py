@@ -138,7 +138,7 @@ class SimpleView(object):
             directory = join(self.repository, package)
             path = join(directory, filename)
             try:
-                package = self.db.get('package', package, with_doc=True)
+                package_doc = self.db.get('package', package, with_doc=True)
             except RecordNotFound:
                 package_doc = {'type': 'package', 'name': package}
                 self.db.insert(package_doc)

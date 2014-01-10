@@ -1,11 +1,11 @@
+import StringIO
+import os
 import shutil
 import tempfile
 import types
 import unittest
-import StringIO
 
 from cgi import FieldStorage
-from hashlib import md5
 from os import mkdir
 from os.path import join, exists
 from pyramid import testing
@@ -15,6 +15,10 @@ from pyramid.threadlocal import get_current_request, get_current_registry
 from pyramid_beaker import set_cache_regions_from_settings
 
 from papaye.views import SimpleView
+
+
+HERE = os.path.abspath(os.path.dirname(__name__))
+TEST_RESOURCES = join('..', HERE, 'test-resources')
 
 
 def create_test_documents(db):
@@ -182,6 +186,26 @@ class SimpleTestView(unittest.TestCase):
         self.assertEqual(result.status_int, 200)
         self.assertTrue(exists(join(self.repository, 'foo')))
         self.assertTrue(exists(join(self.repository, 'foo', 'foo.tar.gz')))
+
+    def test_upload_multiple_releases(self):
+        for filename in ('Whoosh-2.6.0.tar.gz', 'Whoosh-2.6.0.zip'):
+            upload_file = open(join(TEST_RESOURCES, filename), 'rb')
+            storage = FieldStorage()
+            storage.filename = filename
+            storage.file = upload_file
+
+            #Simulate file upload
+            request = get_current_request()
+            request.POST = {
+                "content": storage,
+            }
+
+            view = SimpleView(request)
+            result = view.upload_release()
+            self.assertIsInstance(result, Response)
+            self.assertEqual(result.status_int, 200)
+            self.assertTrue(exists(join(self.repository, 'Whoosh')))
+            self.assertTrue(exists(join(self.repository, 'Whoosh', filename)))
 
     def test_upload_release_without_file(self):
         request = get_current_request()
