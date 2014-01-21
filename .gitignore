@@ -44,6 +44,9 @@ nosetests.xml
 # Repository
 repository/
 
+# Default database location
+papaye_database
+
 # ToDo files
 .todo
 TODO

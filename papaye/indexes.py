@@ -56,8 +56,46 @@ class ReleaseByPackageIndex(HashIndex):
         return md5(key).digest()
 
 
+class UserIndex(HashIndex):
+
+    def __init__(self, *args, **kwargs):
+        kwargs['key_format'] = '16s'
+        super(UserIndex, self).__init__(*args, **kwargs)
+
+    def make_key_value(self, data):
+        username = data.get('username')
+        datatype = data.get('type')
+        if username is not None and datatype == 'user':
+            return md5(username).digest(), None
+        else:
+            None
+
+    def make_key(self, key):
+        return md5(key).digest()
+
+
+class GroupIndex(HashIndex):
+
+    def __init__(self, *args, **kwargs):
+        kwargs['key_format'] = '16s'
+        super(GroupIndex, self).__init__(*args, **kwargs)
+
+    def make_key_value(self, data):
+        name = data.get('name')
+        datatype = data.get('type')
+        if name is not None and datatype == 'group':
+            return md5(name).digest(), None
+        else:
+            None
+
+    def make_key(self, key):
+        return md5(key).digest()
+
+
 INDEXES = (
     ('package', PackageIndex),
     ('release', ReleaseIndex),
     ('rel_release_package', ReleaseByPackageIndex),
+    ('user', UserIndex),
+    ('group', GroupIndex),
 )

@@ -2,13 +2,14 @@ import json
 import logging
 import requests
 
-from CodernityDB.database import RecordNotFound
 from beaker.cache import cache_region
+from CodernityDB.database import RecordNotFound
 from os import mkdir
 from os.path import join, exists
-from pyramid.httpexceptions import HTTPNotFound, HTTPTemporaryRedirect, HTTPBadRequest, HTTPConflict
+from pyramid.httpexceptions import HTTPNotFound, HTTPTemporaryRedirect, HTTPBadRequest, HTTPConflict, HTTPUnauthorized
 from pyramid.response import FileResponse, Response
-from pyramid.view import view_config
+from pyramid.security import forget
+from pyramid.view import view_config, forbidden_view_config
 from requests import ConnectionError
 
 
@@ -152,3 +153,10 @@ class SimpleView(object):
                 release_file.write(self.request.POST['content'].file.read())
             return Response()
         return response
+
+
+@forbidden_view_config()
+def basic_challenge(request):
+    response = HTTPUnauthorized()
+    response.headers.update(forget(request))
+    return response

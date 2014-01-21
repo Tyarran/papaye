@@ -1,14 +1,27 @@
-from os import makedirs
-from os.path import exists
+import hashlib
+import os
+
+from CodernityDB.database import Database, RecordNotFound
+from pyramid.authentication import BasicAuthAuthenticationPolicy
+from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator, ConfigurationError
 from pyramid.httpexceptions import HTTPNotFound
+from pyramid.security import Allow
 from pyramid_beaker import set_cache_regions_from_settings
-from pyramid.authentication import AuthTktAuthenticationPolicy
-from pyramid.authorization import ACLAuthorizationPolicy
-from CodernityDB.database import Database
-from pyramid.security import Allow, Everyone
 
-authn_policy = AuthTktAuthenticationPolicy('seekrit', hashalg='sha512')
+
+def check_func(*args, **kwargs):
+    login, password, request = args
+    try:
+        user = request.db.get('user', login, with_doc=True)
+        if user['doc']['password'] == hashlib.sha256(password).digest():
+            return [login, ]
+    except RecordNotFound:
+        pass
+    return None
+
+
+authn_policy = BasicAuthAuthenticationPolicy(check=check_func)
 authz_policy = ACLAuthorizationPolicy()
 
 
@@ -34,32 +47,23 @@ class RootFactory(object):
     """
     Pyramid root factory that contains the ACL.
     """
-    __name__ = None
-    __parent__ = None
     root = None
 
     class Root(object):
         __acl__ = None
 
-    def __init__(self, settings):
-        self.root = self.root if self.root is not None else self.Root()
-        if self.root.__acl__ is None:
-            self.root.__acl__ = self.read_acl_from_settings()
-
     def __call__(self, request):
+        if self.root is None:
+            db = request.db
+            credentials = self.get_user_acl_from_database(db)
+            self.root = self.Root()
+            self.root.__acl__ = credentials
         return self.root
 
-    def read_acl_from_settings(self):
-        #credentials = [
-        #    (Allow, 'group:Admin', ALL_PERMISSIONS),
-        #    (Allow, 'group:Publisher', 'publish'),
-        #    (Allow, 'group:Installer', 'install'),
-        #    (Allow, Authenticated, 'install'),
-        #]
-        credentials = [
-            (Allow, Everyone, 'install'),
-            (Allow, Everyone, 'publish'),
-        ]
+    def get_user_acl_from_database(self, db):
+        credentials = []
+        for group in db.all('group', with_doc=True):
+            credentials.append((Allow, group['doc']['name'], group['doc']['permissions']))
         return credentials
 
 
@@ -73,12 +77,12 @@ def main(global_config, **settings):
     repository = settings.get('papaye.repository', None)
     if not repository:
         raise ConfigurationError('Variable {} missing in settings'.format('papaye.repository'))
-    elif not exists(repository):
-        makedirs(repository)
+    elif not os.path.exists(repository):
+        os.makedirs(repository)
     test_db_configuration(settings)
     add_db = lambda request: get_db(settings)
     set_cache_regions_from_settings(settings)
-    config = Configurator(settings=settings, root_factory=RootFactory(settings))
+    config = Configurator(settings=settings, root_factory=RootFactory())
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
     config.include('pyramid_jinja2')
