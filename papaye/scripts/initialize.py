@@ -1,11 +1,10 @@
 import hashlib
-import os
 import sys
 
 from CodernityDB.database import Database
-from pyramid.scripts.common import configparser
 
 from papaye.indexes import INDEXES
+from papaye.scripts.common import get_settings
 
 
 DEFAULT_PERMISSIONS = {
@@ -58,13 +57,6 @@ def create_admin_user(db):
         'type': 'user',
     }
     db.insert(admin)
-
-
-def get_settings(inifile):
-    parser = configparser.ConfigParser()
-    current_dir = os.path.abspath(os.path.curdir)
-    parser.read(inifile)
-    return dict(parser.items('app:main', vars={"here": current_dir}))
 
 
 def main(*argv, **kwargs):

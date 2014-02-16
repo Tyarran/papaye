@@ -1,5 +1,6 @@
 import hashlib
 import os
+import zmq
 
 from CodernityDB.database import Database, RecordNotFound
 from pyramid.authentication import BasicAuthAuthenticationPolicy
@@ -7,7 +8,9 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator, ConfigurationError
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.security import Allow
+from pyramid.threadlocal import get_current_registry
 from pyramid_beaker import set_cache_regions_from_settings
+from zmq.devices import ProcessDevice
 
 
 def check_func(*args, **kwargs):
@@ -71,6 +74,25 @@ def notfound(request):
     return HTTPNotFound('Not found.')
 
 
+def start_queue(settings):
+    if 'proxy.broker' not in settings:
+        raise ConfigurationError('"proxy.broker" missing in settings')
+    if 'proxy.worker_socket' not in settings:
+        raise ConfigurationError('"proxy.worker_socket" missing in settings')
+    queuedevice = ProcessDevice(zmq.QUEUE, zmq.XREP, zmq.XREQ)
+    queuedevice.bind_in(settings.get('proxy.broker'))
+    queuedevice.bind_out(settings.get('proxy.worker_socket'))
+    queuedevice.start()
+
+
+def registrer_producer(settings):
+    context = zmq.Context()
+    socket = context.socket(zmq.XREQ)
+    socket.connect(settings.get('proxy.broker'))
+    global_registry = get_current_registry()
+    global_registry.producer = socket
+
+
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
@@ -95,5 +117,7 @@ def main(global_config, **settings):
     config.add_route('download_release', '/simple/{package}/{release}')
     config.add_notfound_view(notfound, append_slash=True)
     config.add_request_method(add_db, 'db', reify=True)
+    start_queue(settings)
+    registrer_producer(settings)
     config.scan()
     return config.make_wsgi_app()
