@@ -10,19 +10,21 @@ def get_task_id():
     return hashlib.md5(str(timestamp)).hexdigest()
 
 
-def delay(*args, **kwargs):
-    task_id = get_task_id()
-    func = delay.func
-    global_registry.producer.send_pyobj([
-        task_id,
-        func,
-        args,
-        kwargs
-    ])
-    return task_id
-
-
 def task(func):
+
+    def delay(*args, **kwargs):
+        task_id = get_task_id()
+        func = delay.func
+        print func.func_name
+        global_registry.producer.send_pyobj([
+            task_id,
+            func,
+            args,
+            kwargs
+        ])
+        return task_id
+
     func.delay = delay
+    func.ready = False
     func.delay.func = func
     return func

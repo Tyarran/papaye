@@ -16,6 +16,7 @@ requires = [
     'requests',
     'transaction',
     'waitress',
+    'pyzmq',
 ]
 
 setup(name='papaye',
