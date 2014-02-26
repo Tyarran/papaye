@@ -24,9 +24,8 @@ def start_collector(settings):
         socket.bind(settings.get('proxy.collector_socket'))
 
         while True:
-            data = pickle.loads(socket.recv())
-            print data
-            task_id, value = pickle.loads(socket.recv())
+            data = socket.recv()
+            task_id, value = pickle.loads(data)
             cache.set_value(task_id, value)
     process = multiprocessing.Process(target=run)
     process.start()
@@ -59,7 +58,6 @@ def run_consumer(settings):
     while True:
         data = socket.recv_multipart()[2]
         task_id, func_name, args, kwargs = pickle.loads(data)
-        print TaskRegistry()._tasks
         func = TaskRegistry()._tasks[func_name]
         func.task_id = task_id
         print 'Starting task id: {}'.format(func.task_id)
