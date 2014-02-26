@@ -1,1 +1,1 @@
-from papaye.tests import views
+from papaye.tests.test_views import *

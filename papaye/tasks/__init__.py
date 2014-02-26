@@ -5,26 +5,55 @@ import time
 from pyramid.registry import global_registry
 
 
-def get_task_id():
-    timestamp = time.time()
-    return hashlib.md5(str(timestamp)).hexdigest()
+class TaskRegistry(object):
+    _shared_state = {}
+    _tasks = {}
+
+    def __init__(self):
+        self.__init__ = self._shared_state
+
+    def register_task(self, func):
+        self._tasks[func.func_name] = func
 
 
-def task(func):
+class Task(object):
 
-    def delay(*args, **kwargs):
-        task_id = get_task_id()
-        func = delay.func
-        print func.func_name
+    def __init__(self, func):
+        self.func = func
+
+    def get_task_id(self):
+        timestamp = time.time()
+        return hashlib.md5(str(timestamp)).hexdigest()
+
+    def delay(self, *args, **kwargs):
+        self.task_id = self.get_task_id()
         global_registry.producer.send_pyobj([
-            task_id,
-            func,
+            self.task_id,
+            self.func.func_name,
             args,
             kwargs
         ])
-        return task_id
+        return self.task_id
 
-    func.delay = delay
-    func.ready = False
-    func.delay.func = func
-    return func
+    def __call__(self, *args, **kwargs):
+        self.func(*args, **kwargs)
+
+    @property
+    def ready(self):
+        cache = global_registry.result_cache
+        return self.task_id in cache
+
+    @property
+    def result(self):
+        cache = global_registry.result_cache
+        return cache.get_value(self.task_id)
+
+    def __repr__(self):
+        return '<{}.{} for "{}"" function>'.format(self.__module__, self.__class__.__name__, self.func.func_name)
+
+
+def task(func):
+    task = Task(func)
+    registry = TaskRegistry()
+    registry.register_task(func)
+    return task
