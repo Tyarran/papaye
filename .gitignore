@@ -48,6 +48,9 @@ repository/
 # Default database location
 papaye_database
 
+# Default cache location
+cache
+
 # ToDo files
 .todo
 TODO
