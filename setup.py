@@ -1,3 +1,4 @@
+#-*- coding:utf-8 -*-
 import os
 
 from setuptools import setup, find_packages
@@ -29,9 +30,9 @@ setup(name='papaye',
           "Topic :: Internet :: WWW/HTTP",
           "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
       ],
-      author='',
-      author_email='',
-      url='',
+      author='Romain Commandé',
+      author_email='commande.romain@gmail.com',
+      url='http://www.rcommande.org',
       keywords='web wsgi bfg pylons pyramid',
       packages=find_packages(),
       include_package_data=True,
