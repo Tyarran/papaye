@@ -136,6 +136,8 @@ class SimpleTestView(unittest.TestCase):
         request = get_current_request()
         request.POST = {
             "content": storage,
+            "some_metadata": "Fake Metadata",
+            ":action": "upload_file",
         }
 
         view = SimpleView(request)
@@ -144,6 +146,12 @@ class SimpleTestView(unittest.TestCase):
         self.assertEqual(result.status_int, 200)
         self.assertTrue(exists(join(self.repository, 'foo')))
         self.assertTrue(exists(join(self.repository, 'foo', 'foo.tar.gz')))
+        data = self.request.db.get('release', 'foo.tar.gz', with_doc=True)['doc']
+        self.assertIn('info', data)
+        self.assertIn('some_metadata', data['info'])
+        self.assertEqual(data['info']['some_metadata'], 'Fake Metadata')
+        self.assertNotIn(':action', data['info'])
+        self.assertNotIn('content', data['info'])
 
     def test_upload_multiple_releases(self):
         for filename in ('Whoosh-2.6.0.tar.gz', 'Whoosh-2.6.0.zip'):

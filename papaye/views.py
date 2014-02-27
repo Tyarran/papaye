@@ -149,6 +149,8 @@ class SimpleView(object):
                 if self.db.count(self.db.get_many, 'release', filename):
                     return HTTPConflict()
                 release_doc = {'type': 'release', 'package': package, 'name': filename}
+                release_doc['info'] = dict(((key, value) for key, value in self.request.POST.iteritems()
+                                            if key != 'content' and key != ':action'))
                 self.db.insert(release_doc)
                 release_file.write(self.request.POST['content'].file.read())
             return Response()
