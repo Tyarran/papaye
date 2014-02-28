@@ -147,6 +147,7 @@ class SimpleTestView(unittest.TestCase):
         self.assertTrue(exists(join(self.repository, 'foo')))
         self.assertTrue(exists(join(self.repository, 'foo', 'foo.tar.gz')))
         data = self.request.db.get('release', 'foo.tar.gz', with_doc=True)['doc']
+        self.assertIn('upload_time', data)
         self.assertIn('info', data)
         self.assertIn('some_metadata', data['info'])
         self.assertEqual(data['info']['some_metadata'], 'Fake Metadata')

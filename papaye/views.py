@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 import requests
@@ -148,7 +149,12 @@ class SimpleView(object):
             with open(path, 'wb') as release_file:
                 if self.db.count(self.db.get_many, 'release', filename):
                     return HTTPConflict()
-                release_doc = {'type': 'release', 'package': package, 'name': filename}
+                release_doc = {
+                    'type': 'release',
+                    'package': package,
+                    'name': filename,
+                    'upload_time': datetime.datetime.now().isoformat()
+                }
                 release_doc['info'] = dict(((key, value) for key, value in self.request.POST.iteritems()
                                             if key != 'content' and key != ':action'))
                 self.db.insert(release_doc)
