@@ -3,11 +3,14 @@ import shutil
 import tempfile
 import types
 import unittest
+import webtest
 
 from cgi import FieldStorage
 from os import mkdir
 from os.path import join, exists
+from pyquery import PyQuery
 from pyramid import testing
+from pyramid.config import Configurator
 from pyramid.httpexceptions import HTTPNotFound, HTTPTemporaryRedirect
 from pyramid.registry import global_registry
 from pyramid.response import FileResponse, Response
@@ -16,10 +19,11 @@ from pyramid_beaker import set_cache_regions_from_settings
 
 from papaye.views import SimpleView
 from papaye.tests.tools import (
-    create_db,
-    TestRequest,
-    TEST_RESOURCES,
     FakeProducer,
+    TEST_RESOURCES,
+    TestRequest,
+    create_db,
+    create_test_app,
 )
 
 
@@ -49,10 +53,7 @@ class SimpleTestView(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.repository)
-        db = self.request.db
-        for elem in db.all('id'):
-            db.delete(elem)
-        db.destroy()
+        shutil.rmtree(self.request.db.path, ignore_errors=True)
 
     def test_list_packages(self):
         request = get_current_request()
@@ -198,3 +199,57 @@ class SimpleTestView(unittest.TestCase):
         result = view.upload_release()
 
         self.assertEqual(result.status_int, 400)
+
+
+class SimpleFunctionnalTest(unittest.TestCase):
+
+    def setUp(self):
+        self.repository = tempfile.mkdtemp('repository')
+        settings = {
+            'papaye.repository': self.repository,
+            'cache.regions': 'pypi',
+            'cache.type': 'memory',
+            'cache.second.expire': '1',
+            'cache.pypi': '5',
+            'codernity.url': 'file://%(here)s/papaye_database',
+        }
+        config = Configurator(settings=settings)
+        self.db = create_db()
+        config.scan('papaye.views')
+        app = create_test_app(config)
+        self.client = webtest.TestApp(app)
+
+    def tearDown(self):
+        shutil.rmtree(self.repository)
+        shutil.rmtree(self.db.path, ignore_errors=True)
+
+    def test_list_packages(self):
+        response = self.client.get('/simple/')
+        self.assertEqual(response.status_code, 200)
+
+        title = response.pyquery('title')
+        self.assertEqual(title.text(), 'Papaye Simple Index')
+
+        expected_links_text = ['package1', 'package2']
+
+        links = response.pyquery('a')
+        self.assertEqual(len(links), 2)
+        for index, link_element in enumerate(links):
+            link = PyQuery(link_element)
+            self.assertEqual(link.text(), expected_links_text[index])
+            self.assertEqual(link.attr('href'), 'http://localhost/simple/{}'.format(expected_links_text[index]))
+
+    def test_list_releases(self):
+        response = self.client.get('/simple/package1/')
+        self.assertEqual(response.status_code, 200)
+
+        title = response.pyquery('title')
+        self.assertEqual(title.text(), 'Papaye Simple Index')
+
+        expected_link_text = 'file-1.0.tar.gz'
+
+        links = response.pyquery('a')
+        self.assertEqual(len(links), 1)
+
+        self.assertEqual(links.eq(0).text(), expected_link_text)
+        self.assertEqual(links.eq(0).attr('href'), 'file-1.0.tar.gz?md5=Fake MD5')
