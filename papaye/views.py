@@ -3,10 +3,11 @@ import json
 import logging
 import requests
 
-from beaker.cache import cache_region
 from CodernityDB.database import RecordNotFound
+from beaker.cache import cache_region
 from os import mkdir
 from os.path import join, exists
+from pkg_resources import parse_version
 from pyramid.httpexceptions import HTTPNotFound, HTTPTemporaryRedirect, HTTPBadRequest, HTTPConflict, HTTPUnauthorized
 from pyramid.response import FileResponse, Response
 from pyramid.security import forget
@@ -63,9 +64,7 @@ class SimpleView(object):
             if result.status_code == 404:
                 return None
             result = json.loads(result.content)
-            for url in result['urls']:
-                if url['packagetype'] == 'sdist':
-                    return url['filename']
+            return result['info']['version']
         except ConnectionError:
             pass
         return None
@@ -74,10 +73,13 @@ class SimpleView(object):
         if not last_remote_release:
             return True
         releases = self.db.get_many('rel_release_package', package_name, with_doc=True)
-        if len([release for release in releases if last_remote_release == release['doc']['name']]):
-            return True
-        else:
-            return False
+        remote_version = parse_version(last_remote_release)
+
+        local_versions = [release['doc']['info']['version'] for release in releases]
+        for version in local_versions:
+            if parse_version(version) >= remote_version:
+                return True
+        return False
 
     def package_not_found(self, package_name, message='Package "{}" not found'):
         LOG.info(message.format(package_name))

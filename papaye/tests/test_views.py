@@ -200,6 +200,64 @@ class SimpleTestView(unittest.TestCase):
 
         self.assertEqual(result.status_int, 400)
 
+    def test_repository_is_up_to_date(self):
+        from papaye.views import SimpleView
+        package = {
+            'type': 'package',
+            'name': 'test_package',
+        }
+        release = {
+            'type': 'release',
+            'name': 'file-1.0.2.tar.gz',
+            'package': 'test_package',
+            'info': {
+                'version': '1.0.2',
+            }
+        }
+        self.request.db.insert(package)
+        self.request.db.insert(release)
+        request = get_current_request()
+        view = SimpleView(request)
+
+        remote_version = '1.0.3'
+        result = view.repository_is_up_to_date(remote_version, 'test_package')
+        self.assertFalse(result)
+
+        remote_version = '1.0.1'
+        result = view.repository_is_up_to_date(remote_version, 'test_package')
+        self.assertTrue(result)
+
+        remote_version = '1.0.2'
+        result = view.repository_is_up_to_date(remote_version, 'test_package')
+        self.assertTrue(result)
+
+        remote_version = '1.0.2-alpha'
+        result = view.repository_is_up_to_date(remote_version, 'test_package')
+        self.assertTrue(result)
+
+    def test_repository_is_up_to_date_with_preversion(self):
+        from papaye.views import SimpleView
+        package = {
+            'type': 'package',
+            'name': 'test_package',
+        }
+        release = {
+            'type': 'release',
+            'name': 'file-1.0.2-alpha2.tar.gz',
+            'package': 'test_package',
+            'info': {
+                'version': '1.0.2-alpha2',
+            }
+        }
+        self.request.db.insert(package)
+        self.request.db.insert(release)
+        request = get_current_request()
+        view = SimpleView(request)
+
+        remote_version = '1.0.2'
+        result = view.repository_is_up_to_date(remote_version, 'test_package')
+        self.assertFalse(result)
+
 
 class SimpleFunctionnalTest(unittest.TestCase):
 

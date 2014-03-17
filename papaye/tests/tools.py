@@ -1,7 +1,6 @@
 import os
 
 from pyramid import testing
-from pyramid.view import view_config
 from pyramid_beaker import set_cache_regions_from_settings
 
 
@@ -46,6 +45,7 @@ def create_test_documents(db):
         'package': 'package1',
         'info': {
             'md5_digest': 'Fake MD5',
+            'version': '1.0.0',
         }
     }
     for document in (package1, package2, release1):
