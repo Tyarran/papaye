@@ -3,16 +3,26 @@ import json
 import logging
 import requests
 
-from CodernityDB.database import RecordNotFound
+import logging as RecordNotFound  # Delete this line !!!
+
+#from CodernityDB.database import RecordNotFound
 from beaker.cache import cache_region
 from os import mkdir
 from os.path import join, exists
 from pkg_resources import parse_version
-from pyramid.httpexceptions import HTTPNotFound, HTTPTemporaryRedirect, HTTPBadRequest, HTTPConflict, HTTPUnauthorized
+from pyramid.httpexceptions import (
+    HTTPBadRequest,
+    HTTPConflict,
+    HTTPNotFound,
+    HTTPTemporaryRedirect,
+    HTTPUnauthorized,
+)
 from pyramid.response import FileResponse, Response
 from pyramid.security import forget
 from pyramid.view import view_config, forbidden_view_config
 from requests import ConnectionError
+
+from papaye.views.commons import BaseView
 
 
 SUPPORTED_PACKAGE_FORMAT = (
@@ -34,25 +44,36 @@ def is_supported_package_format(filename):
     return None
 
 
-class SimpleView(object):
+@view_config(route_name="simple", renderer="simple.jinja2", request_method="GET")
+class ListPackagesView(BaseView):
 
-    def __init__(self, request):
-        LOG.debug('Dispatch "{}" route as {} with {} method'.format(
-            request.matched_route.name,
-            request.path,
-            request.method
-        ))
-        self.request = request
-        self.settings = request.registry.settings
-        self.repository = self.settings.get('papaye.repository')
-        proxy = self.settings.get('papaye.proxy', False)
-        self.proxy = proxy == 'true' if proxy else False
-        self.db = self.request.db
-
-    @view_config(route_name="simple", renderer="simple.jinja2", permission='install', request_method="GET")
-    def list_packages(self):
+    def __call__(self):
         packages = (elem['doc'] for elem in self.db.all('package', with_doc=True))
         return {'objects': packages, 'root_url': self.request.route_url('simple')}
+
+
+@view_config(route_name="simple_release", renderer="simple.jinja2", permission='install')
+class ListReleaseView(BaseView):
+
+    def package_not_found(self, package_name, message='Package "{}" not found'):
+        LOG.info(message.format(package_name))
+        if self.proxy:
+            LOG.info('Proxify "{}" package'.format(package_name))
+            return HTTPTemporaryRedirect('http://pypi.python.org/simple/{}/'.format(package_name))
+        else:
+            return HTTPNotFound('Package doesn\'t exists')
+
+    def repository_is_up_to_date(self, last_remote_release, package_name):
+        if not last_remote_release:
+            return True
+        releases = self.db.get_many('rel_release_package', package_name, with_doc=True)
+        remote_version = parse_version(last_remote_release)
+
+        local_versions = [release['doc']['info']['version'] for release in releases]
+        for version in local_versions:
+            if parse_version(version) >= remote_version:
+                return True
+        return False
 
     @cache_region('pypi', 'get_last_remote_filename')
     def get_last_remote_release(self, package):
@@ -69,37 +90,7 @@ class SimpleView(object):
             pass
         return None
 
-    def repository_is_up_to_date(self, last_remote_release, package_name):
-        if not last_remote_release:
-            return True
-        releases = self.db.get_many('rel_release_package', package_name, with_doc=True)
-        remote_version = parse_version(last_remote_release)
-
-        local_versions = [release['doc']['info']['version'] for release in releases]
-        for version in local_versions:
-            if parse_version(version) >= remote_version:
-                return True
-        return False
-
-    def package_not_found(self, package_name, message='Package "{}" not found'):
-        LOG.info(message.format(package_name))
-        if self.proxy:
-            LOG.info('Proxify "{}" package'.format(package_name))
-            return HTTPTemporaryRedirect('http://pypi.python.org/simple/{}/'.format(package_name))
-        else:
-            return HTTPNotFound('Package doesn\'t exists')
-
-    def release_not_found(self, package_name, release_name, message='Release "{}" for package "{}" not found'):
-        message = message.format(release_name, package_name)
-        LOG.info(message)
-        if self.proxy:
-            LOG.info('Proxify "{}" release for package "{}"'.format(release_name, package_name))
-            return HTTPTemporaryRedirect('http://pypi.python.org/simple/{}/{}/'.format(package_name, release_name))
-        else:
-            return HTTPNotFound('Release doesn\'t exists')
-
-    @view_config(route_name="simple_release", renderer="simple.jinja2", permission='install')
-    def list_releases(self):
+    def __call__(self):
         package_name = self.request.matchdict['package']
         if self.db.count(self.db.get_many, 'package', package_name):
             package = self.db.get('package', package_name, with_doc=True)['doc']
@@ -115,8 +106,11 @@ class SimpleView(object):
         else:
             return self.package_not_found(package_name)
 
-    @view_config(route_name="download_release", permission='install')
-    def download_release(self):
+
+@view_config(route_name="download_release", permission='install')
+class DownloadReleaseView(BaseView):
+
+    def __call__(self):
         package = self.request.matchdict['package']
         release = self.request.matchdict['release']
         if len(release.split('-')) > 1:
@@ -130,8 +124,20 @@ class SimpleView(object):
             LOG.info(message)
             return self.release_not_found(package, release)
 
-    @view_config(route_name="simple", permission='publish', request_method='POST')
-    def upload_release(self):
+
+@view_config(route_name="simple", permission='publish', request_method='POST')
+class UploadReleaseView(BaseView):
+
+    def release_not_found(self, package_name, release_name, message='Release "{}" for package "{}" not found'):
+        message = message.format(release_name, package_name)
+        LOG.info(message)
+        if self.proxy:
+            LOG.info('Proxify "{}" release for package "{}"'.format(release_name, package_name))
+            return HTTPTemporaryRedirect('http://pypi.python.org/simple/{}/{}/'.format(package_name, release_name))
+        else:
+            return HTTPNotFound('Release doesn\'t exists')
+
+    def __call__(self):
         response = HTTPBadRequest()
         if not 'content' in self.request.POST:
             return response
