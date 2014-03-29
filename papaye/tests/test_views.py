@@ -1,4 +1,5 @@
-import StringIO
+#import StringIO
+import io
 import shutil
 import tempfile
 import types
@@ -17,7 +18,7 @@ from pyramid.response import FileResponse, Response
 from pyramid.threadlocal import get_current_request, get_current_registry
 from pyramid_beaker import set_cache_regions_from_settings
 
-from papaye.views import SimpleView
+#from papaye.views import SimpleView
 from papaye.tests.tools import (
     FakeProducer,
     TEST_RESOURCES,
@@ -127,7 +128,7 @@ class SimpleTestView(unittest.TestCase):
 
     def test_upload_release(self):
         # Create a fake test file
-        uploaded_file = StringIO.StringIO()
+        uploaded_file = io.StringIO()
         uploaded_file.write("content")
         storage = FieldStorage()
         storage.filename = 'foo.tar.gz'
@@ -183,7 +184,7 @@ class SimpleTestView(unittest.TestCase):
         self.assertEqual(result.status_int, 400)
 
     def test_upload_release_with_unothaurized_extension(self):
-        uploaded_file = StringIO.StringIO()
+        uploaded_file = io.StringIO()
         uploaded_file.write("content")
         storage = FieldStorage()
         storage.filename = 'foo.bar'

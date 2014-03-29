@@ -8,12 +8,12 @@ README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
-    'CodernityDB',
     'pyramid',
     'pyramid_beaker',
     'pyramid_debugtoolbar',
     'pyramid_jinja2',
     'pyramid_tm',
+    'pyramid_zodbconn'
     'pyzmq',
     'requests',
     'transaction',

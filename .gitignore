@@ -46,7 +46,7 @@ nosetests.xml
 repository/
 
 # Default database location
-papaye_database
+papaye.db*
 
 # Default cache location
 cache

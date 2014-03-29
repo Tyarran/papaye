@@ -1,5 +1,5 @@
 import json
-import grequests
+#import grequests
 
 from papaye.tasks import task
 
@@ -16,25 +16,25 @@ def write_file(package, release, filename):
 
 @task
 def download_release(package, release):
-    print "download"
-    request = grequests.get('http://pypi.python.org/pypi/{}/{}/json'.format(package, release))
-    response = request.send()
-    result = json.loads(response.content)
-    urls = [release_file['url'] for release_file in result['urls']]
-    rs = (grequests.get(url) for url in urls)
-    print grequests.map(rs)
+    print("download")
+    #request = grequests.get('http://pypi.python.org/pypi/{}/{}/json'.format(package, release))
+    #response = request.send()
+    #result = json.loads(response.content)
+    #urls = [release_file['url'] for release_file in result['urls']]
+    #rs = (grequests.get(url) for url in urls)
+    #print(grequests.map(rs))
     #import ipdb; ipdb.set_trace()
     #for release_file in result['urls']:
     #    result = grequests.get(release_file['url'])
     #    print release_file['url']
-    print "downloaded"
+    print("downloaded")
     return {"ok": "ok"}
 
 
 @task
 def test_func(*args, **kwargs):
-    print args, kwargs
+    print(args, kwargs)
     for index in range(1, 11):
-        print index
+        print(index)
         import time
         time.sleep(0.3)

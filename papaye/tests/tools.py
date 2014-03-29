@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from pyramid import testing
 from pyramid_beaker import set_cache_regions_from_settings
@@ -66,6 +67,10 @@ def create_db(request=None, with_doc=True):
     else:
         db.open()
     return db
+
+
+def destroy_db(db):
+    shutil.rmtree(db.path, ignore_errors=True)
 
 
 def create_test_app(config):

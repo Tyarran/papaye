@@ -13,7 +13,7 @@ class TaskRegistry(object):
         self.__init__ = self._shared_state
 
     def register_task(self, func):
-        self._tasks[func.func_name] = func
+        self._tasks[func.__name__] = func
 
 
 class Task(object):

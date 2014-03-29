@@ -3,8 +3,8 @@
         <title>Papaye Simple Index</title>
     </head>
     <body>
-    {% for obj in objects %}
-    <a href="{{ root_url }}{{ obj['name'] }}{% if obj.type == 'release' %}?md5={{ obj.info.md5_digest }}{% endif %}">{{ obj['name'] }}</a></br>
+    {% for url, obj in objects %}
+    <a href="{{ url }}{% if type == 'release' %}?md5={{ obj.__name__ }}{% endif %}" >{{ obj.__name__ }}</a></br>
     {% endfor %}
     </body>
 </html>
