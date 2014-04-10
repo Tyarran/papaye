@@ -18,9 +18,8 @@ class BaseView(object):
         self.request = request
         self.context = context
         self.settings = request.registry.settings
-        self.repository = self.settings.get('papaye.repository')
         proxy = self.settings.get('papaye.proxy', False)
-        self.proxy = proxy == 'true' if proxy else False
+        self.proxy = True if proxy and proxy == 'true' else False
 
     def __call__(self):
         super().__call__(self)
@@ -29,3 +28,5 @@ class BaseView(object):
         except:
             transaction.abort()
             return HTTPInternalServerError()
+
+

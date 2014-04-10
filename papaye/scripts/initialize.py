@@ -1,5 +1,5 @@
 import hashlib
-import lmdb
+#import lmdb
 import sys
 
 #from CodernityDB.database import Database

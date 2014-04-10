@@ -1,20 +1,61 @@
+import json
+import logging
+import requests
+
 from BTrees.OOBTree import OOBTree
+from beaker.cache import cache_region
 from persistent import Persistent
+from pkg_resources import parse_version
+
+
+logger = logging.getLogger(__name__)
+
+
+class Root(OOBTree):
+    __name__ = __parent__ = None
 
 
 class Package(Persistent):
-    __parent__ = __name__ = None
 
     def __init__(self, name):
         self.__name__ = name
+        self.name = name
         self.releases = OOBTree()
 
     def __getitem__(self, release_name):
         return self.releases[release_name]
 
+    def __setitem__(self, key, value):
+        self.releases[key] = value
+
+    @cache_region('pypi', 'get_last_remote_filename')
+    def get_last_remote_version(self, proxy):
+        logger.debug('Not in cache')
+        if not proxy:
+            return None
+        try:
+            result = requests.get('http://pypi.python.org/pypi/{}/json'.format(self.__name__))
+            if not result.status_code == 200:
+                return None
+            result = json.loads(result.content.decode('utf-8'))
+            return result['info']['version']
+        except ConnectionError:
+            pass
+        return None
+
+    def repository_is_up_to_date(self, last_remote_release):
+        if not last_remote_release:
+            return True
+        remote_version = parse_version(last_remote_release)
+
+        local_versions = [release.version for release in self.releases.values()]
+        for version in local_versions:
+            if parse_version(version) >= remote_version:
+                return True
+        return False
+
 
 class Release(Persistent):
-    __parent__ = __name__ = None
 
     def __init__(self, name, version):
         self.__name__ = name
@@ -24,55 +65,13 @@ class Release(Persistent):
     def __getitem__(self, release_file_name):
         return self.release_files[release_file_name]
 
+    def __setitem__(self, key, value):
+        self.release_files[key] = value
+
 
 class ReleaseFile(Persistent):
-    __parent__ = __name__ = None
 
     def __init__(self, filename, content):
         self.filename = filename
+        self.__name__ = filename
         self.content = content
-
-#import pickle
-
-#from pyramid.registry import global_registry
-
-
-#class CRUDMixin(object):
-
-#    #def save(self):
-#        #db_env = global_registry.db_env
-#        #with db_env.begin(write=True) as db:
-#            #db.put(self.name, pickle.dumps(self))
-
-#    @classmethod
-#    def get(cls, key):
-#        """ Return a model object for given key"""
-#        db_env = global_registry.db_env
-#        with db_env.begin() as db:
-#            return pickle.loads(db.get(key))
-
-#    @classmethod
-#    def get_many(cls, *args):
-#        """ Return a generator for keys given in args"""
-#        db_env = global_registry.db_env
-#        with db_env.begin() as db:
-#            for key in args:
-#                yield pickle.loads(db.get(key))
-
-
-#class Group(CRUDMixin, object):
-
-#    def __init__(self, name, permissions, users=[]):
-#        self.name = name
-#        self.permissions = permissions
-#        self.users = users
-#        for user in users:
-#            user.__group__ = self
-#            self.users.append(user)
-
-
-#class User(CRUDMixin, object):
-
-#    def __init__(self, name, password):
-#        self.name = name
-#        self.password = password

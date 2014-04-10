@@ -1,19 +1,23 @@
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 import os
+import papaye
 
 from setuptools import setup, find_packages
+
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
+VERSION = papaye.__version__
 
 requires = [
+    'filemagic',
     'pyramid',
     'pyramid_beaker',
     'pyramid_debugtoolbar',
     'pyramid_jinja2',
     'pyramid_tm',
-    'pyramid_zodbconn'
+    'pyramid_zodbconn',
     'pyzmq',
     'requests',
     'transaction',
@@ -21,7 +25,7 @@ requires = [
 ]
 
 setup(name='papaye',
-      version='0.0',
+      version=VERSION,
       description='papaye',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
@@ -32,6 +36,7 @@ setup(name='papaye',
       ],
       author='Romain Commandé',
       author_email='commande.romain@gmail.com',
+      maintainer='Moi moi et remoi',
       url='http://www.rcommande.org',
       keywords='web wsgi bfg pylons pyramid',
       packages=find_packages(),

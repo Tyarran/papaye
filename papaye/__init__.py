@@ -1,5 +1,5 @@
 #import hashlib
-import lmdb
+#import lmdb
 import os
 import transaction
 
@@ -12,22 +12,40 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.threadlocal import get_current_registry
 from pyramid_beaker import set_cache_regions_from_settings
 from pyramid_zodbconn import get_connection
-from BTrees.OOBTree import OOBTree
+#from BTrees.OOBTree import OOBTree
 #from persistent.mapping import PersistentMapping
+#from persistent.list import PersistentList
+
+from papaye.models import Root
 
 APP_NAME = __name__
+__version__ = '0.1'
 
 #from papaye.tasks.devices import get_producer, start_queue, start_collector
+
+class MyResourceURL(object):
+    """ An adapter which provides the virtual and physical paths of a
+        resource
+    """
+    def __init__(self, resource, request):
+        """ Accept the resource and request and set self.physical_path and
+        self.virtual_path"""
+        self.virtual_path = request.route_path('simple', traverse=request.traversed)
+        #self.virtual_path = '/simple/'lgisc64
+
+        self.physical_path = self.virtual_path
+
+
 
 
 def check_func(*args, **kwargs):
     #login, password, request = args
     #try:
-        #user = request.db.get('user', login, with_doc=True)
-        #if user['doc']['password'] == hashlib.sha256(password).digest():
-            #return [login, ]
+    #    user = request.db.get('user', login, with_doc=True)
+    #    if user['doc']['password'] == hashlib.sha256(password).digest():
+    #        return [login, ]
     #except RecordNotFound:
-        #pass
+    #    pass
     return None
 
 
@@ -35,11 +53,11 @@ authn_policy = BasicAuthAuthenticationPolicy(check=check_func)
 authz_policy = ACLAuthorizationPolicy()
 
 
-def test_db_configuration(settings):
-    path = settings.get('database.path', None)
-    if not path:
-        raise ConfigurationError('No database.path option in INI file')
-    return True
+#def test_db_configuration(settings):
+#    path = settings.get('database.path', None)
+#    if not path:
+#        raise ConfigurationError('No database.path option in INI file')
+#    return True
 
 
 def register_db_environment(db_env):
@@ -47,10 +65,10 @@ def register_db_environment(db_env):
     registry.db_env = db_env
 
 
-def get_db_environment(settings):
-    database_path = settings.get('database.path')
-    env = lmdb.open(database_path)
-    return env
+#def get_db_environment(settings):
+#    database_path = settings.get('database.path')
+#    env = lmdb.open(database_path)
+#    return env
 
 
 class RootFactory(object):
@@ -82,14 +100,14 @@ def root_factory(request):
     conn = get_connection(request)
     zodb_root = conn.root()
     if not '{}_root'.format(APP_NAME) in zodb_root:
-        app_root = OOBTree()
+        app_root = Root()
         zodb_root['{}_root'.format(APP_NAME)] = app_root
         transaction.commit()
     return zodb_root['{}_root'.format(APP_NAME)]
 
 
 def notfound(request):
-    return HTTPNotFound('Not found. Nanana nanère')
+    return HTTPNotFound()
 
 
 def registrer_producer(settings):
@@ -100,26 +118,15 @@ def registrer_producer(settings):
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    repository = settings.get('papaye.repository', None)
-    if not repository:
-        raise ConfigurationError('Variable {} missing in settings'.format('papaye.repository'))
-    elif not os.path.exists(repository):
-        os.makedirs(repository)
     set_cache_regions_from_settings(settings)
-    config = Configurator(settings=settings)
+    config = Configurator(settings=settings, root_factory=root_factory)
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
-    config.include('pyramid_jinja2')
     config.add_jinja2_search_path("papaye:templates")
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
-    config.add_route('repository', 'repository')
-    config.add_route('simple', 'simple/*traverse', factory=root_factory)
-    # onfig.add_route('simple', 'simple/*traverse', factory='papaye.root_factory')
-    # config.add_view("papaye.views.simple:ListPackagesView", context="BTrees.OOBTree.OOBTree", name="simple", renderer="simple.jinja2", request_method="GET", root_factory=root_factory)
+    config.add_route('simple', '/simple/*traverse', factory=root_factory)
     config.add_notfound_view(notfound, append_slash=True)
-    #config.add_request_method(add_db, 'db_env', reify=True)
-    #config.add_request_method(get_db_session, 'db', reify=True)
     #start_queue(settings)
     #start_collector(settings)
     #registrer_producer(settings)

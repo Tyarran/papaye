@@ -1,132 +1,484 @@
-#import StringIO
 import io
-import shutil
-import tempfile
+import json
 import types
 import unittest
-import webtest
 
 from cgi import FieldStorage
-from os import mkdir
-from os.path import join, exists
-from pyquery import PyQuery
+from mock import patch
 from pyramid import testing
-from pyramid.config import Configurator
 from pyramid.httpexceptions import HTTPNotFound, HTTPTemporaryRedirect
-from pyramid.registry import global_registry
-from pyramid.response import FileResponse, Response
-from pyramid.threadlocal import get_current_request, get_current_registry
+from pyramid.response import Response
+from pyramid.threadlocal import get_current_registry
 from pyramid_beaker import set_cache_regions_from_settings
 
-#from papaye.views import SimpleView
 from papaye.tests.tools import (
-    FakeProducer,
-    TEST_RESOURCES,
-    TestRequest,
-    create_db,
-    create_test_app,
+    FakeGRequestResponse,
+    FakeRoute
 )
 
 
-class SimpleTestView(unittest.TestCase):
+class ListPackageViewTest(unittest.TestCase):
 
     def setUp(self):
-        self.request = TestRequest()
-        self.request.db = create_db()
+        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
         self.config = testing.setUp(request=self.request)
-        self.repository = tempfile.mkdtemp('repository')
+        self.config.add_route('simple', '/simple/*traverse', factory='papaye:root_factory')
         registry = get_current_registry()
         registry.settings = {
-            'papaye.repository': self.repository,
             'cache.regions': 'pypi',
-            'cache.type': 'memory',
-            'cache.second.expire': '1',
-            'cache.pypi': '5',
+            'cache.enabled': 'false',
+            'zodbconn.uri': 'memory://',
         }
 
-        global_registry.producer = FakeProducer()
-        set_cache_regions_from_settings(registry.settings)
-        self.config.add_route('simple', 'simple/', static=True)
-        mkdir(join(self.repository, 'package2'))
-        mkdir(join(self.repository, 'package1'))
-        open(join(self.repository, 'package1', 'file-1.0.tar.gz'), 'w').close()
-        open(join(self.repository, 'package1', 'file2.data'), 'w').close()  # a bad file
-
-    def tearDown(self):
-        shutil.rmtree(self.repository)
-        shutil.rmtree(self.request.db.path, ignore_errors=True)
-
     def test_list_packages(self):
-        request = get_current_request()
-        view = SimpleView(request)
-        response = view.list_packages()
+        from papaye.views.simple import ListPackagesView
+        from papaye.models import Package, Root
+
+        # Test packages
+        root = Root()
+        root['package1'] = Package(name='package1')
+        root['package2'] = Package(name='package2')
+
+        view = ListPackagesView(root, self.request)
+        response = view()
+
         self.assertIsInstance(response, dict)
         self.assertIn('objects', response)
         self.assertIsInstance(response['objects'], types.GeneratorType)
-        self.assertEqual([p['name'] for p in response['objects']], ['package1', 'package2'])
+        self.assertEqual([package.name for url, package in response['objects']], ['package1', 'package2'])
 
-    def test_list_releases(self):
-        request = get_current_request()
-        request.matchdict['package'] = 'package1'
-        view = SimpleView(request)
-        response = view.list_releases()
+    def test_list_packages_without_package(self):
+        from papaye.views.simple import ListPackagesView
+        from papaye.models import Root
+
+        # Test packages
+        root = Root()
+
+        view = ListPackagesView(root, self.request)
+        response = view()
         self.assertIsInstance(response, dict)
         self.assertIn('objects', response)
-        self.assertIn('package', response)
         self.assertIsInstance(response['objects'], types.GeneratorType)
-        self.assertEqual([p['name'] for p in response['objects']],
-                         ['file-1.0.tar.gz', ])
-        self.assertEqual(response['package']['name'], 'package1')
+        self.assertEqual([package.name for url, package in response['objects']], [])
 
-    def test_list_releases_with_bad_package(self):
-        request = get_current_request()
-        request.matchdict['package'] = 'package10'
-        view = SimpleView(request)
-        result = view.list_releases()
-        self.assertIsInstance(result, HTTPNotFound)
 
-    def test_list_releases_with_bad_package_and_actived_proxy(self):
-        request = get_current_request()
+class ListReleaseViewTest(unittest.TestCase):
+
+    def setUp(self):
+        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        self.config = testing.setUp(request=self.request)
+        self.config.add_route('simple', '/simple/*traverse', factory='papaye:root_factory')
         registry = get_current_registry()
-        registry.settings['papaye.proxy'] = 'true'
-        package = 'package10'
-        request.matchdict['package'] = package
-        view = SimpleView(request)
-        result = view.list_releases()
-        self.assertIsInstance(result, HTTPTemporaryRedirect)
-        self.assertEqual(result.location, 'http://pypi.python.org/simple/{}/'.format(package))
+        registry.settings = {
+            'cache.regions': 'pypi',
+            'cache.enabled': 'false',
+            'zodbconn.uri': 'memory://',
+        }
+        set_cache_regions_from_settings(registry.settings)
+
+    def test_list_releases_files(self):
+        from papaye.views.simple import ListReleaseFileView
+        from papaye.models import Package, Release, Root, ReleaseFile
+
+        # Test packages
+        root = Root()
+        root['package1'] = Package(name='package1')
+        root['package1']['release1'] = Release(name='release1', version='1.0')
+        root['package1']['release1'].__parent__ = root['package1']
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content='')
+        root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
+
+        view = ListReleaseFileView(root['package1'], self.request)
+        response = view()
+
+        self.assertIsInstance(response, dict)
+        self.assertIn('objects', response)
+        self.assertIsInstance(response['objects'], types.GeneratorType)
+        self.assertEqual(
+            [(url, release) for url, release in response['objects']],
+            [('http://example.com/simple/package1/release1/releasefile1.tar.gz/',
+              root['package1']['release1']['releasefile1.tar.gz'])]
+        )
+
+    def test_list_releases_files_with_multiple_files(self):
+        from papaye.views.simple import ListReleaseFileView
+        from papaye.models import Package, Release, Root, ReleaseFile
+
+        # Test packages
+        root = Root()
+        root['package1'] = Package(name='package1')
+        root['package1']['release1'] = Release(name='release1', version='1.0')
+        root['package1']['release1'].__parent__ = root['package1']
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content='')
+        root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
+        root['package1']['release1']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz', content='')
+        root['package1']['release1']['releasefile2.tar.gz'].__parent__ = root['package1']['release1']
+
+        view = ListReleaseFileView(root['package1'], self.request)
+        response = view()
+
+        self.assertIsInstance(response, dict)
+        self.assertIn('objects', response)
+        self.assertIsInstance(response['objects'], types.GeneratorType)
+        self.assertEqual(
+            [(url, release) for url, release in response['objects']],
+            [
+                ('http://example.com/simple/package1/release1/releasefile1.tar.gz/',
+                 root['package1']['release1']['releasefile1.tar.gz']),
+                ('http://example.com/simple/package1/release1/releasefile2.tar.gz/',
+                 root['package1']['release1']['releasefile2.tar.gz']),
+            ],
+        )
+
+    def test_list_releases_files_with_multiple_release(self):
+        from papaye.views.simple import ListReleaseFileView
+        from papaye.models import Package, Release, Root, ReleaseFile
+
+        # Test packages
+        root = Root()
+        root['package1'] = Package(name='package1')
+        root['package1']['release1'] = Release(name='release1', version='1.0')
+        root['package1']['release1'].__parent__ = root['package1']
+        root['package1']['release2'] = Release(name='release2', version='2.0')
+        root['package1']['release2'].__parent__ = root['package1']
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content='')
+        root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
+        root['package1']['release2']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz', content='')
+        root['package1']['release2']['releasefile2.tar.gz'].__parent__ = root['package1']['release2']
+
+        view = ListReleaseFileView(root['package1'], self.request)
+        response = view()
+
+        self.assertIsInstance(response, dict)
+        self.assertIn('objects', response)
+        self.assertIsInstance(response['objects'], types.GeneratorType)
+        self.assertEqual(
+            [(url, release) for url, release in response['objects']],
+            [
+                ('http://example.com/simple/package1/release1/releasefile1.tar.gz/',
+                 root['package1']['release1']['releasefile1.tar.gz']),
+                ('http://example.com/simple/package1/release2/releasefile2.tar.gz/',
+                 root['package1']['release2']['releasefile2.tar.gz']),
+            ],
+        )
+
+    def test_list_releases_files_with_another_package(self):
+        from papaye.views.simple import ListReleaseFileView
+        from papaye.models import Package, Release, Root, ReleaseFile
+
+        # Test packages
+        root = Root()
+        root['package1'] = Package(name='package1')
+        root['package2'] = Package(name='package2')
+        root['package1']['release1'] = Release(name='release1', version='1.0')
+        root['package1']['release1'].__parent__ = root['package1']
+        root['package2']['release2'] = Release(name='release2', version='2.0')
+        root['package2']['release2'].__parent__ = root['package2']
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content='')
+        root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
+        root['package2']['release2']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz', content='')
+        root['package2']['release2']['releasefile2.tar.gz'].__parent__ = root['package2']['release2']
+
+        view = ListReleaseFileView(root['package1'], self.request)
+        response = view()
+
+        self.assertIsInstance(response, dict)
+        self.assertIn('objects', response)
+        self.assertIsInstance(response['objects'], types.GeneratorType)
+        self.assertEqual(
+            [(url, release) for url, release in response['objects']],
+            [
+                ('http://example.com/simple/package1/release1/releasefile1.tar.gz/',
+                 root['package1']['release1']['releasefile1.tar.gz']),
+            ],
+        )
+
+        view = ListReleaseFileView(root['package2'], self.request)
+        response = view()
+
+        self.assertIsInstance(response, dict)
+        self.assertIn('objects', response)
+        self.assertIsInstance(response['objects'], types.GeneratorType)
+        self.assertEqual(
+            [(url, release) for url, release in response['objects']],
+            [
+                ('http://example.com/simple/package2/release2/releasefile2.tar.gz/',
+                 root['package2']['release2']['releasefile2.tar.gz']),
+            ],
+        )
+
+    @patch('requests.get')
+    @patch('papaye.models.Package.get_last_remote_version')
+    def test_list_releases_files_with_new_remotes_release(self, mock, requests_mock):
+        from papaye.views.simple import ListReleaseFileView
+        from papaye.models import Package, Release, Root, ReleaseFile
+
+        mock.return_value = "3.0"
+
+        # Test packages
+        root = Root()
+        root['package1'] = Package(name='package1')
+        root['package1']['release1'] = Release(name='release1', version='1.0')
+        root['package1']['release1'].__parent__ = root['package1']
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content='')
+        root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
+
+        self.request.matchdict['traverse'] = (root['package1'].__name__, root['package1']['release1'].__name__)
+        view = ListReleaseFileView(root['package1'], self.request)
+        view.proxy = True
+        pypi_result = {
+            'urls': [{
+                'filename': 'releasefile1.tar.gz',
+                'url': 'http://example.com/'
+            }]
+        }
+        requests_mock.return_value = FakeGRequestResponse(200, bytes(json.dumps(pypi_result), 'utf-8'))
+        response = view()
+
+        self.assertIsInstance(response, dict)
+        self.assertIn('objects', response)
+        self.assertIsInstance(response['objects'], types.GeneratorType)
+        self.assertEqual(
+            [url for url, release in response['objects']], [
+                'http://example.com/',
+                'http://example.com/simple/package1/release1/releasefile1.tar.gz/',
+            ],
+        )
+
+
+class DownloadReleaseViewTest(unittest.TestCase):
+
+    def setUp(self):
+        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        self.config = testing.setUp(request=self.request)
+        self.config.add_route('simple', '/simple/*traverse', factory='papaye:root_factory')
+        registry = self.request.registry
+        registry.settings = {
+            'cache.regions': 'pypi',
+            'cache.enabled': 'false',
+            'zodbconn.uri': 'memory://',
+        }
+        set_cache_regions_from_settings(registry.settings)
 
     def test_download_release(self):
-        request = get_current_request()
-        request.matchdict['package'] = 'package1'
-        request.matchdict['release'] = 'file-1.0.tar.gz'
-        view = SimpleView(request)
-        response = view.download_release()
-        self.assertIsInstance(response, FileResponse)
+        from papaye.views.simple import DownloadReleaseView
+        from papaye.models import ReleaseFile, Release, Package
 
-    def test_download_bad_release(self):
-        request = get_current_request()
-        request.matchdict['package'] = 'package1'
-        request.matchdict['release'] = 'file1.tar.gz'
-        view = SimpleView(request)
-        result = view.download_release()
+        package = Package(name='package')
+        release = Release(name='1.0', version='1.0')
+        release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
+        release_file.__parent__ = release
+        release.__parent__ = package
+
+        view = DownloadReleaseView(release_file, self.request)
+        result = view()
+
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.body, b'Hello')
+        self.assertEqual(result.content_type, 'text/plain')
+        self.assertEqual(result.content_disposition, 'attachment; filename="releasefile-1.0.tar.gz"')
+
+    @patch('papaye.models.Package.get_last_remote_version')
+    def test_download_release_with_old_release(self, mock):
+        from papaye.views.simple import DownloadReleaseView
+        from papaye.models import ReleaseFile, Release, Package
+
+        mock.return_value = '2.0'
+
+        package = Package(name='package')
+        release = Release(name='1.0', version='1.0')
+        release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
+        release_file.__parent__ = release
+        release.__parent__ = package
+
+        self.request.matchdict['traverse'] = (package.__name__, release.__name__, release_file.__name__)
+        self.request.traversed = (package.__name__, release.__name__)
+
+        view = DownloadReleaseView(release_file, self.request)
+        result = view()
+
         self.assertIsInstance(result, HTTPNotFound)
 
-    def test_download_bad_release_with_proxy(self):
-        request = get_current_request()
-        registry = get_current_registry()
-        registry.settings['papaye.proxy'] = 'true'
-        request.matchdict['package'] = 'package1'
-        request.matchdict['release'] = 'file1.tar.gz'
-        view = SimpleView(request)
-        result = view.download_release()
+
+class PackageNotFoundViewTest(unittest.TestCase):
+
+    def setUp(self):
+        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        self.config = testing.setUp(request=self.request)
+        registry = self.request.registry
+        registry.settings = {
+            'cache.regions': 'pypi',
+            'cache.enabled': 'false',
+            'zodbconn.uri': 'memory://',
+        }
+        set_cache_regions_from_settings(registry.settings)
+
+    @patch('requests.get')
+    def test_package_not_found(self, mock):
+        from papaye.views.simple import PackageNotFoundView
+
+        view = PackageNotFoundView(self.request, 'Package')
+        view.proxy = True
+        view.request.matchdict['traverse'] = ('unknowpackage',)
+
+        result = view()
+        self.assertEqual(mock.call_count, 1)
+        self.assertIsInstance(result, HTTPNotFound)
+
+    @patch('requests.get')
+    def test_package_not_found_without_proxy(self, mock):
+        from papaye.views.simple import PackageNotFoundView
+
+        view = PackageNotFoundView(self.request, 'Package')
+        view.proxy = False
+        view.request.matchdict['traverse'] = ('unknowpackage',)
+
+        result = view()
+        self.assertEqual(mock.call_count, 0)
+        self.assertIsInstance(result, HTTPNotFound)
+
+    @patch('requests.get')
+    def test_package_not_found_present_in_pypi(self, mock):
+        from papaye.views.simple import PackageNotFoundView
+
+        mock.return_value = FakeGRequestResponse(200, '')
+
+        view = PackageNotFoundView(self.request, 'Package')
+        view.proxy = True
+        view.request.matchdict['traverse'] = ('unknowpackage',)
+
+        result = view()
+        self.assertEqual(mock.call_count, 1)
         self.assertIsInstance(result, HTTPTemporaryRedirect)
-        self.assertEqual(result.location, 'http://pypi.python.org/simple/{}/{}/'.format(
-            request.matchdict['package'],
-            request.matchdict['release'],
-        ))
+        self.assertEqual(result.location, 'http://pypi.python.org/simple/unknowpackage/')
+
+    @patch('requests.get')
+    def test_package_not_found_not_present_in_pypi(self, mock):
+        from papaye.views.simple import PackageNotFoundView
+
+        mock.return_value = FakeGRequestResponse(404, '')
+
+        view = PackageNotFoundView(self.request, 'Package')
+        view.proxy = True
+        view.request.matchdict['traverse'] = ('unknowpackage',)
+
+        result = view()
+        self.assertEqual(mock.call_count, 1)
+        self.assertIsInstance(result, HTTPNotFound)
+
+
+class ReleaseNotFoundViewTest(unittest.TestCase):
+
+    def setUp(self):
+        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        self.config = testing.setUp(request=self.request)
+        registry = self.request.registry
+        registry.settings = {
+            'cache.regions': 'pypi',
+            'cache.enabled': 'false',
+            'zodbconn.uri': 'memory://',
+        }
+        self.config.include('pyramid_jinja2')
+        self.config.add_jinja2_search_path("papaye:templates")
+        set_cache_regions_from_settings(registry.settings)
+
+    def test_get_params(self):
+        from papaye.views.simple import ReleaseNotFoundView
+
+        self.request.matchdict['traverse'] = ('one', 'two', 'three')
+        view = ReleaseNotFoundView(self.request, 'Release')
+
+        result = view.get_params()
+        self.assertEqual(result, ('one', 'two'))
+
+    def test_make_redirection(self):
+        from papaye.views.simple import ReleaseNotFoundView
+        from papaye.models import ReleaseFile
+
+        view = ReleaseNotFoundView(self.request, 'File')
+        pypi_result = {
+            'urls': [{
+                'filename': 'fakefilename.tar.gz',
+            }]
+        }
+
+        result = view.make_redirection('', FakeGRequestResponse(200, bytes(json.dumps(pypi_result), 'utf-8')))
+        self.assertIn('objects', result)
+        self.assertEqual(len(result['objects']), 1)
+        self.assertIsInstance(result['objects'][0][1], ReleaseFile)
+
+
+class ReleaseFileNotFoundViewTest(unittest.TestCase):
+
+    def setUp(self):
+        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        self.config = testing.setUp(request=self.request)
+        registry = self.request.registry
+        registry.settings = {
+            'cache.regions': 'pypi',
+            'cache.enabled': 'false',
+            'zodbconn.uri': 'memory://',
+        }
+        set_cache_regions_from_settings(registry.settings)
+
+    def test_get_params(self):
+        from papaye.views.simple import ReleaseFileNotFoundView
+
+        self.request.matchdict['traverse'] = ('one', 'two', 'three')
+        view = ReleaseFileNotFoundView(self.request, 'Release')
+
+        result = view.get_params()
+        self.assertEqual(result, ('one', 'two'))
+
+    def test_make_redirection(self):
+        from papaye.views.simple import ReleaseFileNotFoundView
+
+        self.request.matchdict['traverse'] = ('package', 'release', 'releasefile.tar.gz')
+        view = ReleaseFileNotFoundView(self.request, 'File')
+        pypi_result = {
+            'urls': [{
+                'filename': 'releasefile.tar.gz',
+                'url': 'http://example.com/releasefile.tar.gz'
+            }, {
+                'filename': 'releasefile2.tar.gz',
+                'url': 'http://example.com/releasefile2.tar.gz'
+            }]
+        }
+
+        result = view.make_redirection('', FakeGRequestResponse(200, bytes(json.dumps(pypi_result), 'utf-8')))
+        self.assertIsInstance(result, HTTPTemporaryRedirect)
+        self.assertEqual(result.location, 'http://example.com/releasefile.tar.gz')
+
+    def test_make_redirection_no_present_in_pypi(self):
+        from papaye.views.simple import ReleaseFileNotFoundView
+
+        self.request.matchdict['traverse'] = ('package', 'release', 'releasefile3.tar.gz')
+        view = ReleaseFileNotFoundView(self.request, 'File')
+        pypi_result = {
+            'urls': [{
+                'filename': 'releasefile.tar.gz',
+                'url': 'http://example.com/releasefile.tar.gz'
+            }, {
+                'filename': 'releasefile2.tar.gz',
+                'url': 'http://example.com/releasefile2.tar.gz'
+            }]
+        }
+
+        result = view.make_redirection('', FakeGRequestResponse(200, bytes(json.dumps(pypi_result), 'utf-8')))
+
+        self.assertIsInstance(result, HTTPNotFound)
+
+
+class UploadReleaseViewTest(unittest.TestCase):
+
+    def setUp(self):
+        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        self.config = testing.setUp(request=self.request)
 
     def test_upload_release(self):
+        from papaye.models import Root, Package, Release, ReleaseFile
+        from papaye.views.simple import UploadView
+
         # Create a fake test file
         uploaded_file = io.StringIO()
         uploaded_file.write("content")
@@ -134,181 +486,97 @@ class SimpleTestView(unittest.TestCase):
         storage.filename = 'foo.tar.gz'
         storage.file = uploaded_file
 
-        #Simulate file upload
-        request = get_current_request()
-        request.POST = {
+        self.request.POST = {
             "content": storage,
             "some_metadata": "Fake Metadata",
-            ":action": "upload_file",
+            "version": "1.0",
+            "name": "my_package",
+            ":action": "file_upload",
         }
+        root = Root()
+        self.request.root = root
+        view = UploadView(root, self.request)
+        result = view()
 
-        view = SimpleView(request)
-        result = view.upload_release()
         self.assertIsInstance(result, Response)
         self.assertEqual(result.status_int, 200)
-        self.assertTrue(exists(join(self.repository, 'foo')))
-        self.assertTrue(exists(join(self.repository, 'foo', 'foo.tar.gz')))
-        data = self.request.db.get('release', 'foo.tar.gz', with_doc=True)['doc']
-        self.assertIn('upload_time', data)
-        self.assertIn('info', data)
-        self.assertIn('some_metadata', data['info'])
-        self.assertEqual(data['info']['some_metadata'], 'Fake Metadata')
-        self.assertNotIn(':action', data['info'])
-        self.assertNotIn('content', data['info'])
+        self.assertTrue('my_package' in root)
+        self.assertIsInstance(root['my_package'], Package)
+        self.assertTrue(root['my_package'].releases.get('1.0', False))
+        self.assertIsInstance(root['my_package']['1.0'], Release)
+        self.assertTrue(root['my_package']['1.0'].release_files.get('foo.tar.gz', False))
+        self.assertIsInstance(root['my_package']['1.0']['foo.tar.gz'], ReleaseFile)
 
-    def test_upload_multiple_releases(self):
-        for filename in ('Whoosh-2.6.0.tar.gz', 'Whoosh-2.6.0.zip'):
-            upload_file = open(join(TEST_RESOURCES, filename), 'rb')
-            storage = FieldStorage()
-            storage.filename = filename
-            storage.file = upload_file
+    def test_upload_release_already_exists(self):
+        from papaye.models import Root, Package, Release, ReleaseFile
+        from papaye.views.simple import UploadView
 
-            #Simulate file upload
-            request = get_current_request()
-            request.POST = {
-                "content": storage,
-            }
-
-            view = SimpleView(request)
-            result = view.upload_release()
-            self.assertIsInstance(result, Response)
-            self.assertEqual(result.status_int, 200)
-            self.assertTrue(exists(join(self.repository, 'Whoosh')))
-            self.assertTrue(exists(join(self.repository, 'Whoosh', filename)))
-
-    def test_upload_release_without_file(self):
-        request = get_current_request()
-        view = SimpleView(request)
-        result = view.upload_release()
-
-        self.assertEqual(result.status_int, 400)
-
-    def test_upload_release_with_unothaurized_extension(self):
+        # Create a fake test file
         uploaded_file = io.StringIO()
         uploaded_file.write("content")
         storage = FieldStorage()
-        storage.filename = 'foo.bar'
+        storage.filename = 'foo.tar.gz'
         storage.file = uploaded_file
 
-        #Simulate file upload
-        request = get_current_request()
-        request.POST = {
+        self.request.POST = {
             "content": storage,
+            "some_metadata": "Fake Metadata",
+            "version": "1.0",
+            "name": "my_package",
+            ":action": "file_upload",
         }
-        request = get_current_request()
-        view = SimpleView(request)
-        result = view.upload_release()
+        root = Root()
 
-        self.assertEqual(result.status_int, 400)
+        #Create initial release
+        package = Package('my_package')
+        package['1.0'] = Release('1.0', '1.0')
+        package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', '')
+        root['my_package'] = package
 
-    def test_repository_is_up_to_date(self):
-        from papaye.views import SimpleView
-        package = {
-            'type': 'package',
-            'name': 'test_package',
+        view = UploadView(root, self.request)
+        result = view()
+
+        self.assertIsInstance(result, Response)
+        self.assertEqual(result.status_int, 409)
+
+    def test_upload_release_multiple_releasefile(self):
+        from papaye.models import Root, Package, Release, ReleaseFile
+        from papaye.views.simple import UploadView
+
+        # Create a fake test file
+        uploaded_file = io.StringIO()
+        uploaded_file.write("content")
+        storage = FieldStorage()
+        storage.filename = 'foo.zip'
+        storage.file = uploaded_file
+
+        self.request.POST = {
+            "content": storage,
+            "some_metadata": "Fake Metadata",
+            "version": "1.0",
+            "name": "my_package",
+            ":action": "file_upload",
         }
-        release = {
-            'type': 'release',
-            'name': 'file-1.0.2.tar.gz',
-            'package': 'test_package',
-            'info': {
-                'version': '1.0.2',
-            }
-        }
-        self.request.db.insert(package)
-        self.request.db.insert(release)
-        request = get_current_request()
-        view = SimpleView(request)
+        root = Root()
 
-        remote_version = '1.0.3'
-        result = view.repository_is_up_to_date(remote_version, 'test_package')
-        self.assertFalse(result)
+        #Create initial release
+        package = Package('my_package')
+        package['1.0'] = Release('1.0', '1.0')
+        package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', '')
+        root['my_package'] = package
 
-        remote_version = '1.0.1'
-        result = view.repository_is_up_to_date(remote_version, 'test_package')
-        self.assertTrue(result)
+        view = UploadView(root, self.request)
+        result = view()
 
-        remote_version = '1.0.2'
-        result = view.repository_is_up_to_date(remote_version, 'test_package')
-        self.assertTrue(result)
-
-        remote_version = '1.0.2-alpha'
-        result = view.repository_is_up_to_date(remote_version, 'test_package')
-        self.assertTrue(result)
-
-    def test_repository_is_up_to_date_with_preversion(self):
-        from papaye.views import SimpleView
-        package = {
-            'type': 'package',
-            'name': 'test_package',
-        }
-        release = {
-            'type': 'release',
-            'name': 'file-1.0.2-alpha2.tar.gz',
-            'package': 'test_package',
-            'info': {
-                'version': '1.0.2-alpha2',
-            }
-        }
-        self.request.db.insert(package)
-        self.request.db.insert(release)
-        request = get_current_request()
-        view = SimpleView(request)
-
-        remote_version = '1.0.2'
-        result = view.repository_is_up_to_date(remote_version, 'test_package')
-        self.assertFalse(result)
+        self.assertIsInstance(result, Response)
+        self.assertEqual(result.status_int, 200)
+        self.assertTrue('my_package' in root)
+        self.assertIsInstance(root['my_package'], Package)
+        self.assertTrue(root['my_package'].releases.get('1.0', False))
+        self.assertIsInstance(root['my_package']['1.0'], Release)
+        self.assertTrue(root['my_package']['1.0'].release_files.get('foo.tar.gz', False))
+        self.assertIsInstance(root['my_package']['1.0']['foo.tar.gz'], ReleaseFile)
+        self.assertTrue(root['my_package']['1.0'].release_files.get('foo.zip', False))
+        self.assertIsInstance(root['my_package']['1.0']['foo.zip'], ReleaseFile)
 
 
-class SimpleFunctionnalTest(unittest.TestCase):
-
-    def setUp(self):
-        self.repository = tempfile.mkdtemp('repository')
-        settings = {
-            'papaye.repository': self.repository,
-            'cache.regions': 'pypi',
-            'cache.type': 'memory',
-            'cache.second.expire': '1',
-            'cache.pypi': '5',
-            'codernity.url': 'file://%(here)s/papaye_database',
-        }
-        config = Configurator(settings=settings)
-        self.db = create_db()
-        config.scan('papaye.views')
-        app = create_test_app(config)
-        self.client = webtest.TestApp(app)
-
-    def tearDown(self):
-        shutil.rmtree(self.repository)
-        shutil.rmtree(self.db.path, ignore_errors=True)
-
-    def test_list_packages(self):
-        response = self.client.get('/simple/')
-        self.assertEqual(response.status_code, 200)
-
-        title = response.pyquery('title')
-        self.assertEqual(title.text(), 'Papaye Simple Index')
-
-        expected_links_text = ['package1', 'package2']
-
-        links = response.pyquery('a')
-        self.assertEqual(len(links), 2)
-        for index, link_element in enumerate(links):
-            link = PyQuery(link_element)
-            self.assertEqual(link.text(), expected_links_text[index])
-            self.assertEqual(link.attr('href'), 'http://localhost/simple/{}'.format(expected_links_text[index]))
-
-    def test_list_releases(self):
-        response = self.client.get('/simple/package1/')
-        self.assertEqual(response.status_code, 200)
-
-        title = response.pyquery('title')
-        self.assertEqual(title.text(), 'Papaye Simple Index')
-
-        expected_link_text = 'file-1.0.tar.gz'
-
-        links = response.pyquery('a')
-        self.assertEqual(len(links), 1)
-
-        self.assertEqual(links.eq(0).text(), expected_link_text)
-        self.assertEqual(links.eq(0).attr('href'), 'file-1.0.tar.gz?md5=Fake MD5')
