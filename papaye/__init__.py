@@ -125,7 +125,7 @@ def main(global_config, **settings):
     config.add_jinja2_search_path("papaye:templates")
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
-    config.add_route('simple', '/simple/*traverse', factory=root_factory)
+    config.add_route('simple', '/simple*traverse', factory=root_factory)
     config.add_notfound_view(notfound, append_slash=True)
     #start_queue(settings)
     #start_collector(settings)
