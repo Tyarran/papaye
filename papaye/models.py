@@ -1,8 +1,11 @@
+import io
 import json
 import logging
+import magic
 import requests
 
 from BTrees.OOBTree import OOBTree
+from ZODB.blob import Blob
 from beaker.cache import cache_region
 from persistent import Persistent
 from pkg_resources import parse_version
@@ -74,4 +77,10 @@ class ReleaseFile(Persistent):
     def __init__(self, filename, content):
         self.filename = filename
         self.__name__ = filename
-        self.content = content
+        self.content = Blob(content)
+        self.content_type = self.get_content_type(content)
+
+    def get_content_type(self, content):
+        buf = io.BytesIO(content)
+        with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as m:
+            self.content_type = m.id_buffer(buf.read())

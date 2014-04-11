@@ -85,7 +85,7 @@ class ListReleaseViewTest(unittest.TestCase):
         root['package1'] = Package(name='package1')
         root['package1']['release1'] = Release(name='release1', version='1.0')
         root['package1']['release1'].__parent__ = root['package1']
-        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content='')
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content=b'')
         root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
 
         view = ListReleaseFileView(root['package1'], self.request)
@@ -109,9 +109,9 @@ class ListReleaseViewTest(unittest.TestCase):
         root['package1'] = Package(name='package1')
         root['package1']['release1'] = Release(name='release1', version='1.0')
         root['package1']['release1'].__parent__ = root['package1']
-        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content='')
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content=b'')
         root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
-        root['package1']['release1']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz', content='')
+        root['package1']['release1']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz', content=b'')
         root['package1']['release1']['releasefile2.tar.gz'].__parent__ = root['package1']['release1']
 
         view = ListReleaseFileView(root['package1'], self.request)
@@ -141,9 +141,9 @@ class ListReleaseViewTest(unittest.TestCase):
         root['package1']['release1'].__parent__ = root['package1']
         root['package1']['release2'] = Release(name='release2', version='2.0')
         root['package1']['release2'].__parent__ = root['package1']
-        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content='')
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content=b'')
         root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
-        root['package1']['release2']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz', content='')
+        root['package1']['release2']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz', content=b'')
         root['package1']['release2']['releasefile2.tar.gz'].__parent__ = root['package1']['release2']
 
         view = ListReleaseFileView(root['package1'], self.request)
@@ -174,9 +174,9 @@ class ListReleaseViewTest(unittest.TestCase):
         root['package1']['release1'].__parent__ = root['package1']
         root['package2']['release2'] = Release(name='release2', version='2.0')
         root['package2']['release2'].__parent__ = root['package2']
-        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content='')
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content=b'')
         root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
-        root['package2']['release2']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz', content='')
+        root['package2']['release2']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz', content=b'')
         root['package2']['release2']['releasefile2.tar.gz'].__parent__ = root['package2']['release2']
 
         view = ListReleaseFileView(root['package1'], self.request)
@@ -220,7 +220,7 @@ class ListReleaseViewTest(unittest.TestCase):
         root['package1'] = Package(name='package1')
         root['package1']['release1'] = Release(name='release1', version='1.0')
         root['package1']['release1'].__parent__ = root['package1']
-        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content='')
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content=b'')
         root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
 
         self.request.matchdict['traverse'] = (root['package1'].__name__, root['package1']['release1'].__name__)
@@ -267,6 +267,7 @@ class DownloadReleaseViewTest(unittest.TestCase):
         package = Package(name='package')
         release = Release(name='1.0', version='1.0')
         release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
+        release_file.content_type = 'text/plain'
         release_file.__parent__ = release
         release.__parent__ = package
 
@@ -402,7 +403,7 @@ class ReleaseNotFoundViewTest(unittest.TestCase):
             }]
         }
 
-        result = view.make_redirection('', FakeGRequestResponse(200, bytes(json.dumps(pypi_result), 'utf-8')))
+        result = view.make_redirection(b'', FakeGRequestResponse(200, bytes(json.dumps(pypi_result), 'utf-8')))
         self.assertIn('objects', result)
         self.assertEqual(len(result['objects']), 1)
         self.assertIsInstance(result['objects'][0][1], ReleaseFile)
@@ -480,8 +481,8 @@ class UploadReleaseViewTest(unittest.TestCase):
         from papaye.views.simple import UploadView
 
         # Create a fake test file
-        uploaded_file = io.StringIO()
-        uploaded_file.write("content")
+        uploaded_file = io.BytesIO()
+        uploaded_file.write(b"content")
         storage = FieldStorage()
         storage.filename = 'foo.tar.gz'
         storage.file = uploaded_file
@@ -504,7 +505,7 @@ class UploadReleaseViewTest(unittest.TestCase):
         self.assertIsInstance(root['my_package'], Package)
         self.assertTrue(root['my_package'].releases.get('1.0', False))
         self.assertIsInstance(root['my_package']['1.0'], Release)
-        self.assertTrue(root['my_package']['1.0'].release_files.get('foo.tar.gz', False))
+        self.assertTrue(root['my_package']['1.0'].release_files.get('foo.tar.gz', b''))
         self.assertIsInstance(root['my_package']['1.0']['foo.tar.gz'], ReleaseFile)
 
     def test_upload_release_already_exists(self):
@@ -512,8 +513,8 @@ class UploadReleaseViewTest(unittest.TestCase):
         from papaye.views.simple import UploadView
 
         # Create a fake test file
-        uploaded_file = io.StringIO()
-        uploaded_file.write("content")
+        uploaded_file = io.BytesIO()
+        uploaded_file.write(b"content")
         storage = FieldStorage()
         storage.filename = 'foo.tar.gz'
         storage.file = uploaded_file
@@ -530,7 +531,7 @@ class UploadReleaseViewTest(unittest.TestCase):
         #Create initial release
         package = Package('my_package')
         package['1.0'] = Release('1.0', '1.0')
-        package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', '')
+        package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
         root['my_package'] = package
 
         view = UploadView(root, self.request)
@@ -544,8 +545,8 @@ class UploadReleaseViewTest(unittest.TestCase):
         from papaye.views.simple import UploadView
 
         # Create a fake test file
-        uploaded_file = io.StringIO()
-        uploaded_file.write("content")
+        uploaded_file = io.BytesIO()
+        uploaded_file.write(b"content")
         storage = FieldStorage()
         storage.filename = 'foo.zip'
         storage.file = uploaded_file
@@ -562,7 +563,7 @@ class UploadReleaseViewTest(unittest.TestCase):
         #Create initial release
         package = Package('my_package')
         package['1.0'] = Release('1.0', '1.0')
-        package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', '')
+        package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
         root['my_package'] = package
 
         view = UploadView(root, self.request)
@@ -574,9 +575,9 @@ class UploadReleaseViewTest(unittest.TestCase):
         self.assertIsInstance(root['my_package'], Package)
         self.assertTrue(root['my_package'].releases.get('1.0', False))
         self.assertIsInstance(root['my_package']['1.0'], Release)
-        self.assertTrue(root['my_package']['1.0'].release_files.get('foo.tar.gz', False))
+        self.assertTrue(root['my_package']['1.0'].release_files.get('foo.tar.gz', b''))
         self.assertIsInstance(root['my_package']['1.0']['foo.tar.gz'], ReleaseFile)
-        self.assertTrue(root['my_package']['1.0'].release_files.get('foo.zip', False))
+        self.assertTrue(root['my_package']['1.0'].release_files.get('foo.zip', b''))
         self.assertIsInstance(root['my_package']['1.0']['foo.zip'], ReleaseFile)
 
 

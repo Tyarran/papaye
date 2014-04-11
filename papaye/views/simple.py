@@ -1,6 +1,5 @@
 import json
 import logging
-import magic
 
 from pyramid.httpexceptions import (
     HTTPBadRequest,
@@ -79,7 +78,7 @@ class ReleaseNotFoundView(PackageNotFoundView):
         result = json.loads(response.content.decode('utf-8'))
         objects = []
         for url in result.get('urls', []):
-            release_file = ReleaseFile(url.get('filename'), '')
+            release_file = ReleaseFile(url.get('filename'), b'')
             objects.append((url.get('url'), release_file))
         return {'objects': objects}
 
@@ -163,11 +162,10 @@ class DownloadReleaseView(BaseView):
         last_remote_version = package.get_last_remote_version(self.proxy)
         if package.repository_is_up_to_date(last_remote_version):
             response = Response()
-            with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as m:
-                response.content_type = m.id_buffer(self.context.content)
             response.content_disposition = 'attachment; filename="{}"'.format(self.context.filename)
             response.charset = 'utf-8'
-            response.body = self.context.content
+            response.content_type = self.context.content_type
+            response.body_file = self.context.content.open()
             return response
         else:
             return not_found_view_dispatcher(self.request)
@@ -199,6 +197,7 @@ class UploadView():
             release_file = ReleaseFile(filename=content.filename, content=content.file.read())
             release_file.__parent__ = release
             self.context[name][version][content.filename] = release_file
+            logger.info('File "{}" successfully added in repository')
             return Response()
         else:
             return HTTPBadRequest()
