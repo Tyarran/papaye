@@ -84,16 +84,24 @@ class ReleaseNotFoundView(PackageNotFoundView):
         return {'objects': objects}
 
 
-class ReleaseFileNotUpToDate(ReleaseNotFoundView):
+class ReleaseFileNotUpToDateView(ReleaseNotFoundView):
     pypi_url = 'https://pypi.python.org/pypi/{}/json'
 
     def get_params(self):
         return (self.request.matchdict['traverse'][0], )
 
+    def format_url(self, url):
+        split_result = url.split('#')
+        base_url = split_result[0]
+        md5 = split_result[1] if len(split_result) == 2 else None
+        base_url += '?{}'.format(urllib.parse.urlencode({'check_update': 'false'}))
+        if md5:
+            base_url += '#{}'.format(md5)
+        return base_url
+
     def make_redirection(self, final_url, response):
         context = super().make_redirection(final_url, response)
-        objects = context['objects'] + [(url + '?' + urllib.parse.urlencode({'check_update': 'false'}), elem)
-                                        for url, elem in self.context['objects']]
+        objects = context['objects'] + [(self.format_url(url), elem) for url, elem in self.context['objects']]
 
         context['objects'] = (obj for obj in objects)
         return context
@@ -136,13 +144,15 @@ class ListReleaseFileView(BaseView):
             for release_file in release.release_files.values():
                 release_files.append(release_file)
         context = {
-            'objects': ((self.request.resource_url(release_file, route_name='simple'), release_file)
-                        for release_file in release_files),
+            'objects': ((self.request.resource_url(
+                release_file,
+                route_name='simple'
+            )[:-1] + "#md5={}".format(release_file.md5_digest), release_file) for release_file in release_files),
         }
         if package.repository_is_up_to_date(package.get_last_remote_version(self.proxy)):
             return context
         else:
-            release_not_found_view = ReleaseFileNotUpToDate(self.request, 'Release', context=context)
+            release_not_found_view = ReleaseFileNotUpToDateView(self.request, 'Release', context=context)
             release_not_found_view.proxy = self.proxy
             return release_not_found_view()
 
@@ -187,6 +197,7 @@ class UploadView():
             name = self.request.POST.get('name')
             version = self.request.POST.get('version')
             content = self.request.POST['content']
+            md5_digest = self.request.POST.get('md5_digest')
             package = self.context[name] if self.context.get(name) else Package(name)
             package.__parent__ = self.context
             self.context[name] = package
@@ -198,7 +209,7 @@ class UploadView():
             if release.release_files.get(content.filename):
                 return HTTPConflict()
             content.file.seek(0)
-            release_file = ReleaseFile(filename=content.filename, content=content.file.read())
+            release_file = ReleaseFile(filename=content.filename, content=content.file.read(), md5_digest=md5_digest)
             release_file.__parent__ = release
             self.context[name][version][content.filename] = release_file
             logger.info('File "{}" successfully added in repository')

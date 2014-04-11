@@ -85,7 +85,9 @@ class ListReleaseViewTest(unittest.TestCase):
         root['package1'] = Package(name='package1')
         root['package1']['release1'] = Release(name='release1', version='1.0')
         root['package1']['release1'].__parent__ = root['package1']
-        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content=b'')
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
+                                                                          content=b'',
+                                                                          md5_digest='12345')
         root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
 
         view = ListReleaseFileView(root['package1'], self.request)
@@ -96,7 +98,7 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertIsInstance(response['objects'], types.GeneratorType)
         self.assertEqual(
             [(url, release) for url, release in response['objects']],
-            [('http://example.com/simple/package1/release1/releasefile1.tar.gz/',
+            [('http://example.com/simple/package1/release1/releasefile1.tar.gz#md5=12345',
               root['package1']['release1']['releasefile1.tar.gz'])]
         )
 
@@ -109,9 +111,13 @@ class ListReleaseViewTest(unittest.TestCase):
         root['package1'] = Package(name='package1')
         root['package1']['release1'] = Release(name='release1', version='1.0')
         root['package1']['release1'].__parent__ = root['package1']
-        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content=b'')
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
+                                                                          content=b'',
+                                                                          md5_digest='12345')
         root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
-        root['package1']['release1']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz', content=b'')
+        root['package1']['release1']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz',
+                                                                          content=b'',
+                                                                          md5_digest='12345')
         root['package1']['release1']['releasefile2.tar.gz'].__parent__ = root['package1']['release1']
 
         view = ListReleaseFileView(root['package1'], self.request)
@@ -123,9 +129,9 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertEqual(
             [(url, release) for url, release in response['objects']],
             [
-                ('http://example.com/simple/package1/release1/releasefile1.tar.gz/',
+                ('http://example.com/simple/package1/release1/releasefile1.tar.gz#md5=12345',
                  root['package1']['release1']['releasefile1.tar.gz']),
-                ('http://example.com/simple/package1/release1/releasefile2.tar.gz/',
+                ('http://example.com/simple/package1/release1/releasefile2.tar.gz#md5=12345',
                  root['package1']['release1']['releasefile2.tar.gz']),
             ],
         )
@@ -141,9 +147,13 @@ class ListReleaseViewTest(unittest.TestCase):
         root['package1']['release1'].__parent__ = root['package1']
         root['package1']['release2'] = Release(name='release2', version='2.0')
         root['package1']['release2'].__parent__ = root['package1']
-        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content=b'')
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
+                                                                          content=b'',
+                                                                          md5_digest='12345')
         root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
-        root['package1']['release2']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz', content=b'')
+        root['package1']['release2']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz',
+                                                                          content=b'',
+                                                                          md5_digest='12345')
         root['package1']['release2']['releasefile2.tar.gz'].__parent__ = root['package1']['release2']
 
         view = ListReleaseFileView(root['package1'], self.request)
@@ -155,9 +165,9 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertEqual(
             [(url, release) for url, release in response['objects']],
             [
-                ('http://example.com/simple/package1/release1/releasefile1.tar.gz/',
+                ('http://example.com/simple/package1/release1/releasefile1.tar.gz#md5=12345',
                  root['package1']['release1']['releasefile1.tar.gz']),
-                ('http://example.com/simple/package1/release2/releasefile2.tar.gz/',
+                ('http://example.com/simple/package1/release2/releasefile2.tar.gz#md5=12345',
                  root['package1']['release2']['releasefile2.tar.gz']),
             ],
         )
@@ -174,9 +184,13 @@ class ListReleaseViewTest(unittest.TestCase):
         root['package1']['release1'].__parent__ = root['package1']
         root['package2']['release2'] = Release(name='release2', version='2.0')
         root['package2']['release2'].__parent__ = root['package2']
-        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content=b'')
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
+                                                                          content=b'',
+                                                                          md5_digest='12345')
         root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
-        root['package2']['release2']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz', content=b'')
+        root['package2']['release2']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz',
+                                                                          content=b'',
+                                                                          md5_digest='12345')
         root['package2']['release2']['releasefile2.tar.gz'].__parent__ = root['package2']['release2']
 
         view = ListReleaseFileView(root['package1'], self.request)
@@ -188,7 +202,7 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertEqual(
             [(url, release) for url, release in response['objects']],
             [
-                ('http://example.com/simple/package1/release1/releasefile1.tar.gz/',
+                ('http://example.com/simple/package1/release1/releasefile1.tar.gz#md5=12345',
                  root['package1']['release1']['releasefile1.tar.gz']),
             ],
         )
@@ -202,7 +216,7 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertEqual(
             [(url, release) for url, release in response['objects']],
             [
-                ('http://example.com/simple/package2/release2/releasefile2.tar.gz/',
+                ('http://example.com/simple/package2/release2/releasefile2.tar.gz#md5=12345',
                  root['package2']['release2']['releasefile2.tar.gz']),
             ],
         )
@@ -220,7 +234,9 @@ class ListReleaseViewTest(unittest.TestCase):
         root['package1'] = Package(name='package1')
         root['package1']['release1'] = Release(name='release1', version='1.0')
         root['package1']['release1'].__parent__ = root['package1']
-        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz', content=b'')
+        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
+                                                                          content=b'',
+                                                                          md5_digest='12345')
         root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
 
         self.request.matchdict['traverse'] = (root['package1'].__name__, root['package1']['release1'].__name__)
@@ -241,7 +257,7 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertEqual(
             [url for url, release in response['objects']], [
                 'http://example.com/',
-                'http://example.com/simple/package1/release1/releasefile1.tar.gz/?check_update=false',
+                'http://example.com/simple/package1/release1/releasefile1.tar.gz?check_update=false#md5=12345',
             ],
         )
 
@@ -493,6 +509,7 @@ class UploadReleaseViewTest(unittest.TestCase):
             "version": "1.0",
             "name": "my_package",
             ":action": "file_upload",
+            "md5_digest": "Fake MD5"
         }
         root = Root()
         self.request.root = root
@@ -507,6 +524,7 @@ class UploadReleaseViewTest(unittest.TestCase):
         self.assertIsInstance(root['my_package']['1.0'], Release)
         self.assertTrue(root['my_package']['1.0'].release_files.get('foo.tar.gz', b''))
         self.assertIsInstance(root['my_package']['1.0']['foo.tar.gz'], ReleaseFile)
+        self.assertEqual(root['my_package']['1.0']['foo.tar.gz'].md5_digest, "Fake MD5")
 
     def test_upload_release_already_exists(self):
         from papaye.models import Root, Package, Release, ReleaseFile
@@ -581,3 +599,34 @@ class UploadReleaseViewTest(unittest.TestCase):
         self.assertIsInstance(root['my_package']['1.0']['foo.zip'], ReleaseFile)
 
 
+class ReleaseFileNotUpToDate(unittest.TestCase):
+
+    def setUp(self):
+        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        self.config = testing.setUp(request=self.request)
+
+    def test_get_params(self):
+        from papaye.views.simple import ReleaseFileNotUpToDateView
+
+        self.request.matchdict['traverse'] = ('package', )
+        view = ReleaseFileNotUpToDateView(self.request, 'File')
+
+        result = view.get_params()
+        self.assertIsInstance(result, tuple)
+        self.assertEqual(result, ('package', ))
+
+    def test_format_url(self):
+        from papaye.views.simple import ReleaseFileNotUpToDateView
+
+        view = ReleaseFileNotUpToDateView(self.request, 'File')
+        result = view.format_url('http://example.com#md5=23456')
+
+        self.assertEqual(result, 'http://example.com?check_update=false#md5=23456')
+
+    def test_format_url_without_md5(self):
+        from papaye.views.simple import ReleaseFileNotUpToDateView
+
+        view = ReleaseFileNotUpToDateView(self.request, 'File')
+        result = view.format_url('http://example.com')
+
+        self.assertEqual(result, 'http://example.com?check_update=false')

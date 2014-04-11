@@ -74,11 +74,12 @@ class Release(Persistent):
 
 class ReleaseFile(Persistent):
 
-    def __init__(self, filename, content):
+    def __init__(self, filename, content, md5_digest=None):
         self.filename = filename
         self.__name__ = filename
         self.content = Blob(content)
         self.content_type = self.get_content_type(content)
+        self.md5_digest = md5_digest
 
     def get_content_type(self, content):
         buf = io.BytesIO(content)
