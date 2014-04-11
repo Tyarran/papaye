@@ -1,5 +1,6 @@
 import json
 import logging
+import urllib
 
 from pyramid.httpexceptions import (
     HTTPBadRequest,
@@ -91,7 +92,9 @@ class ReleaseFileNotUpToDate(ReleaseNotFoundView):
 
     def make_redirection(self, final_url, response):
         context = super().make_redirection(final_url, response)
-        objects = context['objects'] + [elem for elem in self.context['objects']]
+        objects = context['objects'] + [(url + '?' + urllib.parse.urlencode({'check_update': 'false'}), elem)
+                                        for url, elem in self.context['objects']]
+
         context['objects'] = (obj for obj in objects)
         return context
 
@@ -158,17 +161,18 @@ class ForbiddenView(BaseView):
 class DownloadReleaseView(BaseView):
 
     def __call__(self):
+        check_update = True if self.request.GET.get('check_update', 'true') == 'true' else False
         package = self.context.__parent__.__parent__
         last_remote_version = package.get_last_remote_version(self.proxy)
-        if package.repository_is_up_to_date(last_remote_version):
-            response = Response()
-            response.content_disposition = 'attachment; filename="{}"'.format(self.context.filename)
-            response.charset = 'utf-8'
-            response.content_type = self.context.content_type
-            response.body_file = self.context.content.open()
-            return response
-        else:
-            return not_found_view_dispatcher(self.request)
+        if check_update:
+            if not package.repository_is_up_to_date(last_remote_version):
+                return not_found_view_dispatcher(self.request)
+        response = Response()
+        response.content_disposition = 'attachment; filename="{}"'.format(self.context.filename)
+        response.charset = 'utf-8'
+        response.content_type = self.context.content_type
+        response.body_file = self.context.content.open()
+        return response
 
 
 @view_config(context="papaye.models.Root", route_name="simple", request_method="POST")
@@ -183,7 +187,7 @@ class UploadView():
             name = self.request.POST.get('name')
             version = self.request.POST.get('version')
             content = self.request.POST['content']
-            package = self.context[name] if name in self.context else Package(name)
+            package = self.context[name] if self.context.get(name) else Package(name)
             package.__parent__ = self.context
             self.context[name] = package
 

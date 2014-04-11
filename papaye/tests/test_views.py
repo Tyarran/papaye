@@ -241,7 +241,7 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertEqual(
             [url for url, release in response['objects']], [
                 'http://example.com/',
-                'http://example.com/simple/package1/release1/releasefile1.tar.gz/',
+                'http://example.com/simple/package1/release1/releasefile1.tar.gz/?check_update=false',
             ],
         )
 
