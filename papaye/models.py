@@ -4,11 +4,12 @@ import logging
 import magic
 import requests
 
-from BTrees.OOBTree import OOBTree
-from ZODB.blob import Blob
 from beaker.cache import cache_region
+from BTrees.OOBTree import OOBTree
 from persistent import Persistent
 from pkg_resources import parse_version
+from requests.exceptions import ConnectionError
+from ZODB.blob import Blob
 
 
 logger = logging.getLogger(__name__)
