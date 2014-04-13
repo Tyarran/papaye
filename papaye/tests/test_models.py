@@ -82,3 +82,40 @@ class PackageTest(unittest.TestCase):
         self.assertFalse(package.repository_is_up_to_date('1.1a'))
         self.assertTrue(package.repository_is_up_to_date(''))
         self.assertTrue(package.repository_is_up_to_date(None))
+
+
+class UserTest(unittest.TestCase):
+
+    def setUp(self):
+        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        settings = {
+            'zodbconn.uri': 'memory://',
+        }
+        self.config = testing.setUp(request=self.request, settings=settings)
+        self.config.include('pyramid_zodbconn')
+
+    def test_hash_password(self):
+        from papaye.models import User
+        expected = 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86'
+
+        result = User('a_user', 'password')
+        self.assertEqual(result.password, expected)
+
+    def test_by_username(self):
+        from papaye.models import User
+        from papaye.factories import user_root_factory
+
+        root = user_root_factory(self.request)
+        root['a_user'] = User('a_user', 'password')
+
+        result = User.by_username('a_user', self.request)
+
+        self.assertIsInstance(result, User)
+        self.assertEqual(result.username, 'a_user')
+
+    def test_by_username_without_result(self):
+        from papaye.models import User
+
+        result = User.by_username('a_user', self.request)
+
+        self.assertIsNone(result)

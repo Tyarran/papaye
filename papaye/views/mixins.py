@@ -18,5 +18,5 @@ class ExistsOnPyPIMixin(object):
             else:
                 return None
         except:
-            logger.warning('Bad url "{}"'.format(pypi_url))
+            logger.info('Bad url "{}"'.format(pypi_url))
             return None

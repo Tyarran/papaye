@@ -3,6 +3,7 @@ import json
 import logging
 import magic
 import requests
+import hashlib
 
 from beaker.cache import cache_region
 from BTrees.OOBTree import OOBTree
@@ -10,6 +11,9 @@ from persistent import Persistent
 from pkg_resources import parse_version
 from requests.exceptions import ConnectionError
 from ZODB.blob import Blob
+from pyramid.security import Allow, ALL_PERMISSIONS
+
+from papaye.factories import user_root_factory
 
 
 logger = logging.getLogger(__name__)
@@ -17,6 +21,10 @@ logger = logging.getLogger(__name__)
 
 class Root(OOBTree):
     __name__ = __parent__ = None
+    __acl__ = [
+        (Allow, 'group:installer', 'install'),
+        (Allow, 'group:admin', ALL_PERMISSIONS)
+    ]
 
 
 class Package(Persistent):
@@ -86,3 +94,25 @@ class ReleaseFile(Persistent):
         buf = io.BytesIO(content)
         with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as m:
             self.content_type = m.id_buffer(buf.read())
+
+
+class User(Persistent):
+
+    def __init__(self, username, password):
+        self.username = username
+        self.password = self.hash_password(password)
+
+    def hash_password(self, password):
+        return hashlib.sha512(password.encode('utf-8')).hexdigest()
+
+    def password_verify(self, clear_password):
+        return self.hash_password(clear_password) == self.password
+
+    @classmethod
+    def by_username(cls, username, request):
+        """Return user instance by username"""
+        root = user_root_factory(request)
+        if username not in root:
+            return None
+        else:
+            return root[username]

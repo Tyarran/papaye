@@ -22,7 +22,7 @@ class ListPackageViewTest(unittest.TestCase):
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
         self.config = testing.setUp(request=self.request)
-        self.config.add_route('simple', '/simple/*traverse', factory='papaye:root_factory')
+        self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
         registry = get_current_registry()
         registry.settings = {
             'cache.regions': 'pypi',
@@ -67,7 +67,7 @@ class ListReleaseViewTest(unittest.TestCase):
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
         self.config = testing.setUp(request=self.request)
-        self.config.add_route('simple', '/simple/*traverse', factory='papaye:root_factory')
+        self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
         registry = get_current_registry()
         registry.settings = {
             'cache.regions': 'pypi',
@@ -267,7 +267,7 @@ class DownloadReleaseViewTest(unittest.TestCase):
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
         self.config = testing.setUp(request=self.request)
-        self.config.add_route('simple', '/simple/*traverse', factory='papaye:root_factory')
+        self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
         registry = self.request.registry
         registry.settings = {
             'cache.regions': 'pypi',

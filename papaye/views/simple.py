@@ -8,17 +8,26 @@ from pyramid.httpexceptions import (
     HTTPForbidden,
     HTTPNotFound,
     HTTPTemporaryRedirect,
+    HTTPUnauthorized,
 )
 from pyramid.renderers import render_to_response
 from pyramid.response import Response
-from pyramid.view import view_config, notfound_view_config
+from pyramid.security import forget
+from pyramid.view import view_config, notfound_view_config, forbidden_view_config
 
 from papaye.views.commons import BaseView
 from papaye.views.mixins import ExistsOnPyPIMixin
-from papaye.models import ReleaseFile, Package, Release
+from papaye.models import ReleaseFile, Package, Release, Root
 
 
 logger = logging.getLogger(__name__)
+
+
+@forbidden_view_config()
+def basic_challenge(request):
+    response = HTTPUnauthorized()
+    response.headers.update(forget(request))
+    return response
 
 
 @notfound_view_config(route_name="simple")
@@ -43,14 +52,14 @@ class PackageNotFoundView(ExistsOnPyPIMixin, BaseView):
         super().__init__(context, request)
 
     def make_redirection(self, final_url, response):
-        logger.warning('Proxify request to {}'.format(final_url))
+        logger.info('Proxify request to {}'.format(final_url))
         return HTTPTemporaryRedirect(final_url)
 
     def get_params(self):
         return (self.request.matchdict['traverse'][0], )
 
     def __call__(self):
-        logger.warning('{} "{}" not found in Papaye index'.format(
+        logger.info('{} "{}" not found in Papaye index'.format(
             self.type_name,
             self.request.matchdict['traverse'][0])
         )
@@ -60,10 +69,10 @@ class PackageNotFoundView(ExistsOnPyPIMixin, BaseView):
             if result:
                 return self.make_redirection(pypi_url, result)
             else:
-                logger.warning('Not found on Pypi index')
+                logger.info('Not found on Pypi index')
                 return HTTPNotFound()
         else:
-            logger.warning('Not found on Pypi index')
+            logger.info('Not found on Pypi index')
             return HTTPNotFound()
 
 
@@ -75,7 +84,7 @@ class ReleaseNotFoundView(PackageNotFoundView):
         return self.request.matchdict['traverse'][:2]
 
     def make_redirection(self, final_url, response):
-        logger.warning('Get release files from {}'.format(final_url))
+        logger.info('Get release files from {}'.format(final_url))
         result = json.loads(response.content.decode('utf-8'))
         objects = []
         for url in result.get('urls', []):
@@ -120,11 +129,15 @@ class ReleaseFileNotFoundView(ReleaseNotFoundView):
         url = url[0] if url else None
         if not url:
             return HTTPNotFound()
-        logger.warning('Proxy request to {}'.format(url))
+        logger.info('Proxy request to {}'.format(url))
         return HTTPTemporaryRedirect(url)
 
 
-@view_config(context="papaye.models.Root", route_name="simple", renderer="simple.jinja2", request_method="GET")
+@view_config(context="papaye.models.Root",
+             route_name="simple",
+             renderer="simple.jinja2",
+             request_method="GET",
+             permission="install")
 class ListPackagesView(BaseView):
 
     def __call__(self):
@@ -134,7 +147,11 @@ class ListPackagesView(BaseView):
         }
 
 
-@view_config(context="papaye.models.Package", route_name="simple", renderer="simple.jinja2", request_method="GET")
+@view_config(context=Package,
+             route_name="simple",
+             renderer="simple.jinja2",
+             request_method="GET",
+             permission='install')
 class ListReleaseFileView(BaseView):
 
     def __call__(self):
@@ -157,17 +174,14 @@ class ListReleaseFileView(BaseView):
             return release_not_found_view()
 
 
-@view_config(context="papaye.models.Release", route_name="simple")
+@view_config(context=Release, route_name="simple")
 class ForbiddenView(BaseView):
 
     def __call__(self):
         return HTTPForbidden()
 
 
-@view_config(context="papaye.models.ReleaseFile",
-             route_name="simple",
-             # permission='install',
-             request_method="GET",)
+@view_config(context=ReleaseFile, route_name="simple", permission='install', request_method="GET")
 class DownloadReleaseView(BaseView):
 
     def __call__(self):
@@ -185,7 +199,7 @@ class DownloadReleaseView(BaseView):
         return response
 
 
-@view_config(context="papaye.models.Root", route_name="simple", request_method="POST")
+@view_config(context=Root, route_name="simple", request_method="POST", permission="add")
 class UploadView():
 
     def __init__(self, context, request):

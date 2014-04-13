@@ -42,28 +42,6 @@ class FakeProducer(object):
         pass
 
 
-def create_test_documents(db):
-    package1 = {
-        'type': 'package',
-        'name': 'package1',
-    }
-    package2 = {
-        'type': 'package',
-        'name': 'package2',
-    }
-    release1 = {
-        'type': 'release',
-        'name': 'file-1.0.tar.gz',
-        'package': 'package1',
-        'info': {
-            'md5_digest': 'Fake MD5',
-            'version': '1.0.0',
-        }
-    }
-    for document in (package1, package2, release1):
-        db.insert(document)
-
-
 def create_test_app(config):
     """ This function returns a Pyramid WSGI application for functional tests.
     """
