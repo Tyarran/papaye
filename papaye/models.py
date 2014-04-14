@@ -98,9 +98,10 @@ class ReleaseFile(Persistent):
 
 class User(Persistent):
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, **kwargs):
         self.username = username
         self.password = self.hash_password(password)
+        self.groups = kwargs.get('groups', [])
 
     def hash_password(self, password):
         return hashlib.sha512(password.encode('utf-8')).hexdigest()

@@ -13,7 +13,7 @@ def create_admin_user(settings):
     username = input('username for administrator (default="admin"): ')
     username = 'admin' if not username or username == '' else username
     password = getpass.getpass()
-    admin = User(username, password)
+    admin = User(username, password, groups=['group:admin'])
     request = testing.DummyRequest()
     config = testing.setUp(request=request, settings=settings)
     config.include('pyramid_zodbconn')

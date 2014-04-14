@@ -17,7 +17,7 @@ __version__ = '0.1'
 def auth_check_func(username, password, request):
     user = User.by_username(username, request)
     if user and user.password_verify(password):
-        return ['group:installer', ]
+        return user.groups
     return None
 
 
