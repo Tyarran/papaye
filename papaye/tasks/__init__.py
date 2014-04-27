@@ -1,4 +1,3 @@
-#import functools
 import hashlib
 import time
 
@@ -23,13 +22,13 @@ class Task(object):
 
     def get_task_id(self):
         timestamp = time.time()
-        return hashlib.md5(str(timestamp)).hexdigest()
+        return hashlib.md5(str(timestamp).encode('utf-8')).hexdigest()
 
     def delay(self, *args, **kwargs):
         self.task_id = self.get_task_id()
-        global_registry.producer.send_pyobj([
+        global_registry.producer.socket.send_pyobj([
             self.task_id,
-            self.func.func_name,
+            self.func.__name__,
             args,
             kwargs
         ])
@@ -49,7 +48,7 @@ class Task(object):
         return cache.get_value(self.task_id)
 
     def __repr__(self):
-        return '<{}.{} for "{}"" function>'.format(self.__module__, self.__class__.__name__, self.func.func_name)
+        return '<{}.{} for "{}" function>'.format(self.__module__, self.__class__.__name__, self.func.__name__)
 
 
 def task(func):

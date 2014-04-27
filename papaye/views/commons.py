@@ -28,5 +28,3 @@ class BaseView(object):
         except:
             transaction.abort()
             return HTTPInternalServerError()
-
-

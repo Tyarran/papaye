@@ -36,7 +36,6 @@ setup(name='papaye',
       ],
       author='Romain Commandé',
       author_email='commande.romain@gmail.com',
-      maintainer='Moi moi et remoi',
       url='http://www.rcommande.org',
       keywords='web wsgi bfg pylons pyramid',
       packages=find_packages(),
@@ -49,6 +48,7 @@ setup(name='papaye',
       main = papaye:main
       [console_scripts]
       papaye_init = papaye.scripts.initialize:main
-      papaye_worker = papaye.scripts.worker:main
+      # papaye_worker = papaye.scripts.worker:main
+      papaye = papaye.scripts.papaye:main
       """,
       )
