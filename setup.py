@@ -1,14 +1,13 @@
 # -*- coding:utf-8 -*-
 import os
-import papaye
 
 from setuptools import setup, find_packages
 
 
-here = os.path.abspath(os.path.dirname(__file__))
-README = open(os.path.join(here, 'README.rst')).read()
-CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
-VERSION = papaye.__version__
+HERE = os.path.abspath(os.path.dirname(__file__))
+README = open(os.path.join(HERE, 'README.rst')).read()
+CHANGES = open(os.path.join(HERE, 'CHANGES.txt')).read()
+VERSION = '0.1a1'
 
 requires = [
     'filemagic',

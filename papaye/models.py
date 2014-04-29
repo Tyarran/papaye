@@ -13,7 +13,7 @@ from requests.exceptions import ConnectionError
 from ZODB.blob import Blob
 from pyramid.security import Allow, ALL_PERMISSIONS
 
-from papaye.factories import user_root_factory
+from papaye.factories import user_root_factory, repository_root_factory
 
 
 logger = logging.getLogger(__name__)
@@ -39,6 +39,7 @@ class Package(Persistent):
 
     def __setitem__(self, key, value):
         self.releases[key] = value
+        self.releases[key].__parent__ = self
 
     @cache_region('pypi', 'get_last_remote_filename')
     def get_last_remote_version(self, proxy):
@@ -66,6 +67,12 @@ class Package(Persistent):
                 return True
         return False
 
+    @classmethod
+    def by_name(cls, name, request):
+        root = repository_root_factory(request)
+
+        return root[name] if name in root else None
+
 
 class Release(Persistent):
 
@@ -79,13 +86,20 @@ class Release(Persistent):
 
     def __setitem__(self, key, value):
         self.release_files[key] = value
+        self.release_files[key].__parent__ = self
+
+    @classmethod
+    def by_packagename(cls, package, request):
+        root = repository_root_factory(request)
+        if package not in root:
+            return None
+        return list(root[package].releases.values())
 
 
 class ReleaseFile(Persistent):
 
     def __init__(self, filename, content, md5_digest=None):
-        self.filename = filename
-        self.__name__ = filename
+        self.filename = self.__name__ = filename
         self.content = Blob(content)
         self.content_type = self.get_content_type(content)
         self.md5_digest = md5_digest

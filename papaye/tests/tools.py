@@ -8,6 +8,10 @@ HERE = os.path.abspath(os.path.dirname(__name__))
 TEST_RESOURCES = os.path.join('..', '..', HERE, 'test-resources')
 
 
+def get_resource(*args):
+    return os.path.join(TEST_RESOURCES, *args)
+
+
 class FakeGRequestResponse():
     def __init__(self, status_code, content):
         self.status_code = status_code

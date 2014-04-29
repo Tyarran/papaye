@@ -17,9 +17,11 @@ class PackageTest(unittest.TestCase):
         registry.settings = {
             'cache.regions': 'pypi',
             'cache.enabled': 'false',
-            'zodbconn.uri': 'memory://',
+            # 'zodbconn.uri': 'memory://',
+            'zodbconn.uri': 'memory:///blobstorage_dir=packages',
         }
         set_cache_regions_from_settings(registry.settings)
+        self.config.include('pyramid_zodbconn')
 
     @patch('requests.get')
     def test_get_last_remote_version_without_proxy(self, mock):
@@ -82,6 +84,50 @@ class PackageTest(unittest.TestCase):
         self.assertFalse(package.repository_is_up_to_date('1.1a'))
         self.assertTrue(package.repository_is_up_to_date(''))
         self.assertTrue(package.repository_is_up_to_date(None))
+
+    def test_by_name(self):
+        from papaye.models import Package
+        from papaye.factories import repository_root_factory
+
+        root = repository_root_factory(self.request)
+        root['package1'] = Package(name='package1')
+
+        result = Package.by_name('package1', self.request)
+        self.assertEqual(result, root['package1'])
+
+    def test_by_name_not_found(self):
+        from papaye.models import Package
+
+        result = Package.by_name('package1', self.request)
+        self.assertEqual(result, None)
+
+
+class ReleaseTest(unittest.TestCase):
+
+    def setUp(self):
+        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        settings = {
+            'zodbconn.uri': 'memory://',
+        }
+        self.config = testing.setUp(request=self.request, settings=settings)
+        self.config.include('pyramid_zodbconn')
+
+    def test_by_packagename(self):
+        from papaye.models import Release, Package
+        from papaye.factories import repository_root_factory
+
+        root = repository_root_factory(self.request)
+        root['package1'] = Package(name='package1')
+        root['package1']['1.0'] = Release('1.0', '1.0')
+
+        result = Release.by_packagename('package1', self.request)
+        self.assertEqual(result, [root['package1']['1.0'], ])
+
+    def test_by_packagename_not_found(self):
+        from papaye.models import Release
+
+        result = Release.by_packagename('package1', self.request)
+        self.assertEqual(result, None)
 
 
 class UserTest(unittest.TestCase):

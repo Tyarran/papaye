@@ -12,10 +12,6 @@ from papaye.tasks.devices import Scheduler, Producer
 from pyramid.threadlocal import get_current_registry
 
 
-APP_NAME = __name__
-__version__ = '0.1'
-
-
 def auth_check_func(username, password, request):
     user = User.by_username(username, request)
     if user and user.password_verify(password):

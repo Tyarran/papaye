@@ -15,9 +15,10 @@ from pyramid.response import Response
 from pyramid.security import forget
 from pyramid.view import view_config, notfound_view_config, forbidden_view_config
 
+from papaye.models import ReleaseFile, Package, Release, Root
+from papaye.tasks.download import download_release_from_pypi
 from papaye.views.commons import BaseView
 from papaye.views.mixins import ExistsOnPyPIMixin
-from papaye.models import ReleaseFile, Package, Release, Root
 
 
 logger = logging.getLogger(__name__)
@@ -199,7 +200,8 @@ class DownloadReleaseView(BaseView):
         return response
 
 
-@view_config(context=Root, route_name="simple", request_method="POST", permission="add")
+@view_config(context=Root, route_name="simple", request_method="POST")
+# @view_config(context=Root, route_name="simple", request_method="POST", permission="add")
 class UploadView():
 
     def __init__(self, context, request):

@@ -1,0 +1,1199 @@
+{
+    "info": {
+        "maintainer": null, 
+        "docs_url": "", 
+        "requires_python": null, 
+        "maintainer_email": null, 
+        "cheesecake_code_kwalitee_id": null, 
+        "keywords": "web wsgi pylons pyramid", 
+        "package_url": "http://pypi.python.org/pypi/pyramid", 
+        "author": "Chris McDonough, Agendaless Consulting", 
+        "author_email": "pylons-discuss@googlegroups.com", 
+        "download_url": "UNKNOWN", 
+        "platform": "UNKNOWN", 
+        "version": "1.5", 
+        "cheesecake_documentation_id": null, 
+        "_pypi_hidden": false, 
+        "description": "Pyramid\n=======\n\nPyramid is a small, fast, down-to-earth, open source Python web framework.\nIt makes real-world web application development and\ndeployment more fun, more predictable, and more productive.\n\nPyramid is produced by the `Pylons Project <http://pylonsproject.org/>`_.\n\nSupport and Documentation\n-------------------------\n\nSee the `Pylons Project website <http://pylonsproject.org/>`_ to view\ndocumentation, report bugs, and obtain support.\n\nLicense\n-------\n\nPyramid is offered under the BSD-derived `Repoze Public License\n<http://repoze.org/license.html>`_.\n\nAuthors\n-------\n\nPyramid is made available by `Agendaless Consulting <http://agendaless.com>`_\nand a team of contributors.\n\n", 
+        "release_url": "http://pypi.python.org/pypi/pyramid/1.5", 
+        "downloads": {
+            "last_month": 45145, 
+            "last_week": 11568, 
+            "last_day": 1582
+        }, 
+        "_pypi_ordering": 80, 
+        "classifiers": [
+            "Framework :: Pyramid", 
+            "Intended Audience :: Developers", 
+            "License :: Repoze Public License", 
+            "Programming Language :: Python", 
+            "Programming Language :: Python :: 2.6", 
+            "Programming Language :: Python :: 2.7", 
+            "Programming Language :: Python :: 3", 
+            "Programming Language :: Python :: 3.2", 
+            "Programming Language :: Python :: 3.3", 
+            "Programming Language :: Python :: 3.4", 
+            "Programming Language :: Python :: Implementation :: CPython", 
+            "Programming Language :: Python :: Implementation :: PyPy", 
+            "Topic :: Internet :: WWW/HTTP", 
+            "Topic :: Internet :: WWW/HTTP :: WSGI"
+        ], 
+        "bugtrack_url": "", 
+        "name": "pyramid", 
+        "license": "BSD-derived (http://www.repoze.org/LICENSE.txt)", 
+        "summary": "The Pyramid Web Framework, a Pylons project", 
+        "home_page": "http://pylonsproject.org", 
+        "stable_version": null, 
+        "cheesecake_installability_id": null
+    }, 
+    "releases": {
+        "1.4": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-12-18T08:08:19", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.4.tar.gz", 
+                "md5_digest": "d72b664cf3852570faa44a81eb0e448b", 
+                "downloads": 59060, 
+                "filename": "pyramid-1.4.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2423859
+            }
+        ], 
+        "1.5": [
+            {
+                "has_sig": false, 
+                "upload_time": "2014-04-08T23:10:26", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.5.tar.gz", 
+                "md5_digest": "8747658dcbab709a9c491e43d3b0d58b", 
+                "downloads": 18655, 
+                "filename": "pyramid-1.5.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2413504
+            }
+        ], 
+        "1.1.3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-12-15T01:38:28", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.1.3.tar.gz", 
+                "md5_digest": "2369c280b99172fbb99477eb33646266", 
+                "downloads": 1860, 
+                "filename": "pyramid-1.1.3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1916453
+            }
+        ], 
+        "1.1.2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-08-17T20:13:41", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.1.2.tar.gz", 
+                "md5_digest": "d0904dbf79c2682167eb07ea5da2a8ea", 
+                "downloads": 3237, 
+                "filename": "pyramid-1.1.2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1917654
+            }
+        ], 
+        "1.0": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-01-31T01:06:54", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0.tar.gz", 
+                "md5_digest": "811ac86625e39083f24f2b6d400a5d39", 
+                "downloads": 26405, 
+                "filename": "pyramid-1.0.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1739946
+            }
+        ], 
+        "1.1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-07-22T05:59:38", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.1.tar.gz", 
+                "md5_digest": "2481ab1c837648cbb1e9a52bcb44101f", 
+                "downloads": 8011, 
+                "filename": "pyramid-1.1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1917118
+            }
+        ], 
+        "1.2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-09-13T05:16:57", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2.tar.gz", 
+                "md5_digest": "be9cfc78ec7fd72a4bd1e1f677f31063", 
+                "downloads": 12855, 
+                "filename": "pyramid-1.2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2149412
+            }
+        ], 
+        "1.4.1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2013-04-23T17:32:40", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.4.1.tar.gz", 
+                "md5_digest": "044d42f609d567d7db2948a03fffcf7c", 
+                "downloads": 12777, 
+                "filename": "pyramid-1.4.1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2423821
+            }
+        ], 
+        "1.2.1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-09-28T12:12:44", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2.1.tar.gz", 
+                "md5_digest": "80043f02ed5bfbce5da4707cc776b2d8", 
+                "downloads": 15264, 
+                "filename": "pyramid-1.2.1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2149800
+            }
+        ], 
+        "1.4.2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2013-05-22T00:26:06", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.4.2.tar.gz", 
+                "md5_digest": "9f2bbef0032828a1db35fa07f5f3e4bf", 
+                "downloads": 17158, 
+                "filename": "pyramid-1.4.2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2425809
+            }
+        ], 
+        "1.0a4": [
+            {
+                "has_sig": false, 
+                "upload_time": "2010-11-21T06:43:44", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0a4.tar.gz", 
+                "md5_digest": "42d94993f9018f29779a3c9acc4ecd22", 
+                "downloads": 3380, 
+                "filename": "pyramid-1.0a4.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1183870
+            }
+        ], 
+        "1.4.3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2013-07-18T21:43:52", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.4.3.tar.gz", 
+                "md5_digest": "28fabf42cf585ecec7a57b5acc1174e3", 
+                "downloads": 64303, 
+                "filename": "pyramid-1.4.3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2426125
+            }
+        ], 
+        "1.0a7": [
+            {
+                "has_sig": false, 
+                "upload_time": "2010-12-20T17:04:50", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0a7.tar.gz", 
+                "md5_digest": "a629d6d5433574d5e3a52a8fc98d0903", 
+                "downloads": 2528, 
+                "filename": "pyramid-1.0a7.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1349942
+            }
+        ], 
+        "1.0b1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-01-22T04:02:50", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0b1.tar.gz", 
+                "md5_digest": "5df0da644d1c306add58a8ec3e4ac98c", 
+                "downloads": 2509, 
+                "filename": "pyramid-1.0b1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1737412
+            }
+        ], 
+        "1.5b1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2014-02-08T21:29:14", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.5b1.tar.gz", 
+                "md5_digest": "55ec341d65129167150059f649de8198", 
+                "downloads": 35303, 
+                "filename": "pyramid-1.5b1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2416567
+            }
+        ], 
+        "1.4.4": [
+            {
+                "has_sig": false, 
+                "upload_time": "2013-08-27T21:54:52", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.4.4.tar.gz", 
+                "md5_digest": "006d1d219ed66fb453bb345814036d7e", 
+                "downloads": 2433, 
+                "filename": "pyramid-1.4.4.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2426485
+            }
+        ], 
+        "1.0a6": [
+            {
+                "has_sig": false, 
+                "upload_time": "2010-12-16T01:44:10", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0a6.tar.gz", 
+                "md5_digest": "50a89761b1dbd18b1628e0f1e0a8fb4c", 
+                "downloads": 2457, 
+                "filename": "pyramid-1.0a6.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1349745
+            }
+        ], 
+        "1.0b2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-01-25T04:24:27", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0b2.tar.gz", 
+                "md5_digest": "f0a3bf080356cf5245c56e0430c5c10b", 
+                "downloads": 2617, 
+                "filename": "pyramid-1.0b2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1740587
+            }
+        ], 
+        "1.0.1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-08-13T08:39:58", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0.1.tar.gz", 
+                "md5_digest": "58df6c4807e294ef42b243a66680908d", 
+                "downloads": 2097, 
+                "filename": "pyramid-1.0.1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1737186
+            }
+        ], 
+        "1.0a9": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-01-08T08:35:17", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0a9.tar.gz", 
+                "md5_digest": "c67a4113a98f6e77740fbf4c5a583bbf", 
+                "downloads": 2938, 
+                "filename": "pyramid-1.0a9.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1956707
+            }
+        ], 
+        "1.0a8": [
+            {
+                "has_sig": false, 
+                "upload_time": "2010-12-27T23:26:01", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0a8.tar.gz", 
+                "md5_digest": "ff77352e4a4c24e34f80882f221ffd16", 
+                "downloads": 2858, 
+                "filename": "pyramid-1.0a8.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1354442
+            }
+        ], 
+        "1.0.2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-12-15T01:04:48", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0.2.tar.gz", 
+                "md5_digest": "aa56ac5cd3802d78f0a0aac7c17f1728", 
+                "downloads": 1874, 
+                "filename": "pyramid-1.0.2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1736416
+            }
+        ], 
+        "1.0a10": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-01-18T21:15:28", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0a10.tar.gz", 
+                "md5_digest": "7fda227b9aadd399dcf5ceb9ac6b0d16", 
+                "downloads": 2595, 
+                "filename": "pyramid-1.0a10.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1716934
+            }
+        ], 
+        "1.1a4": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-07-01T11:06:55", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.1a4.tar.gz", 
+                "md5_digest": "7fb1f8f26252338afd930992dfb9ad65", 
+                "downloads": 3207, 
+                "filename": "pyramid-1.1a4.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1882602
+            }
+        ], 
+        "1.0a3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2010-11-16T21:57:25", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0a3.tar.gz", 
+                "md5_digest": "f65a2f115a7f4c2731771bd26b0a3c00", 
+                "downloads": 2429, 
+                "filename": "pyramid-1.0a3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1180931
+            }
+        ], 
+        "1.3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-03-21T08:46:12", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3.tar.gz", 
+                "md5_digest": "1de094e952bd8fff5bc0393b75eb2ec2", 
+                "downloads": 34041, 
+                "filename": "pyramid-1.3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2367620
+            }
+        ], 
+        "1.0a5": [
+            {
+                "has_sig": false, 
+                "upload_time": "2010-12-15T08:26:40", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0a5.tar.gz", 
+                "md5_digest": "f5b86b5bc609ed22b6b9d517265292e8", 
+                "downloads": 2261, 
+                "filename": "pyramid-1.0a5.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1347372
+            }
+        ], 
+        "1.1a1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-06-20T07:33:29", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.1a1.tar.gz", 
+                "md5_digest": "ac68524dddf1172a62a4d2f500e43033", 
+                "downloads": 2808, 
+                "filename": "pyramid-1.1a1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1803485
+            }
+        ], 
+        "1.1a2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-06-23T01:42:45", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.1a2.tar.gz", 
+                "md5_digest": "8cfc596ae2635673efb006289482e5ff", 
+                "downloads": 2643, 
+                "filename": "pyramid-1.1a2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1805491
+            }
+        ], 
+        "1.1a3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-06-26T10:03:05", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.1a3.tar.gz", 
+                "md5_digest": "fad9e0384b8223d3c474569efd3f6d1c", 
+                "downloads": 2891, 
+                "filename": "pyramid-1.1a3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1807538
+            }
+        ], 
+        "1.3a2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-12-14T15:27:43", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3a2.tar.gz", 
+                "md5_digest": "62a9d0f29d3e2891f2ca8cc6c6fdabcc", 
+                "downloads": 3310, 
+                "filename": "pyramid-1.3a2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2309038
+            }
+        ], 
+        "1.3a3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-12-21T08:19:27", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3a3.tar.gz", 
+                "md5_digest": "e7feeb2acdb1ed2ca97f3fd3dcf60e8e", 
+                "downloads": 4781, 
+                "filename": "pyramid-1.3a3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2313438
+            }
+        ], 
+        "1.3a1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-12-09T21:06:05", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3a1.tar.gz", 
+                "md5_digest": "902bcc60be19c4c0806bc24ff14192c3", 
+                "downloads": 2927, 
+                "filename": "pyramid-1.3a1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2302908
+            }
+        ], 
+        "1.3a6": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-01-20T16:55:34", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3a6.tar.gz", 
+                "md5_digest": "0de691692bfe085d5d5752ba14f05290", 
+                "downloads": 5982, 
+                "filename": "pyramid-1.3a6.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2325101
+            }
+        ], 
+        "1.3a7": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-02-08T06:06:25", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3a7.tar.gz", 
+                "md5_digest": "44a4385c33546a2070d76b795da0a5e2", 
+                "downloads": 5077, 
+                "filename": "pyramid-1.3a7.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2328138
+            }
+        ], 
+        "1.3a4": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-01-05T15:22:13", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3a4.tar.gz", 
+                "md5_digest": "7808b78090e965a33bddb0041a7580cc", 
+                "downloads": 2333, 
+                "filename": "pyramid-1.3a4.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2322026
+            }
+        ], 
+        "1.3a5": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-01-09T09:50:28", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3a5.tar.gz", 
+                "md5_digest": "4a455ed485964e8bf57c7621f232b4a3", 
+                "downloads": 4283, 
+                "filename": "pyramid-1.3a5.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2322490
+            }
+        ], 
+        "1.2a6": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-09-07T05:16:55", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2a6.tar.gz", 
+                "md5_digest": "625c247d9e22f557328fbe732721e5a0", 
+                "downloads": 2237, 
+                "filename": "pyramid-1.2a6.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2135704
+            }
+        ], 
+        "1.3a8": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-02-19T23:54:08", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3a8.tar.gz", 
+                "md5_digest": "7dfaa938eaece9284a6a272c90c5b74b", 
+                "downloads": 2591, 
+                "filename": "pyramid-1.3a8.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2339557
+            }
+        ], 
+        "1.3a9": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-02-23T03:15:18", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3a9.tar.gz", 
+                "md5_digest": "cf49b38344e8a791fcc9bc8fcb98c24d", 
+                "downloads": 2826, 
+                "filename": "pyramid-1.3a9.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2348226
+            }
+        ], 
+        "1.2a3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-08-29T17:47:30", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2a3.tar.gz", 
+                "md5_digest": "a4d27093a8229b3d5dbd44893dc3e2b5", 
+                "downloads": 4970, 
+                "filename": "pyramid-1.2a3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2126125
+            }
+        ], 
+        "1.2a2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-08-27T10:24:14", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2a2.tar.gz", 
+                "md5_digest": "765342b39afabf68a0e520782829e0bb", 
+                "downloads": 2322, 
+                "filename": "pyramid-1.2a2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2125589
+            }
+        ], 
+        "1.2a1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-08-24T06:48:08", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2a1.tar.gz", 
+                "md5_digest": "71ce8608390ecf301f0bd09f1b9f5b74", 
+                "downloads": 2533, 
+                "filename": "pyramid-1.2a1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2124328
+            }
+        ], 
+        "1.5a1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2013-08-30T19:04:07", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.5a1.tar.gz", 
+                "md5_digest": "f1b4338d6246a45aec8bfe4a3cefac80", 
+                "downloads": 8782, 
+                "filename": "pyramid-1.5a1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2517725
+            }
+        ], 
+        "1.5a2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2013-09-22T18:15:12", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.5a2.tar.gz", 
+                "md5_digest": "22ea572c42216f298342c9ce70ee688f", 
+                "downloads": 32669, 
+                "filename": "pyramid-1.5a2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2495017
+            }
+        ], 
+        "1.5a3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2013-12-10T20:11:59", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.5a3.tar.gz", 
+                "md5_digest": "def83e886a0b33bd790f088958c3b94a", 
+                "downloads": 24121, 
+                "filename": "pyramid-1.5a3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2613533
+            }
+        ], 
+        "1.5a4": [
+            {
+                "has_sig": false, 
+                "upload_time": "2014-01-29T02:31:49", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.5a4.tar.gz", 
+                "md5_digest": "5ef01cd1b9b4d98beb8411e217e4ac71", 
+                "downloads": 7497, 
+                "filename": "pyramid-1.5a4.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2416110
+            }
+        ], 
+        "1.4.5": [
+            {
+                "has_sig": false, 
+                "upload_time": "2013-08-30T18:03:35", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.4.5.tar.gz", 
+                "md5_digest": "321731aad69e9788b7819e257a50be1a", 
+                "downloads": 62229, 
+                "filename": "pyramid-1.4.5.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2432314
+            }
+        ], 
+        "1.1b4": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-07-18T09:01:09", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.1b4.tar.gz", 
+                "md5_digest": "e7cd80238e2a54d9cf9f5c60162bc174", 
+                "downloads": 2739, 
+                "filename": "pyramid-1.1b4.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1915744
+            }
+        ], 
+        "1.4a4": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-11-14T07:50:03", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.4a4.tar.gz", 
+                "md5_digest": "0a5da1a25791764cdfefb15b2d55656a", 
+                "downloads": 3946, 
+                "filename": "pyramid-1.4a4.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2405991
+            }
+        ], 
+        "1.4a1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-09-17T03:15:35", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.4a1.tar.gz", 
+                "md5_digest": "93c01aa8ec50210f0b36685bdd2fb3d7", 
+                "downloads": 5513, 
+                "filename": "pyramid-1.4a1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2387585
+            }
+        ], 
+        "1.4a3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-10-26T05:51:34", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.4a3.tar.gz", 
+                "md5_digest": "61447457de68aea7579e14db3f2796a3", 
+                "downloads": 8202, 
+                "filename": "pyramid-1.4a3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2396866
+            }
+        ], 
+        "1.4a2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-09-27T15:41:43", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.4a2.tar.gz", 
+                "md5_digest": "d9d903fc4cb0421fef3602a954b75852", 
+                "downloads": 12776, 
+                "filename": "pyramid-1.4a2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2392028
+            }
+        ], 
+        "1.3.3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-08-11T08:22:40", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3.3.tar.gz", 
+                "md5_digest": "cb2e22f68fe0d32b119b6c46fd7eb3e0", 
+                "downloads": 20026, 
+                "filename": "pyramid-1.3.3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2373429
+            }
+        ], 
+        "1.3.2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-05-20T02:17:16", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3.2.tar.gz", 
+                "md5_digest": "2462c74563b356d22d654a71ba507c63", 
+                "downloads": 29452, 
+                "filename": "pyramid-1.3.2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2377114
+            }
+        ], 
+        "1.3.1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-05-19T15:27:52", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3.1.tar.gz", 
+                "md5_digest": "36ca00301cd739d88139439b15487283", 
+                "downloads": 1646, 
+                "filename": "pyramid-1.3.1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2376337
+            }
+        ], 
+        "1.2.5": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-12-15T02:04:22", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2.5.tar.gz", 
+                "md5_digest": "4de00046f8c167859d40587e98dd725a", 
+                "downloads": 2393, 
+                "filename": "pyramid-1.2.5.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2156389
+            }
+        ], 
+        "1.2.2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-11-20T21:39:44", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2.2.tar.gz", 
+                "md5_digest": "1bd3196fa1ac5df16bedfce6f78f8c18", 
+                "downloads": 1966, 
+                "filename": "pyramid-1.2.2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2153219
+            }
+        ], 
+        "1.2.3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-11-21T02:30:41", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2.3.tar.gz", 
+                "md5_digest": "37d07d3473de0150c912e278e78140ce", 
+                "downloads": 4974, 
+                "filename": "pyramid-1.2.3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2152961
+            }
+        ], 
+        "1.0a1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2010-11-05T09:07:00", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0a1.tar.gz", 
+                "md5_digest": "1b43bd0684c0c102b661f2373fbd16da", 
+                "downloads": 2803, 
+                "filename": "pyramid-1.0a1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1154214
+            }
+        ], 
+        "1.3.4": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-09-16T01:08:03", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3.4.tar.gz", 
+                "md5_digest": "967a04fcb2143b31b279c3013a778a2b", 
+                "downloads": 6715, 
+                "filename": "pyramid-1.3.4.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2380469
+            }
+        ], 
+        "1.1.1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-08-13T08:44:15", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.1.1.tar.gz", 
+                "md5_digest": "80ff9655c472413300e2d0588170d6c8", 
+                "downloads": 2685, 
+                "filename": "pyramid-1.1.1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1917144
+            }
+        ], 
+        "1.0a2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2010-11-09T18:49:39", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0a2.tar.gz", 
+                "md5_digest": "227056fa96aadad7cf80c58d092e4caa", 
+                "downloads": 2605, 
+                "filename": "pyramid-1.0a2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1171505
+            }
+        ], 
+        "1.2a5": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-09-04T07:42:08", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2a5.tar.gz", 
+                "md5_digest": "3c47ae078f32e4fb101f71d219add611", 
+                "downloads": 2470, 
+                "filename": "pyramid-1.2a5.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2129918
+            }
+        ], 
+        "1.2.6": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-01-05T15:00:32", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2.6.tar.gz", 
+                "md5_digest": "66d536f60f897abbe26c2e18e176fa57", 
+                "downloads": 2258, 
+                "filename": "pyramid-1.2.6.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2162732
+            }
+        ], 
+        "1.2a4": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-09-02T18:55:19", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2a4.tar.gz", 
+                "md5_digest": "08a8e9696e3f96b4878124b6cae8888f", 
+                "downloads": 2228, 
+                "filename": "pyramid-1.2a4.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2127818
+            }
+        ], 
+        "1.1b1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-07-10T07:14:34", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.1b1.tar.gz", 
+                "md5_digest": "2fb328a466e6d53ed7c45387de6970a2", 
+                "downloads": 2620, 
+                "filename": "pyramid-1.1b1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1899477
+            }
+        ], 
+        "1.1b3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-07-15T16:40:26", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.1b3.tar.gz", 
+                "md5_digest": "7c8255420b9e55c3e35fafe880f14384", 
+                "downloads": 2379, 
+                "filename": "pyramid-1.1b3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1913520
+            }
+        ], 
+        "1.2.7": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-01-20T16:34:33", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2.7.tar.gz", 
+                "md5_digest": "53aa6a19d3e5755732145553e2d67e78", 
+                "downloads": 5040, 
+                "filename": "pyramid-1.2.7.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2160433
+            }
+        ], 
+        "1.0b3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-01-28T17:12:43", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.0b3.tar.gz", 
+                "md5_digest": "efb6e516027dac5430113d97cfab09ed", 
+                "downloads": 2442, 
+                "filename": "pyramid-1.0b3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1746366
+            }
+        ], 
+        "1.1b2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-07-13T09:34:32", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.1b2.tar.gz", 
+                "md5_digest": "cbe72b769463c52e0ef0dab8a182a45c", 
+                "downloads": 2605, 
+                "filename": "pyramid-1.1b2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1905233
+            }
+        ], 
+        "1.2.4": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-12-06T10:44:21", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2.4.tar.gz", 
+                "md5_digest": "3a8cd2fa0f1837a60a76ce9b6dfbdb87", 
+                "downloads": 19054, 
+                "filename": "pyramid-1.2.4.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2154823
+            }
+        ], 
+        "1.2b2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-09-08T23:50:41", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2b2.tar.gz", 
+                "md5_digest": "81cfffc21a732796860ce11fc570ec13", 
+                "downloads": 2328, 
+                "filename": "pyramid-1.2b2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2148689
+            }
+        ], 
+        "1.2b3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-09-11T07:33:04", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2b3.tar.gz", 
+                "md5_digest": "e3207d9df2796252c391f22d453e1657", 
+                "downloads": 2326, 
+                "filename": "pyramid-1.2b3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2149092
+            }
+        ], 
+        "1.2b1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2011-09-08T10:00:29", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.2b1.tar.gz", 
+                "md5_digest": "70a5ed12a0f9d753a4cca8287cfcb2fe", 
+                "downloads": 2142, 
+                "filename": "pyramid-1.2b1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2148339
+            }
+        ], 
+        "1.4b1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-11-22T04:22:10", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.4b1.tar.gz", 
+                "md5_digest": "c347a8cf81a2a2d6d6b4a5ba18b236c0", 
+                "downloads": 6846, 
+                "filename": "pyramid-1.4b1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2422201
+            }
+        ], 
+        "1.4b2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-12-10T20:47:58", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.4b2.tar.gz", 
+                "md5_digest": "fb4d250cbedf5364e5472088558ba716", 
+                "downloads": 1190, 
+                "filename": "pyramid-1.4b2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 1897409
+            }
+        ], 
+        "1.4b3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-12-11T02:41:12", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.4b3.tar.gz", 
+                "md5_digest": "90b2193d008fd5d0653189f19243e268", 
+                "downloads": 3332, 
+                "filename": "pyramid-1.4b3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2423991
+            }
+        ], 
+        "1.3b3": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-03-17T22:51:55", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3b3.tar.gz", 
+                "md5_digest": "14d884f9e35bb3a1832f48dbd34b4e00", 
+                "downloads": 3218, 
+                "filename": "pyramid-1.3b3.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2357527
+            }
+        ], 
+        "1.3b2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-03-02T09:12:55", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3b2.tar.gz", 
+                "md5_digest": "fd4e3c70bb28930f49219953aa7abc7a", 
+                "downloads": 5833, 
+                "filename": "pyramid-1.3b2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2352883
+            }
+        ], 
+        "1.3b1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2012-02-26T22:00:40", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.3b1.tar.gz", 
+                "md5_digest": "e035f0409e30c0588939c719df009a84", 
+                "downloads": 3418, 
+                "filename": "pyramid-1.3b1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2350577
+            }
+        ]
+    }, 
+    "urls": [
+        {
+            "has_sig": false, 
+            "upload_time": "2014-04-08T23:10:26", 
+            "comment_text": "", 
+            "python_version": "source", 
+            "url": "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.5.tar.gz", 
+            "md5_digest": "8747658dcbab709a9c491e43d3b0d58b", 
+            "downloads": 18655, 
+            "filename": "pyramid-1.5.tar.gz", 
+            "packagetype": "sdist", 
+            "size": 2413504
+        }
+    ]
+}
