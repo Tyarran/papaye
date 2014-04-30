@@ -53,17 +53,3 @@ def start_scheduler(config):
     if sys.argv[0].endswith('pserve'):
         scheduler = Scheduler(config.registry.settings)
         scheduler.start()
-
-
-def add_task_sender(config, sender):
-    config.registry.producer = sender
-
-
-def add_queue_device(config, queue):
-    config.registry.queue = queue
-    config.registry.queue.start()
-
-
-def add_collector_device(config, collector):
-    config.registry.collector = collector
-    config.registry.collector.start()

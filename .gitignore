@@ -54,3 +54,6 @@ cache
 # ToDo files
 .todo
 TODO
+
+# Fuse files
+.fuse*
