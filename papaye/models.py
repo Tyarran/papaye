@@ -28,6 +28,7 @@ class Root(OOBTree):
 
 
 class Package(Persistent):
+    pypi_url = 'http://pypi.python.org/pypi/{}/json'
 
     def __init__(self, name):
         self.__name__ = name
@@ -70,7 +71,6 @@ class Package(Persistent):
     @classmethod
     def by_name(cls, name, request):
         root = repository_root_factory(request)
-
         return root[name] if name in root else None
 
 

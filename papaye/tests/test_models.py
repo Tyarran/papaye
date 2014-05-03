@@ -5,7 +5,7 @@ from pyramid import testing
 from pyramid.response import Response
 from pyramid_beaker import set_cache_regions_from_settings
 
-from papaye.tests.tools import FakeGRequestResponse, FakeRoute
+from papaye.tests.tools import FakeGRequestResponse, FakeRoute, get_resource
 
 
 class PackageTest(unittest.TestCase):
@@ -17,7 +17,6 @@ class PackageTest(unittest.TestCase):
         registry.settings = {
             'cache.regions': 'pypi',
             'cache.enabled': 'false',
-            # 'zodbconn.uri': 'memory://',
             'zodbconn.uri': 'memory:///blobstorage_dir=packages',
         }
         set_cache_regions_from_settings(registry.settings)
@@ -142,7 +141,8 @@ class UserTest(unittest.TestCase):
 
     def test_hash_password(self):
         from papaye.models import User
-        expected = 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86'
+        expected = 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a'
+        expected += '2ea6d103fd07c95385ffab0cacbc86'
 
         result = User('a_user', 'password')
         self.assertEqual(result.password, expected)
