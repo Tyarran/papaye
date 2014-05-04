@@ -314,7 +314,6 @@ class DownloadReleaseViewTest(unittest.TestCase):
         self.assertEqual(result.content_type, 'text/plain')
         self.assertEqual(result.content_disposition, 'attachment; filename="releasefile-1.0.tar.gz"')
 
-    # @patch('papaye.models.Package.get_last_remote_version')
     @patch('requests.get')
     def test_download_release_with_old_release(self, mock_requests):
         from papaye.views.simple import DownloadReleaseView

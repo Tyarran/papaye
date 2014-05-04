@@ -42,13 +42,14 @@ class Package(Persistent):
         self.releases[key] = value
         self.releases[key].__parent__ = self
 
+    @classmethod
     @cache_region('pypi', 'get_last_remote_filename')
-    def get_last_remote_version(self, proxy):
+    def get_last_remote_version(cls, proxy, package_name):
         logger.debug('Not in cache')
         if not proxy:
             return None
         try:
-            result = requests.get('http://pypi.python.org/pypi/{}/json'.format(self.__name__))
+            result = requests.get('http://pypi.python.org/pypi/{}/json'.format(package_name))
             if not result.status_code == 200:
                 return None
             result = json.loads(result.content.decode('utf-8'))

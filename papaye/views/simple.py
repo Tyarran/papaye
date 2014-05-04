@@ -83,7 +83,7 @@ class ListReleaseFileView(BaseView):
                 route_name='simple'
             )[:-1] + "#md5={}".format(release_file.md5_digest), release_file) for release_file in release_files),
         }
-        if package.repository_is_up_to_date(package.get_last_remote_version(self.proxy)):
+        if package.repository_is_up_to_date(Package.get_last_remote_version(self.proxy, package.name)):
             return context
         else:
             return not_found(self.request)
@@ -102,7 +102,7 @@ class DownloadReleaseView(BaseView):
     def __call__(self):
         check_update = True if self.request.GET.get('check_update', 'true') == 'true' else False
         package = self.context.__parent__.__parent__
-        last_remote_version = package.get_last_remote_version(self.proxy)
+        last_remote_version = Package.get_last_remote_version(self.proxy, package.name)
         if check_update:
             if not package.repository_is_up_to_date(last_remote_version):
                 return not_found(self.request)

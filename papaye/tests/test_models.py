@@ -5,7 +5,7 @@ from pyramid import testing
 from pyramid.response import Response
 from pyramid_beaker import set_cache_regions_from_settings
 
-from papaye.tests.tools import FakeGRequestResponse, FakeRoute, get_resource
+from papaye.tests.tools import FakeGRequestResponse, FakeRoute
 
 
 class PackageTest(unittest.TestCase):
@@ -32,7 +32,7 @@ class PackageTest(unittest.TestCase):
         # Test data
         package = Package('test')
 
-        result = package.get_last_remote_version(False)
+        result = Package.get_last_remote_version(False, package.name)
 
         self.assertEqual(mock.call_count, 0)
         self.assertIsNone(result)
@@ -47,7 +47,7 @@ class PackageTest(unittest.TestCase):
         # Test data
         package = Package('test')
 
-        result = package.get_last_remote_version(True)
+        result = Package.get_last_remote_version(True, package.name)
 
         self.assertEqual(mock.call_count, 1)
         self.assertIsNotNone(result)
@@ -63,7 +63,7 @@ class PackageTest(unittest.TestCase):
         # Test data
         package = Package('test')
 
-        result = package.get_last_remote_version(True)
+        result = Package.get_last_remote_version(True, package.name)
 
         self.assertEqual(mock.call_count, 1)
         self.assertIsNone(result)
