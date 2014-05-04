@@ -22,9 +22,10 @@ class ProxyTest(unittest.TestCase):
     def test_get_remote_informations(self, mock):
         from papaye.proxy import PyPiProxy
         mock.return_value = self.pypi_response
+        url = "http://pypi.python.org/pypi/pyramid/json"
 
         proxy = PyPiProxy(self.request, 'pyramid')
-        result = proxy.get_remote_informations()
+        result = proxy.get_remote_informations(url)
         self.assertIsInstance(result, dict)
         self.assertEqual(result['info']['name'], 'pyramid')
 
@@ -32,18 +33,20 @@ class ProxyTest(unittest.TestCase):
     def test_get_remote_informations_404(self, mock):
         from papaye.proxy import PyPiProxy
         mock.return_value = FakeGRequestResponse(404, b'')
+        url = "http://pypi.python.org/pypi/pyramid/json"
 
         proxy = PyPiProxy(self.request, 'pyramid')
-        result = proxy.get_remote_informations()
+        result = proxy.get_remote_informations(url)
         self.assertIsNone(result)
 
     @patch('requests.get')
     def test_get_remote_informations_connection_error(self, mock):
         from papaye.proxy import PyPiProxy
         mock.side_effect = ConnectionError
+        url = "http://pypi.python.org/pypi/pyramid/json"
 
         proxy = PyPiProxy(self.request, 'pyramid')
-        result = proxy.get_remote_informations()
+        result = proxy.get_remote_informations(url)
         self.assertIsNone(result)
 
     @patch('requests.get')
