@@ -2,6 +2,9 @@ import os
 
 from pyramid import testing
 from pyramid_beaker import set_cache_regions_from_settings
+from ZODB.blob import BlobStorage
+from ZODB.DB import DB
+from ZODB.MappingStorage import MappingStorage
 
 
 HERE = os.path.abspath(os.path.dirname(__name__))
@@ -56,3 +59,10 @@ def create_test_app(config):
     config.add_route('simple', '/simple/*traverse', factory='papaye:root_factory')
     config.scan()
     return config.make_wsgi_app()
+
+
+def get_db_connection(blob_dir):
+    storage = MappingStorage('test')
+    blob_storage = BlobStorage(blob_dir, storage)
+    db = DB(blob_storage)
+    return db.open()
