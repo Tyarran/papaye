@@ -1,7 +1,7 @@
 import json
 import requests
 
-# from pyramid.threadlocal import get_current_request
+from beaker.cache import cache_region
 from requests.exceptions import ConnectionError
 
 from papaye.factories import repository_root_factory
@@ -16,6 +16,7 @@ class PyPiProxy:
         self.package_name = package_name
         self.url = self.pypi_url.format(package_name)
 
+    @cache_region('pypi', 'get_remote_informations')
     def get_remote_informations(self):
         try:
             response = requests.get(self.url)
