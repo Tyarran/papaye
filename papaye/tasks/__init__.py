@@ -34,8 +34,8 @@ class Task(object):
         ])
         return self.task_id
 
-    def __call__(self, *args, **kwargs):
-        self.func(*args, **kwargs)
+    def __call__(self, settings, *args, **kwargs):
+        self.func(settings, *args, **kwargs)
 
     @property
     def ready(self):

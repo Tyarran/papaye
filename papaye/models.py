@@ -101,14 +101,17 @@ class ReleaseFile(Persistent):
 
     def __init__(self, filename, content, md5_digest=None):
         self.filename = self.__name__ = filename
-        self.content = Blob(content)
-        self.content_type = self.get_content_type(content)
         self.md5_digest = md5_digest
+        self.set_content(content)
 
     def get_content_type(self, content):
         buf = io.BytesIO(content)
         with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as m:
             self.content_type = m.id_buffer(buf.read())
+
+    def set_content(self, content):
+        self.content = Blob(content)
+        self.content_type = self.get_content_type(content)
 
 
 class User(Persistent):

@@ -79,11 +79,9 @@ class ConsumerDevice(Device):
             task_id, func_name, args, kwargs = pickle.loads(data)
             func = TaskRegistry()._tasks[func_name]
             func.task_id = task_id
-            func.settings = self.settings
-            func.db = db_from_uri(self.settings.get('zodbconn.uri'))
             print('Worker {}: Starting task id: {}'.format(worker_number, func.task_id))
             try:
-                result = func(*args, **kwargs)
+                result = func(self.settings, *args, **kwargs)
                 self.collector_socket.send_pyobj((task_id, result))
                 print('Worker {}: Task #{} finished'.format(worker_number, func.task_id))
             except:

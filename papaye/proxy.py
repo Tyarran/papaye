@@ -11,8 +11,8 @@ from papaye.models import Package, Release, ReleaseFile
 class PyPiProxy:
     pypi_url = 'http://pypi.python.org/pypi/{}/json'
 
-    def __init__(self, request,  package_name):
-        self.request = request
+    def __init__(self, request_or_dbconn,  package_name):
+        self.request_or_dbconn = request_or_dbconn
         self.package_name = package_name
         self.url = self.pypi_url.format(package_name)
 
@@ -28,7 +28,7 @@ class PyPiProxy:
             return None
 
     def build_repository(self):
-        root = repository_root_factory(self.request)
+        root = repository_root_factory(self.request_or_dbconn)
         info = self.get_remote_informations()
         if info:
             package = Package(info['info']['name'])
@@ -37,11 +37,12 @@ class PyPiProxy:
             for remote_release in info['releases'].keys():
                 release = Release(remote_release, remote_release)
                 package[remote_release] = release
+
                 for remote_release_file in info['releases'][remote_release]:
                     filename = remote_release_file['filename']
                     md5_digest = remote_release_file['md5_digest']
                     release_file = ReleaseFile(filename, b'', md5_digest)
-                    release_file.pypi_url = remote_release_file['url'],
+                    setattr(release_file, 'pypi_url', remote_release_file['url'])
                     release[filename] = release_file
             return package
         return None

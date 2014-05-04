@@ -6,6 +6,7 @@ from pyramid.httpexceptions import (
     HTTPForbidden,
     HTTPNotFound,
     HTTPUnauthorized,
+    HTTPTemporaryRedirect
 )
 from pyramid.response import Response
 from pyramid.security import forget
@@ -14,6 +15,7 @@ from pyramid.view import view_config, notfound_view_config, forbidden_view_confi
 from papaye.models import ReleaseFile, Package, Release, Root
 from papaye.proxy import PyPiProxy
 from papaye.views.commons import BaseView
+from papaye.tasks.download import download_release_from_pypi
 
 
 logger = logging.getLogger(__name__)
@@ -43,8 +45,10 @@ def not_found(request):
         elif len(request.matchdict['traverse']) == 2:
             view = ForbiddenView(None, request)
         elif len(request.matchdict['traverse']) == 3:
-            context = package[request.matchdict['traverse'][1]][request.matchdict['traverse'][2]]
-            view = DownloadReleaseView(context, request)
+            release_file = package[request.matchdict['traverse'][1]][request.matchdict['traverse'][2]]
+            package_name, release_name, _ = request.matchdict['traverse']
+            download_release_from_pypi.delay(package_name, release_name)
+            return HTTPTemporaryRedirect(location=release_file.pypi_url)
     except KeyError:
         return HTTPNotFound()
     return view()
