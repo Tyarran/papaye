@@ -16,6 +16,7 @@ def get_resource(*args):
 
 
 class FakeGRequestResponse():
+
     def __init__(self, status_code, content):
         self.status_code = status_code
         self.content = content

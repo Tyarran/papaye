@@ -17,9 +17,9 @@ class PyPiProxy:
         self.url = self.pypi_url.format(package_name)
 
     @cache_region('pypi', 'get_remote_informations')
-    def get_remote_informations(self):
+    def get_remote_informations(self, url):
         try:
-            response = requests.get(self.url)
+            response = requests.get(url)
             if response.status_code == 200:
                 return json.loads(response.content.decode('utf-8'))
             else:
@@ -29,7 +29,7 @@ class PyPiProxy:
 
     def build_repository(self):
         root = repository_root_factory(self.request_or_dbconn)
-        info = self.get_remote_informations()
+        info = self.get_remote_informations(self.url)
         if info:
             package = Package(info['info']['name'])
             package.__parent__ = root

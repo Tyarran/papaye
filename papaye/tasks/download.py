@@ -5,6 +5,7 @@ import transaction
 
 from BTrees.OOBTree import OOBTree
 from pyramid_zodbconn import db_from_uri
+from termcolor import colored
 
 from papaye.factories import repository_root_factory
 from papaye.tasks import task
@@ -29,6 +30,7 @@ def download_release_from_pypi(settings, package_name, release_name):
         logger.error('Package {} not found on PYPI'.format(package_name))
     root = repository_root_factory(conn)
     for release_file in package[release_name].release_files.values():
+        print(colored('Download file "{}"'.format(release_file.filename), 'yellow'))
         release_file.set_content(requests.get(release_file.pypi_url).content)
         with release_file.content.open() as content:
             if hashlib.md5(content.read()).hexdigest() != release_file.md5_digest:

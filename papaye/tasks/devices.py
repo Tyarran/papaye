@@ -6,7 +6,7 @@ import zmq
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
 from pyramid.registry import global_registry
-from pyramid_zodbconn import db_from_uri
+from termcolor import colored
 
 from papaye.tasks import TaskRegistry
 
@@ -16,6 +16,7 @@ class Device(multiprocessing.Process):
     def __init__(self, settings):
         super().__init__()
         self.settings = settings
+        self.go = True
 
     def get_socket(self):
         raise NotImplemented()
@@ -32,14 +33,20 @@ class Scheduler(Device):
         self.concurency = int(self.settings.get('worker.concurency', 1))
 
     def run(self):
-        processes = []
-        processes.append(QueueDevice(self.settings))
-        processes.append(CollectorDevice(self.settings))
-        for index in range(1, self.concurency + 1):
-            processes.append(ConsumerDevice(self.settings, index))
+        try:
+            processes = []
+            processes.append(QueueDevice(self.settings))
+            processes.append(CollectorDevice(self.settings))
+            for index in range(1, self.concurency + 1):
+                processes.append(ConsumerDevice(self.settings, index))
 
-        for process in processes:
-            process.start()
+            for process in processes:
+                process.start()
+
+            for process in processes:
+                process.join()
+        except KeyboardInterrupt:
+            pass
 
 
 class Producer(object):
@@ -74,19 +81,22 @@ class ConsumerDevice(Device):
     def run(self):
         self.worker_socket, self.collector_socket = self.get_sockets()
         worker_number = self.worker_number
-        while True:
-            data = self.worker_socket.recv_multipart()[2]
-            task_id, func_name, args, kwargs = pickle.loads(data)
-            func = TaskRegistry()._tasks[func_name]
-            func.task_id = task_id
-            print('Worker {}: Starting task id: {}'.format(worker_number, func.task_id))
+        while self.go:
             try:
-                result = func(self.settings, *args, **kwargs)
-                self.collector_socket.send_pyobj((task_id, result))
-                print('Worker {}: Task #{} finished'.format(worker_number, func.task_id))
-            except:
-                traceback.print_exc()
-                print('Worker {}: Task #{} Error'.format(worker_number, func.task_id))
+                data = self.worker_socket.recv_multipart()[2]
+                task_id, func_name, args, kwargs = pickle.loads(data)
+                func = TaskRegistry()._tasks[func_name]
+                func.task_id = task_id
+                print(colored('Worker {}: Starting task id: {}'.format(worker_number, func.task_id), 'yellow'))
+                try:
+                    result = func(self.settings, *args, **kwargs)
+                    self.collector_socket.send_pyobj((task_id, result))
+                    print(colored('Worker {}: Task #{} finished'.format(worker_number, func.task_id), 'yellow'))
+                except:
+                    traceback.print_exc()
+                    print(colored('Worker {}: Task #{} Error'.format(worker_number, func.task_id), 'yellow'))
+            except KeyboardInterrupt:
+                self.go = False
 
 
 class QueueDevice(Device):
@@ -106,8 +116,11 @@ class QueueDevice(Device):
         return frontend, backend
 
     def run(self):
-        self.frontend, self.backend = self.get_sockets()
-        zmq.device(zmq.QUEUE, self.frontend, self.backend)
+        try:
+            self.frontend, self.backend = self.get_sockets()
+            zmq.device(zmq.QUEUE, self.frontend, self.backend)
+        except KeyboardInterrupt:
+            pass
 
 
 class CollectorDevice(Device):
@@ -126,7 +139,10 @@ class CollectorDevice(Device):
 
     def run(self):
         socket = self.get_socket()
-        while True:
-            data = socket.recv()
-            task_id, value = pickle.loads(data)
-            self.cache.set_value(task_id, value)
+        while self.go:
+            try:
+                data = socket.recv()
+                task_id, value = pickle.loads(data)
+                self.cache.set_value(task_id, value)
+            except KeyboardInterrupt:
+                self.go = False
