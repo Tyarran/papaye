@@ -1,14 +1,10 @@
-import json
 import logging
-import transaction
-import urllib
 
 from pyramid.httpexceptions import (
     HTTPBadRequest,
     HTTPConflict,
     HTTPForbidden,
     HTTPNotFound,
-    HTTPTemporaryRedirect,
     HTTPUnauthorized,
 )
 from pyramid.response import Response
@@ -18,7 +14,6 @@ from pyramid.view import view_config, notfound_view_config, forbidden_view_confi
 from papaye.models import ReleaseFile, Package, Release, Root
 from papaye.proxy import PyPiProxy
 from papaye.views.commons import BaseView
-# from papaye.views.mixins import ExistsOnPyPIMixin
 
 
 logger = logging.getLogger(__name__)
@@ -31,122 +26,28 @@ def basic_challenge(request):
     return response
 
 
-# @notfound_view_config(route_name="simple")
-# def not_found_view_dispatcher(request):
-#     if len(request.traversed) == 0:
-#         view = PackageNotFoundView(request, 'Package')
-#     elif len(request.traversed) == 1 and len(request.matchdict['traverse']) == 2:
-#         view = ReleaseNotFoundView
-#         return render_to_response('simple.jinja2', view(request, 'Release')())
-#     elif len(request.traversed) == 2 and len(request.matchdict['traverse']) == 3:
-#         view = ReleaseFileNotFoundView(request, 'File')
-#     else:
-#         return HTTPNotFound()
-#     return view()
-
 @notfound_view_config(route_name="simple", renderer='simple.jinja2')
 def not_found(request):
-    proxy = PyPiProxy(request, request.matchdict['traverse'][0])
-    package = proxy.build_repository()
-    if not package:
+    settings = request.registry.settings
+    proxy = settings.get('papaye.proxy', False)
+    proxy = True if proxy and proxy == 'true' else False
+    if not proxy:
         return HTTPNotFound()
-    if len(request.traversed) == 0 and len(request.matchdict['traverse']) == 1:
-        view = ListReleaseFileView(package, request)
-    elif len(request.traversed) == 0 and len(request.matchdict['traverse']) == 2:
-        view = ForbiddenView(None, request)
-    elif len(request.traversed) == 0 and len(request.matchdict['traverse']) == 3:
-        context = package[request.matchdict['traverse'][1]][request.matchdict['traverse'][2]]
-        view = DownloadReleaseView(context, request)
+    try:
+        proxy = PyPiProxy(request, request.matchdict['traverse'][0])
+        package = proxy.build_repository()
+        if not package:
+            return HTTPNotFound()
+        if len(request.matchdict['traverse']) == 1:
+            view = ListReleaseFileView(package, request)
+        elif len(request.matchdict['traverse']) == 2:
+            view = ForbiddenView(None, request)
+        elif len(request.matchdict['traverse']) == 3:
+            context = package[request.matchdict['traverse'][1]][request.matchdict['traverse'][2]]
+            view = DownloadReleaseView(context, request)
+    except KeyError:
+        return HTTPNotFound()
     return view()
-
-
-# class PackageNotFoundView(ExistsOnPyPIMixin, BaseView):
-#     pypi_url = 'http://pypi.python.org/simple/{}/'
-
-#     def __init__(self, request, type_name, context=None):
-#         self.type_name = type_name
-#         super().__init__(context, request)
-
-#     def make_redirection(self, final_url, response):
-#         logger.info('Proxify request to {}'.format(final_url))
-#         return HTTPTemporaryRedirect(final_url)
-
-#     def get_params(self):
-#         return (self.request.matchdict['traverse'][0], )
-
-#     def __call__(self):
-#         logger.info('{} "{}" not found in Papaye index'.format(
-#             self.type_name,
-#             self.request.matchdict['traverse'][0])
-#         )
-#         if self.proxy:
-#             pypi_url = self.pypi_url.format(*self.get_params())
-#             result = self.exists_on_pypi(pypi_url)
-#             if result:
-#                 return self.make_redirection(pypi_url, result)
-#             else:
-#                 logger.info('Not found on Pypi index')
-#                 return HTTPNotFound()
-#         else:
-#             logger.info('Not found on Pypi index')
-#             return HTTPNotFound()
-
-
-# @view_config(renderer='simple.jinja2')
-# class ReleaseNotFoundView(PackageNotFoundView):
-#     pypi_url = 'http://pypi.python.org/pypi/{}/{}/json'
-
-#     def get_params(self):
-#         return self.request.matchdict['traverse'][:2]
-
-#     def make_redirection(self, final_url, response):
-#         logger.info('Get release files from {}'.format(final_url))
-#         result = json.loads(response.content.decode('utf-8'))
-#         objects = []
-#         for url in result.get('urls', []):
-#             release_file = ReleaseFile(url.get('filename'), b'')
-#             objects.append((url.get('url'), release_file))
-#         return {'objects': objects}
-
-
-# class ReleaseFileNotUpToDateView(ReleaseNotFoundView):
-#     pypi_url = 'https://pypi.python.org/pypi/{}/json'
-
-#     def get_params(self):
-#         return (self.request.matchdict['traverse'][0], )
-
-#     def format_url(self, url):
-#         split_result = url.split('#')
-#         base_url = split_result[0]
-#         md5 = split_result[1] if len(split_result) == 2 else None
-#         base_url += '?{}'.format(urllib.parse.urlencode({'check_update': 'false'}))
-#         if md5:
-#             base_url += '#{}'.format(md5)
-#         return base_url
-
-#     def make_redirection(self, final_url, response):
-#         context = super().make_redirection(final_url, response)
-#         objects = context['objects'] + [(self.format_url(url), elem) for url, elem in self.context['objects']]
-
-#         context['objects'] = (obj for obj in objects)
-#         return context
-
-
-# class ReleaseFileNotFoundView(ReleaseNotFoundView):
-#     pypi_url = 'http://pypi.python.org/pypi/{}/{}/json'
-
-#     def get_params(self):
-#         return self.request.matchdict['traverse'][:2]
-
-#     def make_redirection(self, final_url, response):
-#         result = json.loads(response.content.decode('utf-8'))
-#         url = [url['url'] for url
-#                in result['urls'] if url.get('filename') == self.request.matchdict['traverse'][-1]]
-#         url = url[0] if url else None
-#         if not url:
-#             return HTTPNotFound()
-#         logger.info('Proxy request to {}'.format(url))
-#         return HTTPTemporaryRedirect(url)
 
 
 @view_config(context="papaye.models.Root",
@@ -243,7 +144,6 @@ class UploadView():
             release_file = ReleaseFile(filename=content.filename, content=content.file.read(), md5_digest=md5_digest)
             release = self.context[name][version]
             self.context[name][version][content.filename] = release_file
-            transaction.commit()
             return Response()
         else:
             return HTTPBadRequest()
