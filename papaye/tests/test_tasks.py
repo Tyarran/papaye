@@ -32,14 +32,14 @@ class TestDownloadTask(unittest.TestCase):
         from papaye.factories import repository_root_factory
         request = get_current_request()
 
-        json_response = open(get_resource('pyramid.json'), 'r')
+        json_response = open(get_resource('pyramid.json'), 'rb')
         release_file_content = open(get_resource('pyramid-1.5.tar.gz'), 'rb')
         request_mock.side_effect = [
             FakeGRequestResponse(200, json_response.read()),
             FakeGRequestResponse(200, release_file_content),
         ]
 
-        download_release_from_pypi('http://example.com/', '1.5')
+        download_release_from_pypi('pyramid', '1.5')
         self.assertEqual(request_mock.call_count, 2)
         root = repository_root_factory(request)
         self.assertIn('pyramid', root)
@@ -55,14 +55,14 @@ class TestDownloadTask(unittest.TestCase):
         from papaye.factories import repository_root_factory
         request = get_current_request()
 
-        json_response = open(get_resource('pyramid.json'), 'r')
+        json_response = open(get_resource('pyramid.json'), 'rb')
         release_file_content = io.BytesIO(b'corrupted_file')
         request_mock.side_effect = [
             FakeGRequestResponse(200, json_response.read()),
             FakeGRequestResponse(200, release_file_content),
         ]
 
-        download_release_from_pypi('http://example.com/', '1.5')
+        self.assertRaises(IOError, download_release_from_pypi, 'pyramid', '1.5')
         self.assertEqual(request_mock.call_count, 2)
         root = repository_root_factory(request)
         self.assertNotIn('pyramid', root)

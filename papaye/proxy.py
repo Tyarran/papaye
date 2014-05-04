@@ -41,6 +41,7 @@ class PyPiProxy:
                     filename = remote_release_file['filename']
                     md5_digest = remote_release_file['md5_digest']
                     release_file = ReleaseFile(filename, b'', md5_digest)
+                    release_file.pypi_url = remote_release_file['url'],
                     release[filename] = release_file
             return package
         return None

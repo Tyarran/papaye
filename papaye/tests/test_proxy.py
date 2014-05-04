@@ -62,6 +62,7 @@ class ProxyTest(unittest.TestCase):
         self.assertEqual(len(result.releases.keys()), len(info_dict['releases'].keys()))
         self.assertEqual(len(result['1.5'].release_files.keys()), 1)
         self.assertIsInstance(result['1.5'].release_files.values()[0], ReleaseFile)
+        self.assertTrue(getattr(result['1.5'].release_files.values()[0], 'pypi_url', None))
 
     @patch('requests.get')
     def test_build_repository_404_error(self, mock):
