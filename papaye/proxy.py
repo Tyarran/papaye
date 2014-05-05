@@ -44,5 +44,17 @@ class PyPiProxy:
                     release_file = ReleaseFile(filename, b'', md5_digest)
                     setattr(release_file, 'pypi_url', remote_release_file['url'])
                     release[filename] = release_file
-            return package
+            return self.smart_merge(root, package)
         return None
+
+    def smart_merge(self, root, package):
+        if not package.name in root:
+            return package
+        else:
+            merged_package = root[package.name]
+            to_delete_releases_name = [release for release in package.releases.keys()
+                                       if release in merged_package.releases.keys()]
+            to_update_releases = [(key, value) for key, value in package.releases.items()
+                                  if key not in to_delete_releases_name]
+            merged_package.releases.update(to_update_releases)
+            return merged_package

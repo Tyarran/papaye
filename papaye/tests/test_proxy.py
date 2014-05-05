@@ -1,11 +1,13 @@
 import json
+import shutil
+import tempfile
 import unittest
 
 from mock import patch
 from pyramid import testing
 from requests.exceptions import ConnectionError
 
-from papaye.tests.tools import FakeGRequestResponse, get_resource
+from papaye.tests.tools import FakeGRequestResponse, get_resource, get_db_connection
 
 
 class ProxyTest(unittest.TestCase):
@@ -17,6 +19,11 @@ class ProxyTest(unittest.TestCase):
         with open(get_resource('pyramid.json'), 'rb') as pyramid_json:
             self.pypi_response = FakeGRequestResponse(200, pyramid_json.read())
         self.config.include('pyramid_zodbconn')
+        self.blobs_dir = tempfile.mkdtemp('blobs')
+        self.conn = get_db_connection(self.blobs_dir)
+
+    def tearDown(self):
+        shutil.rmtree(self.blobs_dir)
 
     @patch('requests.get')
     def test_get_remote_informations(self, mock):
@@ -78,3 +85,86 @@ class ProxyTest(unittest.TestCase):
         result = proxy.build_repository()
 
         self.assertIsNone(result)
+
+    @patch('requests.get')
+    def test_smart_merge(self, mock):
+        from papaye.proxy import PyPiProxy
+        from papaye.factories import repository_root_factory
+        from papaye.models import Package, Release, ReleaseFile
+        mock.return_value = self.pypi_response
+        root = repository_root_factory(self.conn)
+
+        # Existing releases
+        root['pyramid'] = Package(name='pyramid')
+        root['pyramid']['1.4'] = Release(name='1.4', version='1.4')
+        root['pyramid']['1.4']['pyramid-1.4.tar.gz'] = ReleaseFile(
+            filename='pyramid-1.4.tar.gz',
+            content=b'',
+            md5_digest='12345'
+        )
+
+        package = Package(name='pyramid')
+        package['1.5'] = Release(name='1.5', version='1.5')
+        package['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
+            filename='pyramid-1.5.tar.gz',
+            content=b'',
+            md5_digest='12345'
+        )
+
+        proxy = PyPiProxy(self.request, 'pyramid')
+        result = proxy.smart_merge(root, package)
+
+        self.assertEqual([key for key in result.releases.keys()], ['1.4', '1.5'])
+
+    @patch('requests.get')
+    def test_smart_merge_with_existing_release(self, mock):
+        from papaye.proxy import PyPiProxy
+        from papaye.factories import repository_root_factory
+        from papaye.models import Package, Release, ReleaseFile
+        mock.return_value = self.pypi_response
+        root = repository_root_factory(self.conn)
+
+        # Existing releases
+        package = Package(name='pyramid')
+        package['1.5'] = Release(name='1.5', version='1.5')
+        package['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
+            filename='pyramid-1.5.tar.gz',
+            content=b'',
+            md5_digest='12345'
+        )
+
+        package = Package(name='pyramid')
+        package['1.5'] = Release(name='1.5', version='1.5')
+        package['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
+            filename='pyramid-1.5.tar.gz',
+            content=b'',
+            md5_digest='12345'
+        )
+
+        proxy = PyPiProxy(self.request, 'pyramid')
+        result = proxy.smart_merge(root, package)
+
+        self.assertEqual([key for key in result.releases.keys()], ['1.5', ])
+        self.assertEqual(result['1.5']['pyramid-1.5.tar.gz'].md5_digest, '12345')
+
+    @patch('requests.get')
+    def test_smart_merge_with_unknown_package(self, mock):
+        from papaye.proxy import PyPiProxy
+        from papaye.factories import repository_root_factory
+        from papaye.models import Package, Release, ReleaseFile
+        mock.return_value = self.pypi_response
+        root = repository_root_factory(self.conn)
+
+        package = Package(name='pyramid')
+        package['1.5'] = Release(name='1.5', version='1.5')
+        package['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
+            filename='pyramid-1.5.tar.gz',
+            content=b'',
+            md5_digest='12345'
+        )
+
+        proxy = PyPiProxy(self.request, 'pyramid')
+        result = proxy.smart_merge(root, package)
+
+        self.assertEqual([key for key in result.releases.keys()], ['1.5', ])
+        self.assertEqual(result, package)
