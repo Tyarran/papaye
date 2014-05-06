@@ -1,21 +1,22 @@
 import io
 import json
+import shutil
+import tempfile
 import types
 import unittest
 
 from cgi import FieldStorage
 from mock import patch
 from pyramid import testing
-from pyramid.httpexceptions import HTTPNotFound, HTTPForbidden
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
 from pyramid.threadlocal import get_current_registry
 from pyramid_beaker import set_cache_regions_from_settings
-from webtest import TestApp
 
 from papaye.tests.tools import (
     FakeGRequestResponse,
     FakeRoute,
-    create_test_app,
+    get_db_connection,
 )
 
 
@@ -261,7 +262,7 @@ class ListReleaseViewTest(unittest.TestCase):
         requests_mock.return_value = FakeGRequestResponse(200, bytes(json.dumps(pypi_result), 'utf-8'))
         response = view()
 
-        self.assertIsInstance(response, HTTPForbidden)
+        self.assertIsInstance(response, dict)
 
 
 class DownloadReleaseViewTest(unittest.TestCase):
@@ -464,13 +465,67 @@ class UploadReleaseViewTest(unittest.TestCase):
         self.assertIsInstance(root['my_package']['1.0']['foo.zip'], ReleaseFile)
 
 
-# class SimpleFunctionnalTest(unittest.TestCase):
+class ListReleaseFileByReleaseViewTest(unittest.TestCase):
 
-#     def setUp(self):
-#         # from papaye import main
-#         config = testing.setUp()
-#         app = create_test_app(config)
-#         self.testapp = TestApp(app)
+    def setUp(self):
+        from papaye.factories import repository_root_factory
+        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        self.config = testing.setUp(request=self.request)
+        self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
+        registry = get_current_registry()
+        registry.settings = {
+            'cache.regions': 'pypi',
+            'cache.enabled': 'false',
+            'zodbconn.uri': 'memory://',
+        }
+        self.config.include('pyramid_zodbconn')
+        self.blobs_dir = tempfile.mkdtemp('blobs')
+        self.conn = get_db_connection(self.blobs_dir)
+        self.root = repository_root_factory(self.conn)
 
-#     def test_simple(self):
-#         import ipdb; ipdb.set_trace()
+    def tearDown(self):
+        shutil.rmtree(self.blobs_dir)
+
+    def test_list_release(self):
+        from papaye.views.simple import ListReleaseFileByReleaseView
+        from papaye.models import Package, Release, ReleaseFile
+
+        # Initial data
+        package = Package('my_package')
+        package['1.0'] = Release('1.0', '1.0')
+        package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
+        self.root['my_package'] = package
+        view = ListReleaseFileByReleaseView(package['1.0'], self.request)
+
+        result = view()
+
+        self.assertIsInstance(result, dict)
+        self.assertIn('objects', result)
+        self.assertEqual(list(result['objects']), [('http://example.com/simple/my_package/1.0/foo.tar.gz/',
+                                                    package['1.0']['foo.tar.gz'])])
+
+    def test_list_release_with_two_release(self):
+        from papaye.views.simple import ListReleaseFileByReleaseView
+        from papaye.models import Package, Release, ReleaseFile
+
+        # Initial data
+        package = Package('my_package')
+        package['1.0'] = Release('1.0', '1.0')
+        package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
+        package['2.0'] = Release('2.0', '2.0')
+        package['2.0']['foo2.tar.gz'] = ReleaseFile('foo2.tar.gz', b'')
+        self.root['my_package'] = package
+        view1 = ListReleaseFileByReleaseView(package['1.0'], self.request)
+        view2 = ListReleaseFileByReleaseView(package['2.0'], self.request)
+
+        result1 = view1()
+        result2 = view2()
+
+        self.assertIsInstance(result1, dict)
+        self.assertIn('objects', result1)
+        self.assertEqual(list(result1['objects']), [('http://example.com/simple/my_package/1.0/foo.tar.gz/',
+                                                    package['1.0']['foo.tar.gz'])])
+        self.assertIsInstance(result2, dict)
+        self.assertIn('objects', result2)
+        self.assertEqual(list(result2['objects']), [('http://example.com/simple/my_package/2.0/foo2.tar.gz/',
+                                                    package['2.0']['foo2.tar.gz'])])

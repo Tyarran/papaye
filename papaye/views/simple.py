@@ -43,7 +43,8 @@ def not_found(request):
         if len(request.matchdict['traverse']) == 1:
             view = ListReleaseFileView(package, request)
         elif len(request.matchdict['traverse']) == 2:
-            view = ForbiddenView(None, request)
+            context = package[request.matchdict['traverse'][1]]
+            view = ListReleaseFileByReleaseView(context, request)
         elif len(request.matchdict['traverse']) == 3:
             release_file = package[request.matchdict['traverse'][1]][request.matchdict['traverse'][2]]
             package_name, release_name, _ = request.matchdict['traverse']
@@ -93,11 +94,19 @@ class ListReleaseFileView(BaseView):
             return not_found(self.request)
 
 
-@view_config(context=Release, route_name="simple")
-class ForbiddenView(BaseView):
+@view_config(context=Release,
+             route_name="simple",
+             renderer="simple.jinja2",
+             request_method="GET",
+             permission='install')
+class ListReleaseFileByReleaseView(BaseView):
 
     def __call__(self):
-        return HTTPForbidden()
+        return {
+            'objects': (
+                (self.request.resource_url(release_file, route_name=self.request.matched_route.name), release_file)
+                for release_file in self.context.release_files.values()),
+        }
 
 
 @view_config(context=ReleaseFile, route_name="simple", permission='install', request_method="GET")
