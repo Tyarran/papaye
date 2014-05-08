@@ -3,7 +3,6 @@ import logging
 from pyramid.httpexceptions import (
     HTTPBadRequest,
     HTTPConflict,
-    HTTPForbidden,
     HTTPNotFound,
     HTTPUnauthorized,
     HTTPTemporaryRedirect
@@ -37,6 +36,7 @@ def not_found(request):
         return HTTPNotFound()
     try:
         proxy = PyPiProxy(request, request.matchdict['traverse'][0])
+        # import ipdb; ipdb.set_trace()
         package = proxy.build_repository()
         if not package:
             return HTTPNotFound()
@@ -55,11 +55,13 @@ def not_found(request):
     return view()
 
 
-@view_config(context="papaye.models.Root",
-             route_name="simple",
-             renderer="simple.jinja2",
-             request_method="GET",
-             permission="install")
+@view_config(
+    context="papaye.models.Root",
+    route_name="simple",
+    renderer="simple.jinja2",
+    request_method="GET",
+    permission="install"
+)
 class ListPackagesView(BaseView):
 
     def __call__(self):
@@ -69,11 +71,13 @@ class ListPackagesView(BaseView):
         }
 
 
-@view_config(context=Package,
-             route_name="simple",
-             renderer="simple.jinja2",
-             request_method="GET",
-             permission='install')
+@view_config(
+    context=Package,
+    route_name="simple",
+    renderer="simple.jinja2",
+    request_method="GET",
+    permission='install'
+)
 class ListReleaseFileView(BaseView):
 
     def __call__(self):
@@ -94,11 +98,13 @@ class ListReleaseFileView(BaseView):
             return not_found(self.request)
 
 
-@view_config(context=Release,
-             route_name="simple",
-             renderer="simple.jinja2",
-             request_method="GET",
-             permission='install')
+@view_config(
+    context=Release,
+    route_name="simple",
+    renderer="simple.jinja2",
+    request_method="GET",
+    permission='install'
+)
 class ListReleaseFileByReleaseView(BaseView):
 
     def __call__(self):

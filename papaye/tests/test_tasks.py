@@ -49,6 +49,7 @@ class TestDownloadTask(unittest.TestCase):
         release_file = root['pyramid']['1.5']['pyramid-1.5.tar.gz']
         self.assertEqual(release_file.md5_digest, "8747658dcbab709a9c491e43d3b0d58b")
         self.assertEqual(release_file.filename, "pyramid-1.5.tar.gz")
+        self.assertEqual(list(root['pyramid'].releases.keys()), ['1.5', ])
 
     @patch('requests.get')
     @patch('papaye.tasks.download.get_connection')

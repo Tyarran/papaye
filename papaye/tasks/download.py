@@ -25,7 +25,7 @@ def get_connection(settings):
 def download_release_from_pypi(settings, package_name, release_name):
     conn = get_connection(settings)
     proxy = PyPiProxy(conn, package_name)
-    package = proxy.build_repository()
+    package = proxy.build_repository(release_name=release_name)
     if not package:
         logger.error('Package {} not found on PYPI'.format(package_name))
     root = repository_root_factory(conn)
@@ -35,10 +35,6 @@ def download_release_from_pypi(settings, package_name, release_name):
         with release_file.content.open() as content:
             if hashlib.md5(content.read()).hexdigest() != release_file.md5_digest:
                 raise IOError('md5 check error')
-
-    # get only desired release
-    releases = dict([(key, value) for key, value in package.releases.items() if key == release_name])
-    package.releases = OOBTree(releases)
     root[package.name] = package
     try:
         transaction.commit()

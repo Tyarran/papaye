@@ -5,7 +5,7 @@ from beaker.cache import cache_region
 from requests.exceptions import ConnectionError
 
 from papaye.factories import repository_root_factory
-from papaye.models import Package, Release, ReleaseFile
+from papaye.models import Package, Release, ReleaseFile, Root
 
 
 class PyPiProxy:
@@ -27,14 +27,19 @@ class PyPiProxy:
         except ConnectionError:
             return None
 
-    def build_repository(self):
+    def build_repository(self, release_name=None):
         root = repository_root_factory(self.request_or_dbconn)
         info = self.get_remote_informations(self.url)
         if info:
+            package_root = Root()
             package = Package(info['info']['name'])
-            package.__parent__ = root
+            package.__parent__ = package_root
+            package_root[package.name] = package
 
-            for remote_release in info['releases'].keys():
+            remote_releases = [release_name, ] if release_name else info['releases'].keys()
+
+            for remote_release in remote_releases:
+                # if release_name and remote_release == release_name:
                 release = Release(remote_release, remote_release)
                 package[remote_release] = release
 
@@ -48,7 +53,7 @@ class PyPiProxy:
         return None
 
     def smart_merge(self, root, package):
-        if not package.name in root:
+        if package.name not in root:
             return package
         else:
             merged_package = root[package.name]
