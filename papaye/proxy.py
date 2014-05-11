@@ -1,3 +1,4 @@
+import copy
 import json
 import requests
 
@@ -39,7 +40,6 @@ class PyPiProxy:
             remote_releases = [release_name, ] if release_name else info['releases'].keys()
 
             for remote_release in remote_releases:
-                # if release_name and remote_release == release_name:
                 release = Release(remote_release, remote_release)
                 package[remote_release] = release
 
@@ -56,7 +56,7 @@ class PyPiProxy:
         if package.name not in root:
             return package
         else:
-            merged_package = root[package.name]
+            merged_package = copy.deepcopy(root[package.name])
             to_delete_releases_name = [release for release in package.releases.keys()
                                        if release in merged_package.releases.keys()]
             to_update_releases = [(key, value) for key, value in package.releases.items()
