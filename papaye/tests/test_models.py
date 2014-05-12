@@ -100,6 +100,31 @@ class PackageTest(unittest.TestCase):
         result = Package.by_name('package1', self.request)
         self.assertEqual(result, None)
 
+    def test_get_last_release(self):
+        from papaye.models import Package, Release
+
+        package = Package(name='package1')
+        package.releases.update([('{}.0'.format(index), Release('', '{}.0'.format(index))) for index in range(1, 3)])
+        result = package.get_last_release()
+        self.assertEqual(result.version, '2.0')
+
+    def test_get_last_release_with_minor(self):
+        from papaye.models import Package, Release
+
+        package = Package(name='package1')
+        package.releases.update([('1.{}'.format(index), Release('', '1.{}'.format(index))) for index in range(1, 3)])
+        result = package.get_last_release()
+        self.assertEqual(result.version, '1.2')
+
+    def test_get_last_release_with_alpha(self):
+        from papaye.models import Package, Release
+
+        package = Package(name='package1')
+        package.releases.update([('1.0{}'.format(version), Release('', '1.0{}'.format(version)))
+                                for version in ['', 'a1', 'a2', 'b1', 'b2', 'rc1']])
+        result = package.get_last_release()
+        self.assertEqual(result.version, '1.0')
+
 
 class ReleaseTest(unittest.TestCase):
 

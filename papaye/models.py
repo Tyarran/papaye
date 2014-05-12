@@ -74,6 +74,12 @@ class Package(Persistent):
         root = repository_root_factory(request)
         return root[name] if name in root else None
 
+    def get_last_release(self):
+        max_version = max([parse_version(version) for version in self.releases.keys()])
+        for version, release in self.releases.items():
+            if parse_version(version) == max_version:
+                return release
+
 
 class Release(Persistent):
 
