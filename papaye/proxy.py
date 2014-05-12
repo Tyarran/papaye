@@ -40,7 +40,7 @@ class PyPiProxy:
             remote_releases = [release_name, ] if release_name else info['releases'].keys()
 
             for remote_release in remote_releases:
-                release = Release(remote_release, remote_release)
+                release = Release(remote_release, remote_release, metadata=info['info'])
                 package[remote_release] = release
 
                 for remote_release_file in info['releases'][remote_release]:

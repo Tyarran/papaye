@@ -75,6 +75,8 @@ class ProxyTest(unittest.TestCase):
         self.assertTrue(getattr(result['1.5'].release_files.values()[0], 'pypi_url', None))
         self.assertEqual(result['1.5'].release_files.values()[0].pypi_url,
                          "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.5.tar.gz")
+        self.assertIsNotNone(result['1.5'].metadata)
+        self.assertIsInstance(result['1.5'].metadata, dict)
 
     @patch('requests.get')
     def test_build_repository_404_error(self, mock):

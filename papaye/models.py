@@ -77,10 +77,11 @@ class Package(Persistent):
 
 class Release(Persistent):
 
-    def __init__(self, name, version):
+    def __init__(self, name, version, metadata=None):
         self.__name__ = name
         self.release_files = OOBTree()
         self.version = version
+        self.metadata = metadata
 
     def __getitem__(self, release_file_name):
         return self.release_files[release_file_name]

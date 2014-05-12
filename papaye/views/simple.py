@@ -143,6 +143,7 @@ class UploadView():
 
     def __call__(self):
         post = dict(self.request.POST)
+        metadata = dict([(key, value) for key, value in post.items() if key != 'content'])
         if post.get(':action') == "file_upload":
             name = post.get('name')
             version = post.get('version')
@@ -153,7 +154,9 @@ class UploadView():
             package.__parent__ = self.context
             self.context[name] = package
 
-            release = package[version] if package.releases.get(version) else Release(name=version, version=version)
+            release = package[version] if package.releases.get(version) else Release(name=version,
+                                                                                     version=version,
+                                                                                     metadata=metadata)
             release.__parent__ = package
             self.context[name][version] = release
 

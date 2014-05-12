@@ -391,6 +391,8 @@ class UploadReleaseViewTest(unittest.TestCase):
         self.assertTrue(root['my_package']['1.0'].release_files.get('foo.tar.gz', b''))
         self.assertIsInstance(root['my_package']['1.0']['foo.tar.gz'], ReleaseFile)
         self.assertEqual(root['my_package']['1.0']['foo.tar.gz'].md5_digest, "Fake MD5")
+        self.assertIsNotNone(root['my_package']['1.0'].metadata)
+        self.assertIsInstance(root['my_package']['1.0'].metadata, dict)
 
     def test_upload_release_already_exists(self):
         from papaye.models import Root, Package, Release, ReleaseFile
