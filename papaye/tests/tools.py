@@ -17,9 +17,10 @@ def get_resource(*args):
 
 class FakeGRequestResponse():
 
-    def __init__(self, status_code, content):
+    def __init__(self, status_code, content, url="https://fake/url/"):
         self.status_code = status_code
         self.content = content
+        self.url = url
 
 
 class FakeMatchedDict(object):

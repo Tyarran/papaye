@@ -1,9 +1,10 @@
+import hashlib
 import io
 import json
 import logging
 import magic
+import pkg_resources
 import requests
-import hashlib
 
 from BTrees.OOBTree import OOBTree
 from ZODB.blob import Blob
@@ -18,6 +19,10 @@ from papaye.factories import user_root_factory, repository_root_factory
 
 
 logger = logging.getLogger(__name__)
+
+
+def format_key(key):
+    return pkg_resources.safe_name(key.lower())
 
 
 class Root(OOBTree):
@@ -35,6 +40,12 @@ class Root(OOBTree):
             acl.append((Allow, Everyone, 'install'))
         return acl
 
+    def __getitem__(self, package_name):
+        keys = [key for key in self.keys()
+                if format_key(key) == format_key(package_name)]
+        if len(keys) == 1:
+            return self.get(keys[0])
+
 
 class Package(Persistent):
     pypi_url = 'http://pypi.python.org/pypi/{}/json'
@@ -48,6 +59,7 @@ class Package(Persistent):
         return self.releases[release_name]
 
     def __setitem__(self, key, value):
+        key = format_key(key)
         self.releases[key] = value
         self.releases[key].__parent__ = self
 
@@ -99,9 +111,10 @@ class Release(Persistent):
         self.metadata = metadata
 
     def __getitem__(self, release_file_name):
-        return self.release_files[release_file_name]
+        return self.release_files[format_key(release_file_name)]
 
     def __setitem__(self, key, value):
+        key = format_key(key)
         self.release_files[key] = value
         self.release_files[key].__parent__ = self
 

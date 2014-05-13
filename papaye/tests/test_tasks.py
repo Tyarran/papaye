@@ -36,12 +36,13 @@ class TestDownloadTask(unittest.TestCase):
         json_response = open(get_resource('pyramid.json'), 'rb')
         release_file_content = open(get_resource('pyramid-1.5.tar.gz'), 'rb')
         request_mock.side_effect = [
+            FakeGRequestResponse(200, b'', 'http://pypi.python.org/simple/pyramid/'),
             FakeGRequestResponse(200, json_response.read()),
             FakeGRequestResponse(200, release_file_content.read()),
         ]
 
         download_release_from_pypi(request.registry.settings, 'pyramid', '1.5')
-        self.assertEqual(request_mock.call_count, 2)
+        self.assertEqual(request_mock.call_count, 3)
         root = repository_root_factory(self.conn)
         self.assertIn('pyramid', root)
         self.assertIn('1.5', root['pyramid'].releases)
@@ -62,11 +63,12 @@ class TestDownloadTask(unittest.TestCase):
         json_response = open(get_resource('pyramid.json'), 'rb')
         release_file_content = io.BytesIO(b'corrupted_file')
         request_mock.side_effect = [
+            FakeGRequestResponse(200, b'', 'http://pypi.python.org/simple/pyramid/'),
             FakeGRequestResponse(200, json_response.read()),
             FakeGRequestResponse(200, release_file_content.read()),
         ]
 
         self.assertRaises(IOError, download_release_from_pypi, request.registry.settings, 'pyramid', '1.5')
-        self.assertEqual(request_mock.call_count, 2)
+        self.assertEqual(request_mock.call_count, 3)
         root = repository_root_factory(self.conn)
         self.assertNotIn('pyramid', root)
