@@ -5,13 +5,14 @@ import magic
 import requests
 import hashlib
 
-from beaker.cache import cache_region
 from BTrees.OOBTree import OOBTree
+from ZODB.blob import Blob
+from beaker.cache import cache_region
 from persistent import Persistent
 from pkg_resources import parse_version
+from pyramid.security import Allow, ALL_PERMISSIONS, Everyone
+from pyramid.threadlocal import get_current_registry
 from requests.exceptions import ConnectionError
-from ZODB.blob import Blob
-from pyramid.security import Allow, ALL_PERMISSIONS
 
 from papaye.factories import user_root_factory, repository_root_factory
 
@@ -21,10 +22,18 @@ logger = logging.getLogger(__name__)
 
 class Root(OOBTree):
     __name__ = __parent__ = None
-    __acl__ = [
-        (Allow, 'group:installer', 'install'),
-        (Allow, 'group:admin', ALL_PERMISSIONS)
-    ]
+
+    def __acl__(self):
+        acl = [
+            (Allow, 'group:installer', 'install'),
+            (Allow, 'group:admin', ALL_PERMISSIONS)
+        ]
+        registry = get_current_registry()
+        anonymous_install = registry.settings.get('papaye.anonymous_install')
+        anonymous_install = True if anonymous_install and anonymous_install == 'true' else False
+        if anonymous_install:
+            acl.append((Allow, Everyone, 'install'))
+        return acl
 
 
 class Package(Persistent):
