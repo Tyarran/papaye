@@ -17,6 +17,7 @@ class PyPiProxy:
         self.request_or_dbconn = request_or_dbconn
         self.package_name = package_name
 
+    @cache_region('pypi', 'get_remote_package_name')
     def get_remote_package_name(self, package_name):
         response = requests.get(self.pypi_simple_url.format(package_name))
         if response.status_code == 200:
