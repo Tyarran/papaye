@@ -1,6 +1,5 @@
 import copy
 import json
-import re
 import requests
 
 from beaker.cache import cache_region
@@ -13,7 +12,6 @@ from papaye.models import Package, Release, ReleaseFile, Root
 class PyPiProxy:
     pypi_simple_url = 'https://pypi.python.org/simple/{}/'
     pypi_url = 'https://pypi.python.org/pypi/{}/json'
-    RE_PACKAGE = re.compile(r'/(\w+)/$')
 
     def __init__(self, request_or_dbconn,  package_name):
         self.request_or_dbconn = request_or_dbconn
@@ -22,7 +20,10 @@ class PyPiProxy:
     def get_remote_package_name(self, package_name):
         response = requests.get(self.pypi_simple_url.format(package_name))
         if response.status_code == 200:
-            return self.RE_PACKAGE.findall(response.url)[0]
+            if response.url.endswith('/'):
+                return response.url.split('/')[-2]
+            else:
+                return response.url.split('/')[-1]
         else:
             None
 
