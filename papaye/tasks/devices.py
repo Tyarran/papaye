@@ -90,7 +90,7 @@ class ConsumerDevice(Device):
                 print(colored('Worker {}: Starting task id: {}'.format(worker_number, func.task_id), 'yellow'))
                 try:
                     result = func(self.settings, *args, **kwargs)
-                    self.collector_socket.send_pyobj((task_id, result))
+                    self.collector_socket.send_pyobj((task_id, pickle.dumps(result)))
                     print(colored('Worker {}: Task #{} finished'.format(worker_number, func.task_id), 'yellow'))
                 except:
                     traceback.print_exc()
