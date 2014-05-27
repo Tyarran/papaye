@@ -1,3 +1,4 @@
+import logging
 import multiprocessing
 import pickle
 import traceback
@@ -6,9 +7,11 @@ import zmq
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
 from pyramid.registry import global_registry
-from termcolor import colored
 
 from papaye.tasks import TaskRegistry
+
+
+logger = logging.getLogger(__name__)
 
 
 class Device(multiprocessing.Process):
@@ -87,14 +90,14 @@ class ConsumerDevice(Device):
                 task_id, func_name, args, kwargs = pickle.loads(data)
                 func = TaskRegistry()._tasks[func_name]
                 func.task_id = task_id
-                print(colored('Worker {}: Starting task id: {}'.format(worker_number, func.task_id), 'yellow'))
+                logger.info('Worker {}: Starting task id: {}'.format(worker_number, func.task_id))
                 try:
                     result = func(self.settings, *args, **kwargs)
                     self.collector_socket.send_pyobj((task_id, pickle.dumps(result)))
-                    print(colored('Worker {}: Task #{} finished'.format(worker_number, func.task_id), 'yellow'))
-                except:
-                    traceback.print_exc()
-                    print(colored('Worker {}: Task #{} Error'.format(worker_number, func.task_id), 'yellow'))
+                    logger.info('Worker {}: Task #{} finished'.format(worker_number, func.task_id))
+                except Exception as exc:
+                    formated_tb = traceback.format_tb(exc.__traceback__)
+                    logger.error('Worker {}: Task #{} Error\n{}'.format(worker_number, func.task_id, formated_tb))
             except KeyboardInterrupt:
                 self.go = False
 

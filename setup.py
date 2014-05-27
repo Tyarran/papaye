@@ -19,7 +19,6 @@ requires = [
     'pyramid_zodbconn',
     'pyzmq',
     'requests',
-    'termcolor',
     'transaction',
     'waitress',
 ]
