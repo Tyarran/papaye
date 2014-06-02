@@ -2,12 +2,12 @@ import sys
 
 from pyramid.authentication import BasicAuthAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
-from pyramid.config import Configurator
+from pyramid.config import Configurator, ConfigurationError
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid_beaker import set_cache_regions_from_settings
 
-from papaye.factories import repository_root_factory
-from papaye.models import User
+from papaye.factories import repository_root_factory, user_root_factory
+from papaye.models import User, get_connection
 from papaye.tasks.devices import Scheduler, Producer
 from pyramid.threadlocal import get_current_registry
 
@@ -19,12 +19,27 @@ def auth_check_func(username, password, request):
     return None
 
 
+def check_database_config(settings):
+    conn = get_connection(settings)
+    if user_root_factory(conn) is None or repository_root_factory(conn) is None:
+        raise ConfigurationError('Database does not exist! Run "papaye_init" script first')
+    return True
+
+
 def notfound(request):
     return HTTPNotFound()
 
 
 def add_directives(config):
     config.add_directive('start_scheduler', start_scheduler)
+
+
+def start_scheduler(config):
+    registry = get_current_registry()
+    registry.producer = Producer(config.registry.settings)
+    if sys.argv[0].endswith('pserve'):
+        scheduler = Scheduler(config.registry.settings)
+        scheduler.start()
 
 
 def main(global_config, **settings):
@@ -42,14 +57,7 @@ def main(global_config, **settings):
     config.add_route('home', '/')
     config.add_route('simple', '/simple*traverse', factory=repository_root_factory)
     config.add_notfound_view(notfound, append_slash=True)
+    check_database_config(settings)
     config.start_scheduler()
     config.scan()
     return config.make_wsgi_app()
-
-
-def start_scheduler(config):
-    registry = get_current_registry()
-    registry.producer = Producer(config.registry.settings)
-    if sys.argv[0].endswith('pserve'):
-        scheduler = Scheduler(config.registry.settings)
-        scheduler.start()

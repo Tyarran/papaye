@@ -6,14 +6,15 @@ import magic
 import pkg_resources
 import requests
 
-from BTrees.OOBTree import OOBTree
-from ZODB.blob import Blob
 from beaker.cache import cache_region
+from BTrees.OOBTree import OOBTree
 from persistent import Persistent
 from pkg_resources import parse_version
 from pyramid.security import Allow, ALL_PERMISSIONS, Everyone
 from pyramid.threadlocal import get_current_registry
+from pyramid_zodbconn import db_from_uri
 from requests.exceptions import ConnectionError
+from ZODB.blob import Blob
 
 from papaye.factories import user_root_factory, repository_root_factory
 
@@ -23,6 +24,12 @@ logger = logging.getLogger(__name__)
 
 def format_key(key):
     return pkg_resources.safe_name(key.lower())
+
+
+def get_connection(settings):
+    uri = settings.get('zodbconn.uri', None)
+    db = db_from_uri(uri, 'unamed', None)
+    return db.open()
 
 
 class Root(OOBTree):
