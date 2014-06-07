@@ -1,7 +1,5 @@
 import io
 import json
-import shutil
-import tempfile
 import types
 import unittest
 
@@ -16,7 +14,7 @@ from pyramid_beaker import set_cache_regions_from_settings
 from papaye.tests.tools import (
     FakeGRequestResponse,
     FakeRoute,
-    get_db_connection,
+    set_database_connection,
 )
 
 
@@ -24,15 +22,14 @@ class ListPackageViewTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        set_database_connection(self.request)
         self.config = testing.setUp(request=self.request)
         self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
         registry = get_current_registry()
         registry.settings = {
             'cache.regions': 'pypi',
             'cache.enabled': 'false',
-            'zodbconn.uri': 'memory://',
         }
-        self.config.include('pyramid_zodbconn')
 
     def test_list_packages(self):
         from papaye.views.simple import ListPackagesView
@@ -70,15 +67,14 @@ class ListReleaseViewTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        set_database_connection(self.request)
         self.config = testing.setUp(request=self.request)
         self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
         registry = get_current_registry()
         registry.settings = {
             'cache.regions': 'pypi',
             'cache.enabled': 'false',
-            'zodbconn.uri': 'memory://',
         }
-        self.config.include('pyramid_zodbconn')
         set_cache_regions_from_settings(registry.settings)
 
     def test_list_releases_files(self):
@@ -269,14 +265,13 @@ class DownloadReleaseViewTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        set_database_connection(self.request)
         settings = {
             'cache.regions': 'pypi',
             'cache.enabled': 'false',
-            'zodbconn.uri': 'memory://',
         }
         self.config = testing.setUp(request=self.request, settings=settings)
         self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
-        self.config.include('pyramid_zodbconn')
         set_cache_regions_from_settings(settings)
 
     @patch('requests.get')
@@ -470,33 +465,27 @@ class UploadReleaseViewTest(unittest.TestCase):
 class ListReleaseFileByReleaseViewTest(unittest.TestCase):
 
     def setUp(self):
-        from papaye.factories import repository_root_factory
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        set_database_connection(self.request)
         self.config = testing.setUp(request=self.request)
         self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
         registry = get_current_registry()
         registry.settings = {
             'cache.regions': 'pypi',
             'cache.enabled': 'false',
-            'zodbconn.uri': 'memory://',
         }
-        self.config.include('pyramid_zodbconn')
-        self.blobs_dir = tempfile.mkdtemp('blobs')
-        self.conn = get_db_connection(self.blobs_dir)
-        self.root = repository_root_factory(self.conn)
-
-    def tearDown(self):
-        shutil.rmtree(self.blobs_dir)
 
     def test_list_release(self):
         from papaye.views.simple import ListReleaseFileByReleaseView
         from papaye.models import Package, Release, ReleaseFile
+        from papaye.factories import repository_root_factory
 
         # Initial data
+        root = repository_root_factory(self.request)
         package = Package('my_package')
         package['1.0'] = Release('1.0', '1.0')
         package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
-        self.root['my_package'] = package
+        root['my_package'] = package
         view = ListReleaseFileByReleaseView(package['1.0'], self.request)
 
         result = view()
@@ -509,14 +498,16 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
     def test_list_release_with_two_release(self):
         from papaye.views.simple import ListReleaseFileByReleaseView
         from papaye.models import Package, Release, ReleaseFile
+        from papaye.factories import repository_root_factory
 
         # Initial data
+        root = repository_root_factory(self.request)
         package = Package('my_package')
         package['1.0'] = Release('1.0', '1.0')
         package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
         package['2.0'] = Release('2.0', '2.0')
         package['2.0']['foo2.tar.gz'] = ReleaseFile('foo2.tar.gz', b'')
-        self.root['my_package'] = package
+        root['my_package'] = package
         view1 = ListReleaseFileByReleaseView(package['1.0'], self.request)
         view2 = ListReleaseFileByReleaseView(package['2.0'], self.request)
 
@@ -526,8 +517,8 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
         self.assertIsInstance(result1, dict)
         self.assertIn('objects', result1)
         self.assertEqual(list(result1['objects']), [('http://example.com/simple/my_package/1.0/foo.tar.gz/',
-                                                    package['1.0']['foo.tar.gz'])])
+                                                     package['1.0']['foo.tar.gz'])])
         self.assertIsInstance(result2, dict)
         self.assertIn('objects', result2)
         self.assertEqual(list(result2['objects']), [('http://example.com/simple/my_package/2.0/foo2.tar.gz/',
-                                                    package['2.0']['foo2.tar.gz'])])
+                                                     package['2.0']['foo2.tar.gz'])])

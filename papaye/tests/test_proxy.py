@@ -1,5 +1,4 @@
 import json
-import shutil
 import tempfile
 import unittest
 
@@ -7,23 +6,18 @@ from mock import patch
 from pyramid import testing
 from requests.exceptions import ConnectionError
 
-from papaye.tests.tools import FakeGRequestResponse, get_resource, get_db_connection
+from papaye.tests.tools import FakeGRequestResponse, get_resource, set_database_connection
 
 
 class ProxyTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest()
-        settings = {'zodbconn.uri': 'memory:///blobstorage_dir=packages'}
-        self.config = testing.setUp(request=self.request, settings=settings)
+        set_database_connection(self.request)
+        self.config = testing.setUp(request=self.request)
         with open(get_resource('pyramid.json'), 'rb') as pyramid_json:
             self.pypi_response = FakeGRequestResponse(200, pyramid_json.read())
-        self.config.include('pyramid_zodbconn')
         self.blobs_dir = tempfile.mkdtemp('blobs')
-        self.conn = get_db_connection(self.blobs_dir)
-
-    def tearDown(self):
-        shutil.rmtree(self.blobs_dir)
 
     @patch('requests.get')
     def test_get_remote_informations(self, mock):
@@ -94,7 +88,7 @@ class ProxyTest(unittest.TestCase):
         from papaye.factories import repository_root_factory
         from papaye.models import Package, Release, ReleaseFile
         mock.return_value = self.pypi_response
-        root = repository_root_factory(self.conn)
+        root = repository_root_factory(self.request)
 
         # Existing releases
         root['pyramid'] = Package(name='pyramid')
@@ -124,7 +118,7 @@ class ProxyTest(unittest.TestCase):
         from papaye.factories import repository_root_factory
         from papaye.models import Package, Release, ReleaseFile
         mock.return_value = self.pypi_response
-        root = repository_root_factory(self.conn)
+        root = repository_root_factory(self.request)
 
         # Existing releases
         package = Package(name='pyramid')
@@ -155,7 +149,7 @@ class ProxyTest(unittest.TestCase):
         from papaye.factories import repository_root_factory
         from papaye.models import Package, Release, ReleaseFile
         mock.return_value = self.pypi_response
-        root = repository_root_factory(self.conn)
+        root = repository_root_factory(self.request)
 
         package = Package(name='pyramid')
         package['1.5'] = Release(name='1.5', version='1.5')

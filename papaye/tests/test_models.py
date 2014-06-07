@@ -5,22 +5,21 @@ from pyramid import testing
 from pyramid.response import Response
 from pyramid_beaker import set_cache_regions_from_settings
 
-from papaye.tests.tools import FakeGRequestResponse, FakeRoute
+from papaye.tests.tools import FakeGRequestResponse, FakeRoute, set_database_connection
 
 
 class PackageTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        set_database_connection(self.request)
         self.config = testing.setUp(request=self.request)
         registry = self.request.registry
         registry.settings = {
             'cache.regions': 'pypi',
             'cache.enabled': 'false',
-            'zodbconn.uri': 'memory:///blobstorage_dir=packages',
         }
         set_cache_regions_from_settings(registry.settings)
-        self.config.include('pyramid_zodbconn')
 
     @patch('requests.get')
     def test_get_last_remote_version_without_proxy(self, mock):
@@ -121,7 +120,7 @@ class PackageTest(unittest.TestCase):
 
         package = Package(name='package1')
         package.releases.update([('1.0{}'.format(version), Release('', '1.0{}'.format(version)))
-                                for version in ['', 'a1', 'a2', 'b1', 'b2', 'rc1']])
+                                 for version in ['', 'a1', 'a2', 'b1', 'b2', 'rc1']])
         result = package.get_last_release()
         self.assertEqual(result.version, '1.0')
 
@@ -130,11 +129,8 @@ class ReleaseTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        settings = {
-            'zodbconn.uri': 'memory://',
-        }
-        self.config = testing.setUp(request=self.request, settings=settings)
-        self.config.include('pyramid_zodbconn')
+        self.config = testing.setUp(request=self.request)
+        set_database_connection(self.request)
 
     def test_by_packagename(self):
         from papaye.models import Release, Package
@@ -158,11 +154,8 @@ class UserTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        settings = {
-            'zodbconn.uri': 'memory://',
-        }
-        self.config = testing.setUp(request=self.request, settings=settings)
-        self.config.include('pyramid_zodbconn')
+        set_database_connection(self.request)
+        self.config = testing.setUp(request=self.request)
 
     def test_hash_password(self):
         from papaye.models import User

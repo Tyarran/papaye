@@ -1,10 +1,13 @@
 import os
+import tempfile
 
 from pyramid import testing
 from pyramid_beaker import set_cache_regions_from_settings
 from ZODB.blob import BlobStorage
 from ZODB.DB import DB
 from ZODB.MappingStorage import MappingStorage
+
+from papaye.scripts.initialize import create_app_root
 
 
 HERE = os.path.abspath(os.path.dirname(__name__))
@@ -67,4 +70,13 @@ def get_db_connection(blob_dir):
     storage = MappingStorage('test')
     blob_storage = BlobStorage(blob_dir, storage)
     db = DB(blob_storage)
-    return db.open()
+    conn = db.open()
+    create_app_root(conn)
+    return conn
+
+
+def set_database_connection(request, blob_dir=None):
+    if not blob_dir:
+        blob_dir = tempfile.mkdtemp('blobs')
+    conn = get_db_connection(blob_dir)
+    request._primary_zodb_conn = conn
