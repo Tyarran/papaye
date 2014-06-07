@@ -5,14 +5,14 @@ from pyramid import testing
 from pyramid.response import Response
 from pyramid_beaker import set_cache_regions_from_settings
 
-from papaye.tests.tools import FakeGRequestResponse, FakeRoute, set_database_connection
+from papaye.tests.tools import FakeGRequestResponse, FakeRoute, set_database_connection, remove_blob_dir
 
 
 class PackageTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        set_database_connection(self.request)
+        self.blob_dir = set_database_connection(self.request)
         self.config = testing.setUp(request=self.request)
         registry = self.request.registry
         registry.settings = {
@@ -20,6 +20,9 @@ class PackageTest(unittest.TestCase):
             'cache.enabled': 'false',
         }
         set_cache_regions_from_settings(registry.settings)
+
+    def tearDown(self):
+        remove_blob_dir(self.blob_dir)
 
     @patch('requests.get')
     def test_get_last_remote_version_without_proxy(self, mock):
@@ -130,7 +133,10 @@ class ReleaseTest(unittest.TestCase):
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
         self.config = testing.setUp(request=self.request)
-        set_database_connection(self.request)
+        self.blob_dir = set_database_connection(self.request)
+
+    def tearDown(self):
+        remove_blob_dir(self.blob_dir)
 
     def test_by_packagename(self):
         from papaye.models import Release, Package
@@ -154,8 +160,11 @@ class UserTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        set_database_connection(self.request)
+        self.blob_dir = set_database_connection(self.request)
         self.config = testing.setUp(request=self.request)
+
+    def tearDown(self):
+        remove_blob_dir(self.blob_dir)
 
     def test_hash_password(self):
         from papaye.models import User

@@ -1,4 +1,5 @@
 import os
+import shutil
 import tempfile
 
 from pyramid import testing
@@ -80,3 +81,8 @@ def set_database_connection(request, blob_dir=None):
         blob_dir = tempfile.mkdtemp('blobs')
     conn = get_db_connection(blob_dir)
     request._primary_zodb_conn = conn
+    return blob_dir
+
+
+def remove_blob_dir(blob_dir):
+    shutil.rmtree(blob_dir)

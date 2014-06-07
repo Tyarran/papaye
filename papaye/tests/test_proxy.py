@@ -1,23 +1,24 @@
 import json
-import tempfile
 import unittest
 
 from mock import patch
 from pyramid import testing
 from requests.exceptions import ConnectionError
 
-from papaye.tests.tools import FakeGRequestResponse, get_resource, set_database_connection
+from papaye.tests.tools import FakeGRequestResponse, get_resource, set_database_connection, remove_blob_dir
 
 
 class ProxyTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest()
-        set_database_connection(self.request)
+        self.blob_dir = set_database_connection(self.request)
         self.config = testing.setUp(request=self.request)
         with open(get_resource('pyramid.json'), 'rb') as pyramid_json:
             self.pypi_response = FakeGRequestResponse(200, pyramid_json.read())
-        self.blobs_dir = tempfile.mkdtemp('blobs')
+
+    def tearDown(self):
+        remove_blob_dir(self.blob_dir)
 
     @patch('requests.get')
     def test_get_remote_informations(self, mock):

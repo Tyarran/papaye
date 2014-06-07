@@ -15,6 +15,7 @@ from papaye.tests.tools import (
     FakeGRequestResponse,
     FakeRoute,
     set_database_connection,
+    remove_blob_dir,
 )
 
 
@@ -22,7 +23,7 @@ class ListPackageViewTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        set_database_connection(self.request)
+        self.blob_dir = set_database_connection(self.request)
         self.config = testing.setUp(request=self.request)
         self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
         registry = get_current_registry()
@@ -30,6 +31,9 @@ class ListPackageViewTest(unittest.TestCase):
             'cache.regions': 'pypi',
             'cache.enabled': 'false',
         }
+
+    def tearDown(self):
+        remove_blob_dir(self.blob_dir)
 
     def test_list_packages(self):
         from papaye.views.simple import ListPackagesView
@@ -67,7 +71,7 @@ class ListReleaseViewTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        set_database_connection(self.request)
+        self.blob_dir = set_database_connection(self.request)
         self.config = testing.setUp(request=self.request)
         self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
         registry = get_current_registry()
@@ -76,6 +80,9 @@ class ListReleaseViewTest(unittest.TestCase):
             'cache.enabled': 'false',
         }
         set_cache_regions_from_settings(registry.settings)
+
+    def tearDown(self):
+        remove_blob_dir(self.blob_dir)
 
     def test_list_releases_files(self):
         from papaye.views.simple import ListReleaseFileView
@@ -265,7 +272,7 @@ class DownloadReleaseViewTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        set_database_connection(self.request)
+        self.blob_dir = set_database_connection(self.request)
         settings = {
             'cache.regions': 'pypi',
             'cache.enabled': 'false',
@@ -273,6 +280,9 @@ class DownloadReleaseViewTest(unittest.TestCase):
         self.config = testing.setUp(request=self.request, settings=settings)
         self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
         set_cache_regions_from_settings(settings)
+
+    def tearDown(self):
+        remove_blob_dir(self.blob_dir)
 
     @patch('requests.get')
     def test_download_release(self, mock):
@@ -466,7 +476,7 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        set_database_connection(self.request)
+        self.blob_dir = set_database_connection(self.request)
         self.config = testing.setUp(request=self.request)
         self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
         registry = get_current_registry()
@@ -474,6 +484,9 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
             'cache.regions': 'pypi',
             'cache.enabled': 'false',
         }
+
+    def tearDown(self):
+        remove_blob_dir(self.blob_dir)
 
     def test_list_release(self):
         from papaye.views.simple import ListReleaseFileByReleaseView
