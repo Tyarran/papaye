@@ -1,14 +1,17 @@
 # Wire up travis
-language: python
+language: "python"
 
 python:
-  - 3.4
+  - "3.2"
+  - "3.3"
+  - "3.4"
 
 install:
-  - python setup.py develop
+  - "pip install ."
+  - "pip install -r requirements_develop.txt"
 
-script: python setup.py test -q
+script: "nose2"
 
 notifications:
   email:
-    - commande.romain@gmail.com
+    - "commande.romain@gmail.com"
