@@ -1,4 +1,5 @@
-.. image:: https://travis-ci.org/rcommande/papaye.png?branch=master   :target: https://travis-ci.org/rcommande/papaye
+.. image:: https://travis-ci.org/rcommande/papaye.png?branch=master
+    :target: https://travis-ci.org/rcommande/papaye
 
 papaye README
 ==================
