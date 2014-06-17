@@ -86,3 +86,16 @@ def set_database_connection(request, blob_dir=None):
 
 def remove_blob_dir(blob_dir):
     shutil.rmtree(blob_dir)
+
+
+def disable_cache(settings=None):
+    cache_settings = {
+        'cache.regions': 'pypi',
+        'cache.enabled': 'false',
+    }
+    if settings:
+        settings.update(cache_settings)
+    else:
+        settings = cache_settings
+    set_cache_regions_from_settings(settings)
+    return settings

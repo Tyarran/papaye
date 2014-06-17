@@ -9,13 +9,13 @@ from pyramid import testing
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
 from pyramid.threadlocal import get_current_registry
-from pyramid_beaker import set_cache_regions_from_settings
 
 from papaye.tests.tools import (
     FakeGRequestResponse,
     FakeRoute,
-    set_database_connection,
+    disable_cache,
     remove_blob_dir,
+    set_database_connection,
 )
 
 
@@ -27,10 +27,7 @@ class ListPackageViewTest(unittest.TestCase):
         self.config = testing.setUp(request=self.request)
         self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
         registry = get_current_registry()
-        registry.settings = {
-            'cache.regions': 'pypi',
-            'cache.enabled': 'false',
-        }
+        registry.settings = disable_cache()
 
     def tearDown(self):
         remove_blob_dir(self.blob_dir)
@@ -75,11 +72,7 @@ class ListReleaseViewTest(unittest.TestCase):
         self.config = testing.setUp(request=self.request)
         self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
         registry = get_current_registry()
-        registry.settings = {
-            'cache.regions': 'pypi',
-            'cache.enabled': 'false',
-        }
-        set_cache_regions_from_settings(registry.settings)
+        registry.settings = disable_cache()
 
     def tearDown(self):
         remove_blob_dir(self.blob_dir)
@@ -273,13 +266,9 @@ class DownloadReleaseViewTest(unittest.TestCase):
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
         self.blob_dir = set_database_connection(self.request)
-        settings = {
-            'cache.regions': 'pypi',
-            'cache.enabled': 'false',
-        }
+        settings = disable_cache()
         self.config = testing.setUp(request=self.request, settings=settings)
         self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
-        set_cache_regions_from_settings(settings)
 
     def tearDown(self):
         remove_blob_dir(self.blob_dir)

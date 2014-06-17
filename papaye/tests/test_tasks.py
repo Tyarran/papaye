@@ -7,7 +7,12 @@ from mock import patch
 from pyramid import testing
 from pyramid.threadlocal import get_current_request
 
-from papaye.tests.tools import FakeGRequestResponse, get_resource, get_db_connection
+from papaye.tests.tools import (
+    FakeGRequestResponse,
+    disable_cache,
+    get_db_connection,
+    get_resource,
+)
 
 
 class TestDownloadTask(unittest.TestCase):
@@ -15,10 +20,7 @@ class TestDownloadTask(unittest.TestCase):
     def setUp(self):
         self.blob_dir = tempfile.mkdtemp()
         request = testing.DummyRequest()
-        settings = {
-            'cache.regions': 'pypi',
-            'cache.enabled': 'false',
-        }
+        settings = disable_cache()
         self.config = testing.setUp(request=request, settings=settings)
         self.conn = get_db_connection(self.blob_dir)
 

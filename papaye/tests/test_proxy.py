@@ -5,7 +5,13 @@ from mock import patch
 from pyramid import testing
 from requests.exceptions import ConnectionError
 
-from papaye.tests.tools import FakeGRequestResponse, get_resource, set_database_connection, remove_blob_dir
+from papaye.tests.tools import (
+    FakeGRequestResponse,
+    disable_cache,
+    get_resource,
+    remove_blob_dir,
+    set_database_connection,
+)
 
 
 class ProxyTest(unittest.TestCase):
@@ -13,7 +19,8 @@ class ProxyTest(unittest.TestCase):
     def setUp(self):
         self.request = testing.DummyRequest()
         self.blob_dir = set_database_connection(self.request)
-        self.config = testing.setUp(request=self.request)
+        settings = disable_cache()
+        self.config = testing.setUp(request=self.request, settings=settings)
         with open(get_resource('pyramid.json'), 'rb') as pyramid_json:
             self.pypi_response = FakeGRequestResponse(200, pyramid_json.read())
 

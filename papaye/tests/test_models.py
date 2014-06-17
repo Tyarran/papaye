@@ -3,9 +3,14 @@ import unittest
 from mock import patch
 from pyramid import testing
 from pyramid.response import Response
-from pyramid_beaker import set_cache_regions_from_settings
 
-from papaye.tests.tools import FakeGRequestResponse, FakeRoute, set_database_connection, remove_blob_dir
+from papaye.tests.tools import (
+    FakeGRequestResponse,
+    FakeRoute,
+    disable_cache,
+    remove_blob_dir,
+    set_database_connection,
+)
 
 
 class PackageTest(unittest.TestCase):
@@ -15,11 +20,7 @@ class PackageTest(unittest.TestCase):
         self.blob_dir = set_database_connection(self.request)
         self.config = testing.setUp(request=self.request)
         registry = self.request.registry
-        registry.settings = {
-            'cache.regions': 'pypi',
-            'cache.enabled': 'false',
-        }
-        set_cache_regions_from_settings(registry.settings)
+        registry.settings = disable_cache()
 
     def tearDown(self):
         remove_blob_dir(self.blob_dir)
