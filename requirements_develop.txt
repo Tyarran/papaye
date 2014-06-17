@@ -1,4 +1,6 @@
 -e .
+
 nose2
-webtest
 pyquery
+tox
+webtest
