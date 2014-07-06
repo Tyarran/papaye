@@ -125,6 +125,7 @@ class QueueDevice(Device):
         return frontend, backend
 
     def run(self):
+        logger.debug('Starting {} device'.format(self._name))
         try:
             self.frontend, self.backend = self.get_sockets()
             zmq.device(zmq.QUEUE, self.frontend, self.backend)
