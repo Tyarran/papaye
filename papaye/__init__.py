@@ -7,7 +7,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid_beaker import set_cache_regions_from_settings
 
 from papaye.factories import repository_root_factory, user_root_factory
-from papaye.models import User, get_connection
+from papaye.models import User
 from papaye.tasks.devices import Scheduler, Producer
 from pyramid.threadlocal import get_current_registry
 
@@ -19,8 +19,8 @@ def auth_check_func(username, password, request):
     return None
 
 
-def check_database_config(settings):
-    conn = get_connection(settings)
+def check_database_config(settings, config):
+    conn = config.registry._zodb_databases[''].open()
     if user_root_factory(conn) is None or repository_root_factory(conn) is None:
         raise ConfigurationError('Database does not exist! Run "papaye_init" script first')
     return True
@@ -36,10 +36,10 @@ def add_directives(config):
 
 def start_scheduler(config):
     registry = get_current_registry()
-    registry.producer = Producer(config.registry.settings)
+    registry.producer = Producer(config)
     if sys.argv[0].endswith('pserve'):
-        scheduler = Scheduler(config.registry.settings)
-        scheduler.start()
+        scheduler = Scheduler(config.registry.settings, config)
+        scheduler.run()
 
 
 def main(global_config, **settings):
@@ -48,6 +48,8 @@ def main(global_config, **settings):
     set_cache_regions_from_settings(settings)
     config = Configurator(settings=settings)
     add_directives(config)
+    config.start_scheduler()
+
     authn_policy = BasicAuthAuthenticationPolicy(check=auth_check_func)
     authz_policy = ACLAuthorizationPolicy()
     config.set_authentication_policy(authn_policy)
@@ -57,7 +59,6 @@ def main(global_config, **settings):
     config.add_route('home', '/')
     config.add_route('simple', '/simple*traverse', factory=repository_root_factory)
     config.add_notfound_view(notfound, append_slash=True)
-    check_database_config(settings)
-    config.start_scheduler()
+    check_database_config(settings, config)
     config.scan()
     return config.make_wsgi_app()

@@ -3,8 +3,6 @@ import logging
 import requests
 import transaction
 
-from pyramid_zodbconn import db_from_uri
-
 from papaye.factories import repository_root_factory
 from papaye.tasks import task
 from papaye.proxy import PyPiProxy
@@ -13,15 +11,14 @@ from papaye.proxy import PyPiProxy
 logger = logging.getLogger(__name__)
 
 
-def get_connection(settings):
-    uri = settings.get('zodbconn.uri', None)
-    db = db_from_uri(uri, 'unamed', None)
-    return db.open()
+def get_connection(config):
+    conn = config.registry._zodb_databases[''].open()
+    return conn
 
 
 @task
-def download_release_from_pypi(settings, package_name, release_name):
-    conn = get_connection(settings)
+def download_release_from_pypi(config, package_name, release_name):
+    conn = get_connection(config)
     proxy = PyPiProxy(conn, package_name)
     package = proxy.build_repository(release_name=release_name)
     if not package:

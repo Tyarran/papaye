@@ -1,12 +1,13 @@
 import logging
 import multiprocessing
 import pickle
+import signal
 import traceback
 import zmq
 
-from beaker.cache import CacheManager
-from beaker.util import parse_cache_config_options
-from pyramid.registry import global_registry
+# from beaker.cache import CacheManager
+# from beaker.util import parse_cache_config_options
+# from pyramid.registry import global_registry
 
 from papaye.tasks import TaskRegistry
 
@@ -16,9 +17,10 @@ logger = logging.getLogger(__name__)
 
 class Device(multiprocessing.Process):
 
-    def __init__(self, settings):
+    def __init__(self, config):
         super().__init__()
-        self.settings = settings
+        self.config = config
+        self.settings = self.config.registry.settings
         self.go = True
 
     def get_socket(self):
@@ -28,34 +30,35 @@ class Device(multiprocessing.Process):
         raise NotImplemented()
 
 
-class Scheduler(Device):
+class Scheduler(object):
 
-    def __init__(self, settings):
-        super().__init__(settings)
+    def __init__(self, settings, config):
+        self.config = config
         self.settings = settings
         self.concurency = int(self.settings.get('worker.concurency', 1))
+        signal.signal(signal.SIGTERM, self.sigterm_handler)
+        self.devices = []
+
+    def sigterm_handler(self, _signo, _stack_frame):
+        for device in self.devices:
+            if device._popen:
+                device.terminate()
 
     def run(self):
-        try:
-            processes = []
-            processes.append(QueueDevice(self.settings))
-            processes.append(CollectorDevice(self.settings))
-            for index in range(1, self.concurency + 1):
-                processes.append(ConsumerDevice(self.settings, index))
-
-            for process in processes:
-                process.start()
-
-            for process in processes:
-                process.join()
-        except KeyboardInterrupt:
-            pass
+        self.devices.append(QueueDevice(self.config))
+        # self.devices.append(CollectorDevice(self.config))
+        for index in range(1, self.concurency + 1):
+            self.devices.append(ConsumerDevice(self.config, index))
+        for device in self.devices:
+            device.daemon = True
+            device.start()
 
 
 class Producer(object):
 
-    def __init__(self, settings):
-        self.settings = settings
+    def __init__(self, config):
+        self.config = config
+        self.settings = self.config.registry.settings
         self.socket = self.get_socket()
 
     def get_socket(self):
@@ -67,8 +70,8 @@ class Producer(object):
 
 class ConsumerDevice(Device):
 
-    def __init__(self, settings, worker_number):
-        super().__init__(settings)
+    def __init__(self, config, worker_number):
+        super().__init__(config)
         self.worker_number = worker_number
         # Load tasks
         __import__("papaye.tasks.download")
@@ -82,6 +85,7 @@ class ConsumerDevice(Device):
         return socket, socket2
 
     def run(self):
+        logger.info('Starting worker {}'.format(self._name))
         self.worker_socket, self.collector_socket = self.get_sockets()
         worker_number = self.worker_number
         while self.go:
@@ -92,8 +96,10 @@ class ConsumerDevice(Device):
                 func.task_id = task_id
                 logger.info('Worker {}: Starting task id: {}'.format(worker_number, func.task_id))
                 try:
-                    result = func(self.settings, *args, **kwargs)
-                    self.collector_socket.send_pyobj((task_id, pickle.dumps(result)))
+                    # result = func(self.settings, *args, **kwargs)
+                    # result = func(self.config, *args, **kwargs)
+                    func(self.config, *args, **kwargs)
+                    # self.collector_socket.send(pickle.dumps((task_id, result)))
                     logger.info('Worker {}: Task #{} finished'.format(worker_number, func.task_id))
                 except Exception as exc:
                     formated_tb = traceback.format_tb(exc.__traceback__)
@@ -104,8 +110,8 @@ class ConsumerDevice(Device):
 
 class QueueDevice(Device):
 
-    def __init__(self, settings):
-        super().__init__(settings)
+    def __init__(self, config):
+        super().__init__(config)
         # self.frontend, self.backend = self.get_sockets()
 
     def get_sockets(self):
@@ -126,26 +132,29 @@ class QueueDevice(Device):
             pass
 
 
-class CollectorDevice(Device):
+# class CollectorDevice(Device):
 
-    def __init__(self, settings):
-        super().__init__(settings)
-        cache_manager = CacheManager(**parse_cache_config_options(self.settings))
-        self.cache = cache_manager.get_cache_region('result_cache', 'result')
-        global_registry.result_cache = self.cache
+#     def __init__(self, config):
+#         super().__init__(config)
+#         cache_manager = CacheManager(**parse_cache_config_options(self.settings))
+#         self.cache = cache_manager.get_cache_region('result_cache', 'result')
+#         global_registry.result_cache = self.cache
 
-    def get_socket(self):
-        context = zmq.Context()
-        socket = context.socket(zmq.PULL)
-        socket.bind(self.settings.get('proxy.collector_socket'))
-        return socket
+#     def get_socket(self):
+#         context = zmq.Context()
+#         socket = context.socket(zmq.PULL)
+#         socket.bind(self.settings.get('proxy.collector_socket'))
+#         return socket
 
-    def run(self):
-        socket = self.get_socket()
-        while self.go:
-            try:
-                data = socket.recv()
-                task_id, value = pickle.loads(data)
-                self.cache.set_value(task_id, value)
-            except KeyboardInterrupt:
-                self.go = False
+#     def run(self):
+#         socket = self.get_socket()
+#         while self.go:
+#             try:
+#                 data = socket.recv()
+#                 task_id, value = pickle.loads(data)
+#                 if value:
+#                     self.cache.set_value(task_id, value)
+#                 else:
+#                     self.cache.set_value(task_id, 2)
+#             except KeyboardInterrupt:
+#                 self.go = False
