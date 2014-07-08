@@ -47,6 +47,7 @@ setup(name='papaye',
       main = papaye:main
       [console_scripts]
       papaye_init = papaye.scripts.initialize:main
+      papaye_evolve = papaye.scripts.evolve:main
       # papaye_worker = papaye.scripts.worker:main
       papaye = papaye.scripts.papaye:main
       """,

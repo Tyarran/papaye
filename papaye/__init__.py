@@ -10,7 +10,6 @@ from papaye.factories import repository_root_factory, user_root_factory
 from papaye.models import User, get_manager, SW_VERSION
 from papaye.tasks.devices import Scheduler, Producer
 from pyramid.threadlocal import get_current_registry
-from repoze.evolution import evolve_to_latest
 
 
 def auth_check_func(username, password, request):
@@ -23,11 +22,10 @@ def auth_check_func(username, password, request):
 def check_database_config(settings, config):
     manager = get_manager(config)
     if manager.get_db_version() < SW_VERSION:
-        # raise ConfigurationError('Your database need to be updated! Run "papaye_evolve" script first')
-        evolve_to_latest(manager)
+        raise ConfigurationError('Your database need to be updated! Run "papaye_evolve path_to_your_config_file.ini" command first')
     conn = config.registry._zodb_databases[''].open()
     if user_root_factory(conn) is None or repository_root_factory(conn) is None:
-        raise ConfigurationError('Database does not exist! Run "papaye_init" script first')
+        raise ConfigurationError('Database does not exist! Run "papaye_init path_to_your_config_file.ini command first')
     return True
 
 
