@@ -6,20 +6,34 @@ import magic
 import pkg_resources
 import requests
 
-from beaker.cache import cache_region
 from BTrees.OOBTree import OOBTree
+from ZODB.blob import Blob
+from beaker.cache import cache_region
 from persistent import Persistent
 from pkg_resources import parse_version
 from pyramid.security import Allow, ALL_PERMISSIONS, Everyone
 from pyramid.threadlocal import get_current_registry
 from pyramid_zodbconn import db_from_uri
+from repoze.evolution import ZODBEvolutionManager
 from requests.exceptions import ConnectionError
-from ZODB.blob import Blob
 
-from papaye.factories import user_root_factory, repository_root_factory
+from papaye.factories import user_root_factory, repository_root_factory, APP_ROOT_NAME
 
 
 logger = logging.getLogger(__name__)
+SW_VERSION = 0
+
+
+def get_manager(config):
+    conn = config.registry._zodb_databases[''].open()
+    root = conn.root()[APP_ROOT_NAME]
+    manager = ZODBEvolutionManager(
+        root,
+        evolve_packagename='papaye.evolve',
+        sw_version=SW_VERSION,
+        initial_db_version=0
+    )
+    return manager
 
 
 def format_key(key):

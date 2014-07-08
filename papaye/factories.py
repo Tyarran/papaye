@@ -4,6 +4,7 @@ from pyramid.testing import DummyRequest
 
 
 APP_NAME = __import__(__name__).__name__
+APP_ROOT_NAME = '{}_root'.format(APP_NAME)
 
 
 def user_root_factory(request_or_connection):
@@ -14,7 +15,7 @@ def user_root_factory(request_or_connection):
     zodb_root = conn.root()
     if not '{}_root'.format(APP_NAME) in zodb_root:
         return None
-    return zodb_root['{}_root'.format(APP_NAME)]['user']
+    return zodb_root[APP_ROOT_NAME]['user']
 
 
 def repository_root_factory(request_or_connection):
@@ -25,4 +26,4 @@ def repository_root_factory(request_or_connection):
     zodb_root = conn.root()
     if not '{}_root'.format(APP_NAME) in zodb_root:
         return None
-    return zodb_root['{}_root'.format(APP_NAME)]['repository']
+    return zodb_root[APP_ROOT_NAME]['repository']

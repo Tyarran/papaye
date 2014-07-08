@@ -7,9 +7,10 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid_beaker import set_cache_regions_from_settings
 
 from papaye.factories import repository_root_factory, user_root_factory
-from papaye.models import User
+from papaye.models import User, get_manager, SW_VERSION
 from papaye.tasks.devices import Scheduler, Producer
 from pyramid.threadlocal import get_current_registry
+from repoze.evolution import evolve_to_latest
 
 
 def auth_check_func(username, password, request):
@@ -20,6 +21,10 @@ def auth_check_func(username, password, request):
 
 
 def check_database_config(settings, config):
+    manager = get_manager(config)
+    if manager.get_db_version() < SW_VERSION:
+        # raise ConfigurationError('Your database need to be updated! Run "papaye_evolve" script first')
+        evolve_to_latest(manager)
     conn = config.registry._zodb_databases[''].open()
     if user_root_factory(conn) is None or repository_root_factory(conn) is None:
         raise ConfigurationError('Database does not exist! Run "papaye_init" script first')
@@ -48,8 +53,6 @@ def main(global_config, **settings):
     set_cache_regions_from_settings(settings)
     config = Configurator(settings=settings)
     add_directives(config)
-    config.start_scheduler()
-
     authn_policy = BasicAuthAuthenticationPolicy(check=auth_check_func)
     authz_policy = ACLAuthorizationPolicy()
     config.set_authentication_policy(authn_policy)
@@ -61,4 +64,5 @@ def main(global_config, **settings):
     config.add_notfound_view(notfound, append_slash=True)
     check_database_config(settings, config)
     config.scan()
+    config.start_scheduler()
     return config.make_wsgi_app()
