@@ -76,11 +76,17 @@ def get_db_connection(blob_dir):
     return conn
 
 
-def set_database_connection(request, blob_dir=None):
+def set_database_connection(request, blob_dir=None, config=None):
     if not blob_dir:
         blob_dir = tempfile.mkdtemp('blobs')
     conn = get_db_connection(blob_dir)
     request._primary_zodb_conn = conn
+    if config:
+        import transaction
+        conn.root()['repository'] = {}
+        conn.root()['user'] = {}
+        transaction.commit()
+        config.registry._zodb_databases = {'': conn._db}
     return blob_dir
 
 

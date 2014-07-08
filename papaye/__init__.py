@@ -7,7 +7,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid_beaker import set_cache_regions_from_settings
 
 from papaye.factories import repository_root_factory, user_root_factory
-from papaye.models import User, get_manager, SW_VERSION
+from papaye.models import User
 from papaye.tasks.devices import Scheduler, Producer
 from pyramid.threadlocal import get_current_registry
 
@@ -19,13 +19,16 @@ def auth_check_func(username, password, request):
     return None
 
 
-def check_database_config(settings, config):
+def check_database_config(config):
+    from papaye.models import get_manager
     manager = get_manager(config)
-    if manager.get_db_version() < SW_VERSION:
-        raise ConfigurationError('Your database need to be updated! Run "papaye_evolve path_to_your_config_file.ini" command first')
+    if manager.get_db_version() < manager.get_sw_version():
+        raise ConfigurationError('Your database need to be updated! Run '
+                                 '"papaye_evolve path_to_your_config_file.ini" command first')
     conn = config.registry._zodb_databases[''].open()
     if user_root_factory(conn) is None or repository_root_factory(conn) is None:
-        raise ConfigurationError('Database does not exist! Run "papaye_init path_to_your_config_file.ini command first')
+        raise ConfigurationError('Database does not exist! Run "papaye_init '
+                                 'path_to_your_config_file.ini command first')
     return True
 
 
@@ -34,6 +37,7 @@ def notfound(request):
 
 
 def add_directives(config):
+    config.add_directive('check_database_config', check_database_config)
     config.add_directive('start_scheduler', start_scheduler)
 
 
@@ -60,7 +64,8 @@ def main(global_config, **settings):
     config.add_route('home', '/')
     config.add_route('simple', '/simple*traverse', factory=repository_root_factory)
     config.add_notfound_view(notfound, append_slash=True)
-    check_database_config(settings, config)
+    # check_database_config(config)
+    config.check_database_config()
     config.scan()
     config.start_scheduler()
     return config.make_wsgi_app()

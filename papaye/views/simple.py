@@ -36,7 +36,6 @@ def not_found(request):
         return HTTPNotFound()
     try:
         proxy = PyPiProxy(request, request.matchdict['traverse'][0])
-        # import ipdb; ipdb.set_trace()
         package = proxy.build_repository()
         if not package:
             return HTTPNotFound()
@@ -133,8 +132,7 @@ class DownloadReleaseView(BaseView):
         return response
 
 
-@view_config(context=Root, route_name="simple", request_method="POST")
-# @view_config(context=Root, route_name="simple", request_method="POST", permission="add")
+@view_config(context=Root, route_name="simple", request_method="POST", permission="add")
 class UploadView():
 
     def __init__(self, context, request):
