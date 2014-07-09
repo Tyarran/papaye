@@ -1,4 +1,11 @@
-0.0
----
+0.1
+###
+Initial version
 
--  Initial version
+- Works with PIP
+- Proxify PyPi repository
+- Cache PyPi repository
+- Package uploading
+- Anonymous / private repository
+- Async tasks
+- Works with Python 3.2 / 3.3 / 3.4

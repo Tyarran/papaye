@@ -45,6 +45,21 @@ papaye.worker.concurency (integer)
 Number of workers
 
 
+Changelist
+----------
+
+0.1
+###
+Initial version
+  * Works with PIP
+  * Proxify PyPi repository
+  * Cache PyPi repository
+  * Package uploading
+  * Anonymous / private repository
+  * Async tasks
+  * Works with Python 3.2 / 3.3 / 3.4
+
+
 .. _ZODB: https://pypi.python.org/pypi/ZODB
 .. _Pyramid Web Framework: http://www.pylonsproject.org
 .. _Beaker Cache: http://beaker.readthedocs.org
