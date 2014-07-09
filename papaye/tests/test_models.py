@@ -18,9 +18,8 @@ class PackageTest(unittest.TestCase):
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
         self.blob_dir = set_database_connection(self.request)
-        self.config = testing.setUp(request=self.request)
-        registry = self.request.registry
-        registry.settings = disable_cache()
+        settings = disable_cache()
+        self.config = testing.setUp(request=self.request, settings=settings)
 
     def tearDown(self):
         remove_blob_dir(self.blob_dir)
