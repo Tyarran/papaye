@@ -18,6 +18,7 @@ requires = [
     'pyramid_tm',
     'pyramid_zodbconn',
     'pyzmq',
+    'repoze.evolution',
     'requests',
     'transaction',
     'waitress',
