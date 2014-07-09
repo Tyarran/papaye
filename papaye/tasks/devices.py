@@ -35,7 +35,7 @@ class Scheduler(object):
     def __init__(self, settings, config):
         self.config = config
         self.settings = settings
-        self.concurency = int(self.settings.get('worker.concurency', 1))
+        self.concurency = int(self.settings.get('papaye.worker.concurency', 1))
         signal.signal(signal.SIGTERM, self.sigterm_handler)
         self.devices = []
 
@@ -64,7 +64,7 @@ class Producer(object):
     def get_socket(self):
         context = zmq.Context()
         socket = context.socket(zmq.XREQ)
-        socket.connect(self.settings.get('proxy.broker'))
+        socket.connect(self.settings.get('papaye.proxy.broker'))
         return socket
 
 
@@ -79,9 +79,9 @@ class ConsumerDevice(Device):
     def get_sockets(self):
         context = zmq.Context()
         socket = context.socket(zmq.XREP)
-        socket.connect(self.settings.get('proxy.worker_socket'))
+        socket.connect(self.settings.get('papaye.proxy.worker_socket'))
         socket2 = context.socket(zmq.PUSH)
-        socket2.connect(self.settings.get('proxy.collector_socket'))
+        socket2.connect(self.settings.get('papaye.proxy.collector_socket'))
         return socket, socket2
 
     def run(self):
@@ -118,10 +118,10 @@ class QueueDevice(Device):
         context = zmq.Context(1)
         # Socket facing clients
         frontend = context.socket(zmq.XREP)
-        frontend.bind(self.settings.get('proxy.broker'))
+        frontend.bind(self.settings.get('papaye.proxy.broker'))
         # Socket facing services
         backend = context.socket(zmq.XREQ)
-        backend.bind(self.settings.get('proxy.worker_socket'))
+        backend.bind(self.settings.get('papaye.proxy.worker_socket'))
         return frontend, backend
 
     def run(self):
