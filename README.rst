@@ -1,8 +1,8 @@
 .. image:: https://travis-ci.org/rcommande/papaye.png?branch=master
     :target: https://travis-ci.org/rcommande/papaye
 
-papaye README
-==================
+papaye
+======
 A basic PyPi server clone written in `Pyramid Web Framework`_, using `ZODB`_ and `Beaker Cache`_.
 
 Getting Started
@@ -43,21 +43,6 @@ zmq uri used by worker devices
 papaye.worker.concurency (integer)
 ..................................
 Number of workers
-
-
-Changelist
-----------
-
-0.1
-###
-Initial version
-  * Works with PIP
-  * Proxify PyPi repository
-  * Cache PyPi repository
-  * Package uploading
-  * Anonymous / private repository
-  * Async tasks
-  * Works with Python 3.2 / 3.3 / 3.4
 
 
 .. _ZODB: https://pypi.python.org/pypi/ZODB

@@ -1,3 +1,10 @@
+Changelist
+----------
+0.1.2
+#####
+
+- Fixed download async tasks
+
 0.1.1
 #####
 
