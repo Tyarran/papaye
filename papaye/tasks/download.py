@@ -18,6 +18,7 @@ def get_connection(config):
 
 @task
 def download_release_from_pypi(config, package_name, release_name):
+    transaction.begin()
     conn = get_connection(config)
     proxy = PyPiProxy(conn, package_name)
     package = proxy.build_repository(release_name=release_name)

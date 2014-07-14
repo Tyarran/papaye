@@ -1,7 +1,6 @@
 import logging
-import multiprocessing
+import threading
 import pickle
-import signal
 import traceback
 import zmq
 
@@ -15,7 +14,7 @@ from papaye.tasks import TaskRegistry
 logger = logging.getLogger(__name__)
 
 
-class Device(multiprocessing.Process):
+class Device(threading.Thread):
 
     def __init__(self, config):
         super().__init__()
@@ -36,13 +35,7 @@ class Scheduler(object):
         self.config = config
         self.settings = settings
         self.concurency = int(self.settings.get('papaye.worker.concurency', 1))
-        signal.signal(signal.SIGTERM, self.sigterm_handler)
         self.devices = []
-
-    def sigterm_handler(self, _signo, _stack_frame):
-        for device in self.devices:
-            if device._popen:
-                device.terminate()
 
     def run(self):
         self.devices.append(QueueDevice(self.config))
