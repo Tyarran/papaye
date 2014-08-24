@@ -1,0 +1,20 @@
+#download_link {
+    margin-top: 20px;
+    margin-bottom: 50px;
+    min-height: 100px;
+}
+
+body {
+    /*font-family: 'open_sansregular';*/
+} 
+
+#tags, #tags {
+    margin: 0px;
+    padding: 0px;
+}
+
+header {
+    font-weight: bold;
+    border-bottom: 1px solid #EEEEEE;
+    margin-bottom: 5px;
+}             

@@ -1,6 +1,14 @@
 <html>
     <head>
         <title>Papaye Simple Index</title>
+        {#
+        {% assets "test" %}
+        <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+        {% endassets %}
+        {% assets "bootstrap" %}
+        <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+        {% endassets %}
+        #}
     </head>
     <body>
     {% for url, obj in objects %}

@@ -16,6 +16,7 @@ requires = [
     'pyramid_debugtoolbar',
     'pyramid_jinja2',
     'pyramid_tm',
+    'pyramid_webassets',
     'pyramid_zodbconn',
     'pyzmq',
     'repoze.evolution',

@@ -8,7 +8,7 @@ from mock import patch
 from pyramid import testing
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
-from pyramid.threadlocal import get_current_registry
+from pyramid.threadlocal import get_current_registry, get_current_request
 
 from papaye.tests.tools import (
     FakeGRequestResponse,
@@ -524,3 +524,14 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
         self.assertIn('objects', result2)
         self.assertEqual(list(result2['objects']), [('http://example.com/simple/my_package/2.0/foo2.tar.gz/',
                                                      package['2.0']['foo2.tar.gz'])])
+
+
+class HomeViewTest(unittest.TestCase):
+
+    def test_context(self):
+        from papaye.views.home import HomeView
+        request = get_current_request()
+        view = HomeView(None, request)
+
+        result = view()
+        self.assertIsInstance(result, dict)
