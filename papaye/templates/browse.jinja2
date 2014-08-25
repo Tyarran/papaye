@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Papaye Index Home - Papaye 1.0.0</title>
+        <title>Papaye Index Home - {{ package.name }} {{ release.version }}</title>
     </head>
     <body>
             <nav class="navbar navbar-default" role="navigation">
@@ -27,9 +27,9 @@
             </nav>
         <div class="container">
                         <div class="jumbotron">
-                            <h1>Papaye <small>1.0.0</small></h1>
-                            <p>A basic PyPi server clone written in Pyramid Web Framework, using ZODB and Beaker Cache.</p>
-                            <p><a class="btn btn-primary btn-lg" role="button">Download papaye-1.0.0-tar.gz</a></p>
+                            <h1>{{ package.name }} <small>{{ release.version }}</small></h1>
+                            <p>{{ release.metadata.summary }}</p>
+                            <p><a class="btn btn-primary btn-lg" role="button" href="{{ release_url }}">Download {{ release_file.__name__ }}</a></p>
                         </div>
                 <div class="row">
                     <div class="col-md-9">
@@ -40,84 +40,37 @@
                         </div>
                         #}
                         <p>
-<div class="document">
-
-
-<a class="reference external image-reference" href="https://travis-ci.org/rcommande/papaye"><img alt="https://travis-ci.org/rcommande/papaye.png?branch=master" src="https://travis-ci.org/rcommande/papaye.png?branch=master" /></a>
-<div class="section" id="papaye">
-<h1>papaye</h1>
-<p>A basic PyPi server clone written in <a class="reference external" href="http://www.pylonsproject.org">Pyramid Web Framework</a>, using <a class="reference external" href="https://pypi.python.org/pypi/ZODB">ZODB</a> and <a class="reference external" href="http://beaker.readthedocs.org">Beaker Cache</a>.</p>
-<div class="section" id="getting-started">
-<h2>Getting Started</h2>
-<ul class="simple">
-<li>cd &lt;directory containing this file&gt;</li>
-<li>$venv/bin/pip install -e .</li>
-<li>$venv/bin/papaye_init development.ini  # Use production.ini in production</li>
-<li>$venv/bin/pserve development.ini  # Use production.ini in production</li>
-</ul>
-</div>
-<div class="section" id="configuration">
-<h2>Configuration</h2>
-<div class="section" id="papaye-variables">
-<h3>Papaye variables</h3>
-<div class="section" id="papaye-proxy-true-false">
-<h4>papaye.proxy (true / false)</h4>
-<p>Enable proxy from Pypi server</p>
-</div>
-<div class="section" id="papaye-anonymous-install-true-false">
-<h4>papaye.anonymous_install (true / false)</h4>
-<p>Allow anonymous user to install packages</p>
-</div>
-<div class="section" id="papaye-proxy-broker-zmq-uri">
-<h4>papaye.proxy.broker (ZMQ URI)</h4>
-<p>ZMQ URI used by queue and producer devices</p>
-</div>
-<div class="section" id="papaye-proxy-collector-zmq-uri">
-<h4>papaye.proxy.collector (zmq uri)</h4>
-<p>zmq uri used by collector device</p>
-</div>
-<div class="section" id="papaye-proxy-worker-zmq-uri">
-<h4>papaye.proxy.worker (zmq uri)</h4>
-<p>zmq uri used by worker devices</p>
-</div>
-<div class="section" id="papaye-worker-concurency-integer">
-<h4>papaye.worker.concurency (integer)</h4>
-<p>Number of workers</p>
-</div>
-</div>
-</div>
-</div>
-</div>
+                        {{ description.whole|safe }}
                         </p>
                     </div>
                     <div class="col-md-3">
                         <div>
                             <header>Author</header>
                             <p>
-                                Romain Commandé <br>commande.romain@gmail.com
+                            {{ release.metadata.author }}<br>{{ release.metadata.author_email }}
                             </p>
                         </div>
                         <div>
                             <header>Licence</header>
                             <p>
-                                LGPL
+                            {{ release.metadata.license }}
                             </p>
                         </div>
                         <div>
                             <header>Platform</header>
                             <p>
-                                UNKNOWN
+                            {{ release.metadata.platform }}
                             </p>
                         </div>
                         <div>
                             <header>Classifiers</header>
                             <p>
-                                Framework :: Pyramid<br>
-                                Programming Language :: Python<br>
-                                Topic :: Internet :: WWW/HTTP<br>
-                                Topic :: Internet :: WWW/HTTP :: WSGI :: Application
+                                {% for classifier in  release.metadata.classifiers %}
+                                {{ classifier }}<br>
+                                {% endfor %}
                             </p>
                         </div>
+                        {% if release.metadata.keywords %}
                         <div>
                             <header>Keywords</header>
                             <p>
@@ -126,22 +79,21 @@
                                     #tags ul { padding-left: 0px;}
                                 </style>
                                 <ul id='tags'>
-                                    <li><span class="label label-default">web</span></li>
-                                    <li><span class="label label-default">wsgi</span></li>
-                                    <li><span class="label label-default">bfg</span></li>
-                                    <li><span class="label label-default">pylons</span></li>
-                                    <li><span class="label label-default">pyramid</span></li>
+                                    {% for tag in release.metadata.keywords %}
+                                    <li><span class="label label-default">{{ tag }}</span></li>
+                                    {% endfor %}
                                 </ul>
                             </p>
                         </div>
+                        {% endif %}
                         <bobo>
                             <header>Maintainer</header>
                             <p>
-                                <img src="http://www.gravatar.com/avatar/e528817ed8304eb35912a63d04a88814" alt="">
+                            <img src="http://www.gravatar.com/avatar/{{ gravatar_hash }}" alt="">
                             </p>
                         </bobo>
                         <div>
-                            <a class="btn btn-info" href="#"><i class="glyphicon glyphicon-home"></i> Project home page</a>
+                            <a class="btn btn-info" href="{{ release.metadata.home_page }}" class="glyphicon glyphicon-home"></i> Project home page</a>
                         </div>
                     </div>
                 </div>
