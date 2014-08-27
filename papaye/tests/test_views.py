@@ -528,6 +528,10 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
 
 class BroseViewTest(unittest.TestCase):
 
+    def setUp(self):
+        config = testing.setUp(request=get_current_request())
+        config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
+
     def test_context(self):
         from papaye.views.browse import BrowseView
         from papaye.models import Package, Release, ReleaseFile
@@ -638,7 +642,7 @@ class BroseViewTest(unittest.TestCase):
 
         self.assertEqual(result, release2)
 
-    def test_get_release_with_release(self):
+    def test_get_release_with_package_multiple_releases(self):
         from papaye.views.browse import BrowseView
         from papaye.models import Package, Release
 
