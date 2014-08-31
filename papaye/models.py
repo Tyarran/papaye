@@ -18,6 +18,7 @@ from repoze.evolution import ZODBEvolutionManager
 from requests.exceptions import ConnectionError
 
 from papaye.factories import user_root_factory, repository_root_factory, APP_ROOT_NAME
+from papaye.schemas import Metadata
 
 
 logger = logging.getLogger(__name__)
@@ -130,7 +131,7 @@ class Release(Persistent):
         self.release_files = OOBTree()
         self.version = version
         self.original_metadata = metadata
-        self.metadata = metadata
+        self.metadata = Metadata().deserialize(metadata)
 
     def __getitem__(self, release_file_name):
         return self.release_files[format_key(release_file_name)]
