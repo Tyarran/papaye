@@ -21,7 +21,7 @@ from papaye.factories import user_root_factory, repository_root_factory, APP_ROO
 
 
 logger = logging.getLogger(__name__)
-SW_VERSION = 0
+SW_VERSION = 1
 
 
 def get_manager(config):
@@ -125,10 +125,11 @@ class Package(Persistent):
 
 class Release(Persistent):
 
-    def __init__(self, name, version, metadata=None):
+    def __init__(self, name, version, metadata):
         self.__name__ = name
         self.release_files = OOBTree()
         self.version = version
+        self.original_metadata = metadata
         self.metadata = metadata
 
     def __getitem__(self, release_file_name):

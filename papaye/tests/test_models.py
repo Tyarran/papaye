@@ -75,7 +75,7 @@ class PackageTest(unittest.TestCase):
 
         # Test package
         package = Package(name='package1')
-        release = Release(name='1.0', version='1.0')
+        release = Release(name='1.0', version='1.0', metadata={})
         package['release'] = release
 
         self.assertTrue(package.repository_is_up_to_date('1.0'))
@@ -106,7 +106,10 @@ class PackageTest(unittest.TestCase):
         from papaye.models import Package, Release
 
         package = Package(name='package1')
-        package.releases.update([('{}.0'.format(index), Release('', '{}.0'.format(index))) for index in range(1, 3)])
+        package.releases.update([(
+            '{}.0'.format(index),
+            Release('', '{}.0'.format(index), metadata={})) for index in range(1, 3)]
+        )
         result = package.get_last_release()
         self.assertEqual(result.version, '2.0')
 
@@ -114,7 +117,10 @@ class PackageTest(unittest.TestCase):
         from papaye.models import Package, Release
 
         package = Package(name='package1')
-        package.releases.update([('1.{}'.format(index), Release('', '1.{}'.format(index))) for index in range(1, 3)])
+        package.releases.update([(
+            '1.{}'.format(index),
+            Release('', '1.{}'.format(index), metadata={})) for index in range(1, 3)]
+        )
         result = package.get_last_release()
         self.assertEqual(result.version, '1.2')
 
@@ -122,7 +128,7 @@ class PackageTest(unittest.TestCase):
         from papaye.models import Package, Release
 
         package = Package(name='package1')
-        package.releases.update([('1.0{}'.format(version), Release('', '1.0{}'.format(version)))
+        package.releases.update([('1.0{}'.format(version), Release('', '1.0{}'.format(version), metadata={}))
                                  for version in ['', 'a1', 'a2', 'b1', 'b2', 'rc1']])
         result = package.get_last_release()
         self.assertEqual(result.version, '1.0')
@@ -144,7 +150,7 @@ class ReleaseTest(unittest.TestCase):
 
         root = repository_root_factory(self.request)
         root['package1'] = Package(name='package1')
-        root['package1']['1.0'] = Release('1.0', '1.0')
+        root['package1']['1.0'] = Release('1.0', '1.0', metadata={})
 
         result = Release.by_packagename('package1', self.request)
         self.assertEqual(result, [root['package1']['1.0'], ])

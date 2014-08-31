@@ -100,7 +100,7 @@ class ProxyTest(unittest.TestCase):
 
         # Existing releases
         root['pyramid'] = Package(name='pyramid')
-        root['pyramid']['1.4'] = Release(name='1.4', version='1.4')
+        root['pyramid']['1.4'] = Release(name='1.4', version='1.4', metadata={})
         root['pyramid']['1.4']['pyramid-1.4.tar.gz'] = ReleaseFile(
             filename='pyramid-1.4.tar.gz',
             content=b'',
@@ -108,7 +108,7 @@ class ProxyTest(unittest.TestCase):
         )
 
         package = Package(name='pyramid')
-        package['1.5'] = Release(name='1.5', version='1.5')
+        package['1.5'] = Release(name='1.5', version='1.5', metadata={})
         package['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
             filename='pyramid-1.5.tar.gz',
             content=b'',
@@ -130,7 +130,7 @@ class ProxyTest(unittest.TestCase):
 
         # Existing releases
         package = Package(name='pyramid')
-        package['1.5'] = Release(name='1.5', version='1.5')
+        package['1.5'] = Release(name='1.5', version='1.5', metadata={})
         package['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
             filename='pyramid-1.5.tar.gz',
             content=b'',
@@ -138,7 +138,7 @@ class ProxyTest(unittest.TestCase):
         )
 
         package = Package(name='pyramid')
-        package['1.5'] = Release(name='1.5', version='1.5')
+        package['1.5'] = Release(name='1.5', version='1.5', metadata={})
         package['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
             filename='pyramid-1.5.tar.gz',
             content=b'',
@@ -160,7 +160,7 @@ class ProxyTest(unittest.TestCase):
         root = repository_root_factory(self.request)
 
         package = Package(name='pyramid')
-        package['1.5'] = Release(name='1.5', version='1.5')
+        package['1.5'] = Release(name='1.5', version='1.5', metadata={})
         package['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
             filename='pyramid-1.5.tar.gz',
             content=b'',

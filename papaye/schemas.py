@@ -10,7 +10,9 @@ class Tags(object):
             return ' '.join(appstruct)
 
     def deserialize(self, node, cstruct):
-        if not isinstance(cstruct, (str, bytes)):
+        if cstruct == colander.null:
+            return None
+        elif not isinstance(cstruct, (str, bytes)):
             raise colander.Invalid(node, '%r is not a string' % cstruct)
         else:
             return cstruct.split(' ')
@@ -25,7 +27,9 @@ class Classifiers(object):
             return '\n'.join(appstruct)
 
     def deserialize(self, node, cstruct):
-        if isinstance(cstruct, (str, bytes)):
+        if cstruct == colander.null:
+            return None
+        elif isinstance(cstruct, (str, bytes)):
             return [value for value in (value.strip() for value in cstruct.split('\n')) if value != '']
         elif isinstance(cstruct, list):
             return cstruct

@@ -84,7 +84,7 @@ class ListReleaseViewTest(unittest.TestCase):
         # Test packages
         root = Root()
         root['package1'] = Package(name='package1')
-        root['package1']['release1'] = Release(name='release1', version='1.0')
+        root['package1']['release1'] = Release(name='release1', version='1.0', metadata={})
         root['package1']['release1'].__parent__ = root['package1']
         root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
                                                                           content=b'',
@@ -110,7 +110,7 @@ class ListReleaseViewTest(unittest.TestCase):
         # Test packages
         root = Root()
         root['package1'] = Package(name='package1')
-        root['package1']['release1'] = Release(name='release1', version='1.0')
+        root['package1']['release1'] = Release(name='release1', version='1.0', metadata={})
         root['package1']['release1'].__parent__ = root['package1']
         root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
                                                                           content=b'',
@@ -144,9 +144,9 @@ class ListReleaseViewTest(unittest.TestCase):
         # Test packages
         root = Root()
         root['package1'] = Package(name='package1')
-        root['package1']['release1'] = Release(name='release1', version='1.0')
+        root['package1']['release1'] = Release(name='release1', version='1.0', metadata={})
         root['package1']['release1'].__parent__ = root['package1']
-        root['package1']['release2'] = Release(name='release2', version='2.0')
+        root['package1']['release2'] = Release(name='release2', version='2.0', metadata={})
         root['package1']['release2'].__parent__ = root['package1']
         root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
                                                                           content=b'',
@@ -181,9 +181,9 @@ class ListReleaseViewTest(unittest.TestCase):
         root = Root()
         root['package1'] = Package(name='package1')
         root['package2'] = Package(name='package2')
-        root['package1']['release1'] = Release(name='release1', version='1.0')
+        root['package1']['release1'] = Release(name='release1', version='1.0', metadata={})
         root['package1']['release1'].__parent__ = root['package1']
-        root['package2']['release2'] = Release(name='release2', version='2.0')
+        root['package2']['release2'] = Release(name='release2', version='2.0', metadata={})
         root['package2']['release2'].__parent__ = root['package2']
         root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
                                                                           content=b'',
@@ -233,7 +233,7 @@ class ListReleaseViewTest(unittest.TestCase):
         # Test packages
         root = Root()
         root['package1'] = Package(name='package1')
-        root['package1']['release1'] = Release(name='release1', version='1.0')
+        root['package1']['release1'] = Release(name='release1', version='1.0', metadata={})
         root['package1']['release1'].__parent__ = root['package1']
         root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
                                                                           content=b'',
@@ -279,7 +279,7 @@ class DownloadReleaseViewTest(unittest.TestCase):
         from papaye.models import ReleaseFile, Release, Package
 
         package = Package(name='package')
-        release = Release(name='1.0', version='1.0')
+        release = Release(name='1.0', version='1.0', metadata={})
         release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
         release_file.content_type = 'text/plain'
         package['1.0'] = release
@@ -331,7 +331,7 @@ class DownloadReleaseViewTest(unittest.TestCase):
         mock_requests.return_value = FakeGRequestResponse(200, bytes(json.dumps(pypi_response), 'utf-8'))
 
         package = Package(name='package')
-        release = Release(name='1.0', version='1.0')
+        release = Release(name='1.0', version='1.0', metadata={})
         release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
         package['1.0'] = release
         package['1.0']['releasefile-1.0.tar.gz'] = release_file
@@ -410,7 +410,7 @@ class UploadReleaseViewTest(unittest.TestCase):
 
         # Create initial release
         package = Package('my_package')
-        package['1.0'] = Release('1.0', '1.0')
+        package['1.0'] = Release('1.0', '1.0', metadata={})
         package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
         root['my_package'] = package
 
@@ -442,7 +442,7 @@ class UploadReleaseViewTest(unittest.TestCase):
 
         # Create initial release
         package = Package('my_package')
-        package['1.0'] = Release('1.0', '1.0')
+        package['1.0'] = Release('1.0', '1.0', metadata={})
         package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
         root['my_package'] = package
 
@@ -485,7 +485,7 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
         # Initial data
         root = repository_root_factory(self.request)
         package = Package('my_package')
-        package['1.0'] = Release('1.0', '1.0')
+        package['1.0'] = Release('1.0', '1.0', metadata={})
         package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
         root['my_package'] = package
         view = ListReleaseFileByReleaseView(package['1.0'], self.request)
@@ -505,9 +505,9 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
         # Initial data
         root = repository_root_factory(self.request)
         package = Package('my_package')
-        package['1.0'] = Release('1.0', '1.0')
+        package['1.0'] = Release('1.0', '1.0', metadata={})
         package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
-        package['2.0'] = Release('2.0', '2.0')
+        package['2.0'] = Release('2.0', '2.0', metadata={})
         package['2.0']['foo2.tar.gz'] = ReleaseFile('foo2.tar.gz', b'')
         root['my_package'] = package
         view1 = ListReleaseFileByReleaseView(package['1.0'], self.request)
@@ -539,7 +539,7 @@ class BroseViewTest(unittest.TestCase):
         request = get_current_request()
         request.matched_route = matched_route
         package = Package(name='TEST')
-        release = Release('1.0', '1.0')
+        release = Release('1.0', '1.0', metadata={})
         release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
         release.metadata = {
             'maintainer_email': 'test@papaye.com',
@@ -589,7 +589,7 @@ class BroseViewTest(unittest.TestCase):
         request = get_current_request()
         request.matched_route = matched_route
         package = Package(name='TEST')
-        release = Release('1.0', '1.0')
+        release = Release('1.0', '1.0', metadata={})
         package['1.0'] = release
         view = BrowseView(release, request)
 
@@ -604,7 +604,7 @@ class BroseViewTest(unittest.TestCase):
         request = get_current_request()
         request.matched_route = matched_route
         package = Package(name='TEST')
-        release = Release('1.0', '1.0')
+        release = Release('1.0', '1.0', metadata={})
         release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
         package['1.0'] = release
         release['releasefile-1.0.tar.gz'] = release_file
@@ -632,8 +632,8 @@ class BroseViewTest(unittest.TestCase):
         request = get_current_request()
         request.matched_route = matched_route
         package = Package(name='TEST')
-        release1 = Release('1.0', '1.0')
-        release2 = Release('2.0', '2.0')
+        release1 = Release('1.0', '1.0', metadata={})
+        release2 = Release('2.0', '2.0', metadata={})
         package['1.0'] = release1
         package['2.0'] = release2
         view = BrowseView(package, request)
@@ -650,9 +650,9 @@ class BroseViewTest(unittest.TestCase):
         request = get_current_request()
         request.matched_route = matched_route
         package = Package(name='TEST')
-        release1 = Release('1.0', '1.0')
-        release2 = Release('2.0', '2.0')
-        release3 = Release('2.1', '2.1')
+        release1 = Release('1.0', '1.0', metadata={})
+        release2 = Release('2.0', '2.0', metadata={})
+        release3 = Release('2.1', '2.1', metadata={})
         package['1.0'] = release1
         package['2.1'] = release3
         package['2.0'] = release2
@@ -669,7 +669,7 @@ class BroseViewTest(unittest.TestCase):
         matched_route = FakeRoute('browse')
         request = get_current_request()
         request.matched_route = matched_route
-        release = Release('1.0', '1.0')
+        release = Release('1.0', '1.0', metadata={})
         view = BrowseView(release, request)
 
         result = view.get_release(release)
@@ -683,7 +683,7 @@ class BroseViewTest(unittest.TestCase):
         matched_route = FakeRoute('browse')
         request = get_current_request()
         request.matched_route = matched_route
-        release = Release('1.0', '1.0')
+        release = Release('1.0', '1.0', metadata={})
         release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
         release['releasefile-1.0.tar.gz'] = release_file
         view = BrowseView(release, request)
@@ -700,7 +700,7 @@ class BroseViewTest(unittest.TestCase):
         request = get_current_request()
         request.matched_route = matched_route
         package = Package(name='TEST')
-        release = Release('1.0', '1.0')
+        release = Release('1.0', '1.0', metadata={})
         release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
         package['1.0'] = release
         release['releasefile-1.0.tar.gz'] = release_file
@@ -718,7 +718,7 @@ class BroseViewTest(unittest.TestCase):
             request = get_current_request()
             request.matched_route = matched_route
             package = Package(name='TEST')
-            release = Release('1.0', '1.0')
+            release = Release('1.0', '1.0', metadata={})
             release_file = ReleaseFile(filename='releasefile-1.0.whl', content=b'Hello')
             package['1.0'] = release
             release['releasefile-1.0.whl'] = release_file
@@ -736,7 +736,7 @@ class BroseViewTest(unittest.TestCase):
             request = get_current_request()
             request.matched_route = matched_route
             package = Package(name='TEST')
-            release = Release('1.0', '1.0')
+            release = Release('1.0', '1.0', metadata={})
             release_file1 = ReleaseFile(filename='releasefile-1.0.whl', content=b'Hello')
             release_file2 = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
             package['1.0'] = release
