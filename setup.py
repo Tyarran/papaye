@@ -31,12 +31,12 @@ setup(name='papaye',
       version=VERSION,
       description='A basic PyPi server clone written in Pyramid Web Framework, using ZODB and Beaker Cache.',
       long_description=README + '\n\n' + CHANGES,
-      classifiers=[
-          "Programming Language :: Python",
-          "Framework :: Pyramid",
-          "Topic :: Internet :: WWW/HTTP",
-          "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
-      ],
+      classifiers="""
+          Programming Language :: Python
+          Framework :: Pyramid
+          Topic :: Internet :: WWW/HTTP
+          Topic :: Internet :: WWW/HTTP :: WSGI :: Application
+      """,
       author='Romain Commandé',
       author_email='commande.romain@gmail.com',
       url='https://github.com/rcommande/papaye',
