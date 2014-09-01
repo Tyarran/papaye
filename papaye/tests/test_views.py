@@ -357,8 +357,7 @@ class UploadReleaseViewTest(unittest.TestCase):
         from papaye.views.simple import UploadView
 
         # Create a fake test file
-        uploaded_file = io.BytesIO()
-        uploaded_file.write(b"content")
+        uploaded_file = io.BytesIO(b"content")
         storage = FieldStorage()
         storage.filename = 'foo.tar.gz'
         storage.file = uploaded_file
@@ -387,14 +386,14 @@ class UploadReleaseViewTest(unittest.TestCase):
         self.assertEqual(root['my_package']['1.0']['foo.tar.gz'].md5_digest, "Fake MD5")
         self.assertIsNotNone(root['my_package']['1.0'].metadata)
         self.assertIsInstance(root['my_package']['1.0'].metadata, dict)
+        self.assertEqual(root['my_package']['1.0'].release_files.get('foo.tar.gz', b'').size, 7)
 
     def test_upload_release_already_exists(self):
         from papaye.models import Root, Package, Release, ReleaseFile
         from papaye.views.simple import UploadView
 
         # Create a fake test file
-        uploaded_file = io.BytesIO()
-        uploaded_file.write(b"content")
+        uploaded_file = io.BytesIO(b"content")
         storage = FieldStorage()
         storage.filename = 'foo.tar.gz'
         storage.file = uploaded_file
@@ -425,8 +424,7 @@ class UploadReleaseViewTest(unittest.TestCase):
         from papaye.views.simple import UploadView
 
         # Create a fake test file
-        uploaded_file = io.BytesIO()
-        uploaded_file.write(b"content")
+        uploaded_file = io.BytesIO(b"content")
         storage = FieldStorage()
         storage.filename = 'foo.zip'
         storage.file = uploaded_file
@@ -443,7 +441,7 @@ class UploadReleaseViewTest(unittest.TestCase):
         # Create initial release
         package = Package('my_package')
         package['1.0'] = Release('1.0', '1.0', metadata={})
-        package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
+        package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'Fake Content')
         root['my_package'] = package
 
         view = UploadView(root, self.request)
@@ -459,6 +457,7 @@ class UploadReleaseViewTest(unittest.TestCase):
         self.assertIsInstance(root['my_package']['1.0']['foo.tar.gz'], ReleaseFile)
         self.assertTrue(root['my_package']['1.0'].release_files.get('foo.zip', b''))
         self.assertIsInstance(root['my_package']['1.0']['foo.zip'], ReleaseFile)
+        self.assertEqual(root['my_package']['1.0'].release_files.get('foo.tar.gz', b'').size, 12)
 
 
 class ListReleaseFileByReleaseViewTest(unittest.TestCase):
@@ -529,7 +528,7 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
 class BroseViewTest(unittest.TestCase):
 
     def setUp(self):
-        config = testing.setUp(request=get_current_request())
+        config = testing.setUp(request=testing.DummyRequest())
         config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
 
     def test_context(self):

@@ -28,8 +28,10 @@ def download_release_from_pypi(config, package_name, release_name):
         logger.info('Download file "{}"'.format(release_file.filename))
         release_file.set_content(requests.get(release_file.pypi_url).content)
         with release_file.content.open() as content:
-            if hashlib.md5(content.read()).hexdigest() != release_file.md5_digest:
+            binary_content = content.read()
+            if hashlib.md5(binary_content).hexdigest() != release_file.md5_digest:
                 raise IOError('md5 check error')
+        release_file.size = len(binary_content)
     root[package.name] = package
     try:
         transaction.commit()

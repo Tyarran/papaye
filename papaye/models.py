@@ -164,6 +164,7 @@ class ReleaseFile(Persistent):
     def set_content(self, content):
         self.content = Blob(content)
         self.content_type = self.get_content_type(content)
+        self.size = len(content)
 
 
 class User(Persistent):

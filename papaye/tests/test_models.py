@@ -10,6 +10,7 @@ from papaye.tests.tools import (
     disable_cache,
     remove_blob_dir,
     set_database_connection,
+    get_resource,
 )
 
 
@@ -160,6 +161,24 @@ class ReleaseTest(unittest.TestCase):
 
         result = Release.by_packagename('package1', self.request)
         self.assertEqual(result, None)
+
+
+class ReleaseFileTest(unittest.TestCase):
+
+    def setUp(self):
+        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        self.config = testing.setUp(request=self.request)
+        self.blob_dir = set_database_connection(self.request)
+
+
+    def test__init__(self):
+        from papaye.models import ReleaseFile
+
+        with open(get_resource('pyramid-1.5.tar.gz'), 'rb') as tar_gz:
+            release_file = ReleaseFile('pyramid-1.5.tar.gz', tar_gz.read())
+
+        self.assertEqual(release_file.size, 2413504)
+
 
 
 class UserTest(unittest.TestCase):
