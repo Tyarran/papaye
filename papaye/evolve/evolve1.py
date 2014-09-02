@@ -1,3 +1,5 @@
+import os
+
 from papaye.schemas import Metadata
 
 
@@ -13,4 +15,8 @@ def evolve(context):
             release.original_metadata = dict(release.metadata)
             deserialized_metadata = schema.deserialize(metadata)
             release.metadata = deserialized_metadata
+
+            for release_filename in release.release_files:
+                release_file = release[release_filename]
+                release_file.size = os.path.getsize(release_file.content.open().name)
     context.evolved = 1

@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import io
 import json
@@ -16,6 +17,7 @@ from pyramid.threadlocal import get_current_registry
 from pyramid_zodbconn import db_from_uri
 from repoze.evolution import ZODBEvolutionManager
 from requests.exceptions import ConnectionError
+from pytz import utc
 
 from papaye.factories import user_root_factory, repository_root_factory, APP_ROOT_NAME
 from papaye.schemas import Metadata
@@ -155,6 +157,7 @@ class ReleaseFile(Persistent):
         self.filename = self.__name__ = filename
         self.md5_digest = md5_digest
         self.set_content(content)
+        self.upload_date = datetime.datetime.now(tz=utc)
 
     def get_content_type(self, content):
         buf = io.BytesIO(content)

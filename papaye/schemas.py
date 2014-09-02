@@ -12,6 +12,8 @@ class Tags(object):
     def deserialize(self, node, cstruct):
         if cstruct == colander.null:
             return None
+        elif isinstance(cstruct, (tuple, list)):
+            return cstruct
         elif not isinstance(cstruct, (str, bytes)):
             raise colander.Invalid(node, '%r is not a string' % cstruct)
         else:

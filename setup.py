@@ -20,6 +20,7 @@ requires = [
     'pyramid_tm',
     'pyramid_webassets',
     'pyramid_zodbconn',
+    'pytz',
     'pyzmq',
     'repoze.evolution',
     'requests',
