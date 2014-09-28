@@ -1,6 +1,7 @@
 -e .
 
-nose2
+pytest
+pytest-cov
 pyquery
 tox
 webtest
