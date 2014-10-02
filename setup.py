@@ -13,6 +13,7 @@ requires = [
     'colander',
     'docutils',
     'filemagic',
+    'marshmallow',
     'pyramid',
     'pyramid_beaker',
     'pyramid_debugtoolbar',
