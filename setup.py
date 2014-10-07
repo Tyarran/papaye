@@ -11,6 +11,7 @@ VERSION = '0.1.3-dev'
 
 requires = [
     'colander',
+    'cornice',
     'docutils',
     'filemagic',
     'marshmallow',
