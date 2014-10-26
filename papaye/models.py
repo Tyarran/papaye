@@ -24,7 +24,7 @@ from papaye.schemas import Metadata
 
 
 logger = logging.getLogger(__name__)
-SW_VERSION = 1
+SW_VERSION = 2
 
 
 def get_manager(config):
@@ -160,7 +160,9 @@ class Release(BaseModel):
         self.release_files = OOBTree()
         self.version = version
         self.original_metadata = metadata
-        self.metadata = Metadata().deserialize(metadata)
+        schema = Metadata()
+        self.metadata = schema.serialize(metadata)
+        self.metadata = schema.deserialize(self.metadata)
 
     def __getitem__(self, release_file_name):
         return self.release_files[format_key(release_file_name)]

@@ -27,3 +27,19 @@ def repository_root_factory(request_or_connection):
     if not '{}_root'.format(APP_NAME) in zodb_root:
         return None
     return zodb_root[APP_ROOT_NAME]['repository']
+
+def evolve_root_factory(request_or_connection):
+    if isinstance(request_or_connection, (Request, DummyRequest)):
+        conn = get_connection(request_or_connection)
+    else:
+        conn = request_or_connection
+    zodb_root = conn.root()
+    return zodb_root['repoze.evolution']
+
+def default_root_factory(request_or_connection):
+    if isinstance(request_or_connection, (Request, DummyRequest)):
+        conn = get_connection(request_or_connection)
+    else:
+        conn = request_or_connection
+    zodb_root = conn.root()
+    return zodb_root

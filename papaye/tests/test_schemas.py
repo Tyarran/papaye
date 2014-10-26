@@ -1,6 +1,8 @@
 import json
 import unittest
 
+from docutils.core import publish_parts
+
 from papaye.tests.tools import get_resource
 
 
@@ -42,7 +44,7 @@ class MetadataTest(unittest.TestCase):
         self.assertEqual(result['summary'], cstruct['summary'])
         self.assertEqual(result['maintainer'], None)
         self.assertEqual(result['maintainer_email'], None)
-        self.assertEqual(result['description'], cstruct['description'])
+        self.assertEqual(result['description'], publish_parts(cstruct['description'], writer_name='html')['fragment'])
         self.assertEqual(result['platform'], 'UNKNOWN')
         self.assertEqual(result['classifiers'], cstruct['classifiers'])
         self.assertEqual(result['name'], 'pyramid')
@@ -89,7 +91,7 @@ class MetadataTest(unittest.TestCase):
         self.assertEqual(result['summary'], cstruct['summary'])
         self.assertEqual(result['maintainer'], None)
         self.assertEqual(result['maintainer_email'], None)
-        self.assertEqual(result['description'], cstruct['description'])
+        self.assertEqual(result['description'], publish_parts(cstruct['description'], writer_name='html')['fragment'])
         self.assertEqual(result['platform'], 'UNKNOWN')
         self.assertEqual(result['classifiers'], expected_classifiers)
         self.assertEqual(result['name'], 'papaye')
