@@ -2,7 +2,7 @@ import colander
 import hashlib
 
 
-from papaye.schemas import APIMetadata, String
+from papaye.schemas import APIMetadata, String, ReleaseFiles
 
 
 class Serializer(object):
@@ -46,12 +46,13 @@ class PackageListSerializer(Serializer):
         return data
 
 
-class PackageAPISerializer(Serializer):
+class ReleaseAPISerializer(Serializer):
     name = colander.SchemaNode(String())
     version = colander.SchemaNode(String())
     gravatar_hash = colander.SchemaNode(String(), missing=None)
     metadata = APIMetadata()
     download_url = colander.SchemaNode(String())
+    release_files = ReleaseFiles()
 
     def __init__(self, request):
         self.request = request
@@ -69,15 +70,30 @@ class PackageAPISerializer(Serializer):
         else:
             return None
 
-    def get_data(self, package):
-        data = super().get_data(package)
-        data['metadata'] = package.metadata
-        release = package.get_last_release()
+    def get_release_files(self, release):
+        release_files = [release[release_filename] for release_filename in release.release_files]
+        keys = ('filename', 'upload_date', 'size')
+        result = []
+        for release_file in release_files:
+            item = {'filename': None, 'upload_date': None, 'size': None}
+            item.update({key: value for key, value in release_file.__dict__.items() if key in keys})
+            item['version'] = release.version
+            item['url'] = self.request.resource_url(
+                release_file,
+                route_name='simple',
+            )
+            result.append(item)
+        return result
+
+    def get_data(self, release):
+        data = super().get_data(release)
+        data['name'] = release.__parent__.name
+        data['metadata'] = release.metadata
         data['version'] = release.version
-        if package.metadata['maintainer_email']:
-            data['gravatar_hash'] = self.hash(package.metadata['maintainer_email'].encode('latin-1'))
-        elif package.metadata['author_email']:
-            data['gravatar_hash'] = self.hash(package.metadata['author_email'].encode('latin-1'))
+        if release.metadata['maintainer_email']:
+            data['gravatar_hash'] = self.hash(release.metadata['maintainer_email'].encode('latin-1'))
+        elif release.metadata['author_email']:
+            data['gravatar_hash'] = self.hash(release.metadata['author_email'].encode('latin-1'))
         else:
             data['gravatar_hash'] = None
         release_file = self.get_release_file(release)
@@ -85,17 +101,5 @@ class PackageAPISerializer(Serializer):
             release_file,
             route_name='simple',
         )
+        data['release_files'] = self.get_release_files(release)
         return data
-
-
-class ReleaseSerializer(Serializer):
-    name = colander.SchemaNode(colander.String())
-    version = colander.SchemaNode(colander.String())
-    metadata = APIMetadata()
-
-    def get_data(self, release):
-        return {
-            'name': release.__parent__.name,
-            'version': release.version,
-            'metadata': release.metadata,
-        }

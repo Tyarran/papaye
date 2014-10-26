@@ -58,120 +58,117 @@
             </div>
         </div>
     </div>
-        <section id="download_link">
-                <ul id="download-tab" class="nav nav-tabs" role="tablist">
-                    <li class="active"><a href="#current-version" role="tab" data-toggle="tab">Files</a></li>
-                    <li><a href="#all-versions" role="tab" data-toggle="tab">All versions</a></li>
-                </ul>
+    <section id="download_link">
+            <ul id="download-tab" class="nav nav-tabs" role="tablist">
+                <li ng-class="{ active: activeTab == 'current' }" ng-click="tabClick(1)">
+                    <a href="" role="tab" data-toggle="tab">Files</a>
+                </li>
+                <li ng-class="{ active: activeTab == 'other' }" ng-click="tabClick(2)">
+                    <a href="" role="tab" data-toggle="tab">Other releases</a>
+                </li>
+            </ul>
 
-                <div class="tab-content">
-                    <div class="tab-pane active" id="current-version">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>File</th>
-                                    <th>Version</th>
-                                    <th>Upload date</th>
-                                    <th>Size</th>
-                                </tr>
-                            </thead>
-                            {% for release_file in release.release_files.values() %}
+            <div class="tab-content">
+                <div class="tab-pane" ng-class="{ active: activeTab == 'current' }">
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td><a href="{{ release_file }}">{{ release_file.filename }}</a></td>
-                                <td>{{ release_file.__parent__.version }}</td>
-                                <td>{{ release_file.upload_date }}</td>
-                                <td>{{ release_file.size }}</td>
+                                <th>File</th>
+                                <th>Version</th>
+                                <th>Upload date</th>
+                                <th>Size</th>
                             </tr>
-                            {% endfor %}
-                        </table>
-                    </div>
-                    <div class="tab-pane" id="all-versions">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>File</th>
-                                    <th>Version</th>
-                                    <th>Upload date</th>
-                                    <th>Size</th>
-                                </tr>
-                            </thead>
-                            <tr>
-                                <td><a href="#">papaye-1.0.0.tar.gz</a></td>
-                                <td>1.0.0</td>
-                                <td>2014-08-11 11:11:11</td>
-                                <td>45ko</td>
-                            </tr>
-                            <tr>
-                                <td><a href="#">papaye-1.0.0.tar.gz</a></td>
-                                <td>1.0.0</td>
-                                <td>2014-08-11 11:11:11</td>
-                                <td>45ko</td>
-                            </tr>
-                            <tr>
-                                <td><a href="#">papaye-1.0.0.tar.gz</a></td>
-                                <td>1.0.0</td>
-                                <td>2014-08-11 11:11:11</td>
-                                <td>45ko</td>
-                            </tr>
-                            <tr>
-                                <td><a href="#">papaye-1.0.0.tar.gz</a></td>
-                                <td>1.0.0</td>
-                                <td>2014-08-11 11:11:11</td>
-                                <td>45ko</td>
-                            </tr>
-                            <tr>
-                                <td><a href="#">papaye-1.0.0.tar.gz</a></td>
-                                <td>1.0.0</td>
-                                <td>2014-08-11 11:11:11</td>
-                                <td>45ko</td>
-                            </tr>
-                            <tr>
-                                <td><a href="#">papaye-1.0.0.tar.gz</a></td>
-                                <td>1.0.0</td>
-                                <td>2014-08-11 11:11:11</td>
-                                <td>45ko</td>
-                            </tr>
-                            <tr>
-                                <td><a href="#">papaye-1.0.0.tar.gz</a></td>
-                                <td>1.0.0</td>
-                                <td>2014-08-11 11:11:11</td>
-                                <td>45ko</td>
-                            </tr>
-                            <tr>
-                                <td><a href="#">papaye-1.0.0.tar.gz</a></td>
-                                <td>1.0.0</td>
-                                <td>2014-08-11 11:11:11</td>
-                                <td>45ko</td>
-                            </tr>
-                            <tr>
-                                <td><a href="#">papaye-1.0.0.tar.gz</a></td>
-                                <td>1.0.0</td>
-                                <td>2014-08-11 11:11:11</td>
-                                <td>45ko</td>
-                            </tr>
-                            <tr>
-                                <td><a href="#">papaye-1.0.0.tar.gz</a></td>
-                                <td>1.0.0</td>
-                                <td>2014-08-11 11:11:11</td>
-                                <td>45ko</td>
-                            </tr>
-                            <tr>
-                                <td><a href="#">papaye-1.0.0.tar.gz</a></td>
-                                <td>1.0.0</td>
-                                <td>2014-08-11 11:11:11</td>
-                                <td>45ko</td>
-                            </tr>
-                            <tr>
-                                <td><a href="#">papaye-1.0.0.tar.gz</a></td>
-                                <td>1.0.0</td>
-                                <td>2014-08-11 11:11:11</td>
-                                <td>45ko</td>
-                            </tr>
-                        </table>
-                    </div>
+                        </thead>
+                        <tr ng-repeat="release_file in release.release_files">
+                            <td><a href="{{ release_file.url }}">{{ release_file.filename }}</a></td>
+                            <td>{{ release_file.version }}</td>
+                            <td>{{ release_file.upload_date }}</td>
+                            <td>{{ release_file.size }}</td>
+                        </tr>
+                    </table>
                 </div>
-            </section>
-        </div>
-
-        <div>
+                <div class="tab-pane" ng-class="{ active: activeTab == 'other' }">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Url</th>
+                                <th>Version</th>
+                            </tr>
+                        </thead>
+                        <tr>
+                            <td><a href="#">papaye-1.0.0.tar.gz</a></td>
+                            <td>1.0.0</td>
+                            <td>2014-08-11 11:11:11</td>
+                            <td>45ko</td>
+                        </tr>
+                        <tr>
+                            <td><a href="#">papaye-1.0.0.tar.gz</a></td>
+                            <td>1.0.0</td>
+                            <td>2014-08-11 11:11:11</td>
+                            <td>45ko</td>
+                        </tr>
+                        <tr>
+                            <td><a href="#">papaye-1.0.0.tar.gz</a></td>
+                            <td>1.0.0</td>
+                            <td>2014-08-11 11:11:11</td>
+                            <td>45ko</td>
+                        </tr>
+                        <tr>
+                            <td><a href="#">papaye-1.0.0.tar.gz</a></td>
+                            <td>1.0.0</td>
+                            <td>2014-08-11 11:11:11</td>
+                            <td>45ko</td>
+                        </tr>
+                        <tr>
+                            <td><a href="#">papaye-1.0.0.tar.gz</a></td>
+                            <td>1.0.0</td>
+                            <td>2014-08-11 11:11:11</td>
+                            <td>45ko</td>
+                        </tr>
+                        <tr>
+                            <td><a href="#">papaye-1.0.0.tar.gz</a></td>
+                            <td>1.0.0</td>
+                            <td>2014-08-11 11:11:11</td>
+                            <td>45ko</td>
+                        </tr>
+                        <tr>
+                            <td><a href="#">papaye-1.0.0.tar.gz</a></td>
+                            <td>1.0.0</td>
+                            <td>2014-08-11 11:11:11</td>
+                            <td>45ko</td>
+                        </tr>
+                        <tr>
+                            <td><a href="#">papaye-1.0.0.tar.gz</a></td>
+                            <td>1.0.0</td>
+                            <td>2014-08-11 11:11:11</td>
+                            <td>45ko</td>
+                        </tr>
+                        <tr>
+                            <td><a href="#">papaye-1.0.0.tar.gz</a></td>
+                            <td>1.0.0</td>
+                            <td>2014-08-11 11:11:11</td>
+                            <td>45ko</td>
+                        </tr>
+                        <tr>
+                            <td><a href="#">papaye-1.0.0.tar.gz</a></td>
+                            <td>1.0.0</td>
+                            <td>2014-08-11 11:11:11</td>
+                            <td>45ko</td>
+                        </tr>
+                        <tr>
+                            <td><a href="#">papaye-1.0.0.tar.gz</a></td>
+                            <td>1.0.0</td>
+                            <td>2014-08-11 11:11:11</td>
+                            <td>45ko</td>
+                        </tr>
+                        <tr>
+                            <td><a href="#">papaye-1.0.0.tar.gz</a></td>
+                            <td>1.0.0</td>
+                            <td>2014-08-11 11:11:11</td>
+                            <td>45ko</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+    </section>
 </div>

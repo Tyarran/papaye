@@ -73,6 +73,18 @@ class APIDescription(colander.MappingSchema):
     html = colander.SchemaNode(colander.Boolean())
 
 
+class ReleaseFile(colander.MappingSchema):
+    filename = colander.SchemaNode(colander.String())
+    version = colander.SchemaNode(colander.String())
+    upload_date = colander.SchemaNode(colander.String())
+    size = colander.SchemaNode(colander.String())
+    url = colander.SchemaNode(colander.String())
+
+
+class ReleaseFiles(colander.SequenceSchema):
+    release_files = ReleaseFile()
+
+
 class Metadata(colander.MappingSchema):
     version = colander.SchemaNode(String(), missing=None)
     author = colander.SchemaNode(String(), missing=None)

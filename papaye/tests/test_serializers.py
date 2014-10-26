@@ -49,7 +49,7 @@ class SerializerTest(unittest.TestCase):
         self.assertFalse(schema)
 
 
-class PackageAPISerializerTest(unittest.TestCase):
+class ReleaseAPISerializerTest(unittest.TestCase):
 
     def setUp(self):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
@@ -59,18 +59,18 @@ class PackageAPISerializerTest(unittest.TestCase):
         registry.settings = disable_cache()
 
     def test_instanciate(self):
-        from papaye.serializers import PackageAPISerializer
+        from papaye.serializers import ReleaseAPISerializer
 
-        serializer = PackageAPISerializer(request=self.request)
+        serializer = ReleaseAPISerializer(request=self.request)
 
-        self.assertIsInstance(serializer, PackageAPISerializer)
+        self.assertIsInstance(serializer, ReleaseAPISerializer)
         self.assertTrue(getattr(serializer, 'request', None))
         self.assertEqual(serializer.request, self.request)
 
     def test_serialize(self):
-        from papaye.serializers import PackageAPISerializer
+        from papaye.serializers import ReleaseAPISerializer
         from papaye.models import Package, Release, ReleaseFile
-        serializer = PackageAPISerializer(request=self.request)
+        serializer = ReleaseAPISerializer(request=self.request)
         package = Package(name='package')
         package['1.0'] = Release('1.0', '1.0', {
             'summary': 'The package',
@@ -97,8 +97,15 @@ class PackageAPISerializerTest(unittest.TestCase):
                 'name': None,
             },
             'download_url': 'http://example.com/simple/package/1.0/package-1.0.tar.gz/',
+            'release_files': [{
+                'size': '0',
+                'filename': 'package-1.0.tar.gz',
+                'url': 'http://example.com/simple/package/1.0/package-1.0.tar.gz/',
+                'version': '1.0',
+                'upload_date': str(package['1.0']['package-1.0.tar.gz'].upload_date),
+            }],
         }
 
-        result = serializer.serialize(package)
+        result = serializer.serialize(package['1.0'])
 
         self.assertEqual(result, expected)
