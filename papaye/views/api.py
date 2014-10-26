@@ -1,7 +1,7 @@
 from pyramid.httpexceptions import HTTPNotFound
 from cornice import Service
 
-from papaye.serializers import PackageListSerializer, PackageSerializer, ReleaseSerializer
+from papaye.serializers import PackageListSerializer, PackageAPISerializer, ReleaseSerializer
 from papaye.factories import repository_root_factory
 
 packages = Service(
@@ -30,7 +30,7 @@ def get_package(request):
     if package_name:
         package = request.context[package_name]
         if package:
-            return PackageSerializer().serialize(package)
+            return PackageAPISerializer(request).serialize(package)
         else:
             return HTTPNotFound()
 

@@ -8,7 +8,7 @@ from mock import patch
 from pyramid import testing
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
-from pyramid.threadlocal import get_current_registry, get_current_request
+from pyramid.threadlocal import get_current_registry
 
 from papaye.tests.tools import (
     FakeGRequestResponse,

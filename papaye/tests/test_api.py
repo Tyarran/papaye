@@ -11,6 +11,7 @@ class APIPackageViewTest(unittest.TestCase):
         self.request = testing.DummyRequest()
         self.config = testing.setUp(request=self.request, settings=settings)
         self.config.include('pyramid_zodbconn')
+        self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
 
     def test_get_packages(self):
         from papaye.views.api import list_packages

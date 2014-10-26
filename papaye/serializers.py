@@ -2,7 +2,7 @@ import colander
 import hashlib
 
 
-from papaye.schemas import APIMetadata
+from papaye.schemas import APIMetadata, String
 
 
 class Serializer(object):
@@ -46,25 +46,45 @@ class PackageListSerializer(Serializer):
         return data
 
 
-class PackageSerializer(Serializer):
-    name = colander.SchemaNode(colander.String())
-    version = colander.SchemaNode(colander.String())
-    gravatar_hash = colander.SchemaNode(colander.String())
+class PackageAPISerializer(Serializer):
+    name = colander.SchemaNode(String())
+    version = colander.SchemaNode(String())
+    gravatar_hash = colander.SchemaNode(String(), missing=None)
     metadata = APIMetadata()
+    download_url = colander.SchemaNode(String())
+
+    def __init__(self, request):
+        self.request = request
 
     def hash(self, email):
         return hashlib.md5(email).hexdigest()
 
+    def get_release_file(self, release):
+        '''Return the .tar.gz first or other file'''
+        tar_gz = [name for name in release.release_files.keys() if name.endswith('.tar.gz')]
+        if tar_gz:
+            return release[tar_gz[0]]
+        elif len(list(release.release_files.values())):
+            return next((release_file for release_file in release.release_files.values()))
+        else:
+            return None
+
     def get_data(self, package):
         data = super().get_data(package)
         data['metadata'] = package.metadata
-        data['version'] = package.get_last_release().version
+        release = package.get_last_release()
+        data['version'] = release.version
         if package.metadata['maintainer_email']:
             data['gravatar_hash'] = self.hash(package.metadata['maintainer_email'].encode('latin-1'))
         elif package.metadata['author_email']:
             data['gravatar_hash'] = self.hash(package.metadata['author_email'].encode('latin-1'))
         else:
             data['gravatar_hash'] = None
+        release_file = self.get_release_file(release)
+        data['download_url'] = self.request.resource_url(
+            release_file,
+            route_name='simple',
+        )
         return data
 
 

@@ -2,7 +2,7 @@
     <div class="jumbotron">
         <h1>{{ release.name }} <small>{{ release.version }}</small></h1>
         <p>{{ release.metadata.summary }}</p>
-        <p><a class="btn btn-primary btn-lg" role="button" href="{{ release_url }}">Download {{ release.name }} v{{ release.version }}</a></p>
+        <p><a class="btn btn-primary btn-lg" role="button" href="{{ release.download_url }}">Download {{ release.name }} v{{ release.version }}</a></p>
     </div>
     <div class="row">
         <div class="col-md-9">

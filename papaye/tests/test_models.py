@@ -1,5 +1,4 @@
 
-import colander
 import unittest
 
 from mock import patch
