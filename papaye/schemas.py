@@ -100,6 +100,6 @@ class APIMetadata(colander.MappingSchema):
     maintainer = colander.SchemaNode(String(), missing=None)
     maintainer_email = colander.SchemaNode(String(), missing=None)
     description = APIDescription()
-    platform = colander.SchemaNode(colander.String(), missing=None)
+    platform = colander.SchemaNode(String(), missing=None)
     classifiers = colander.SchemaNode(Classifiers(), default=[])
-    name = colander.SchemaNode(colander.String(), missing=None)
+    name = colander.SchemaNode(String(), missing=None)

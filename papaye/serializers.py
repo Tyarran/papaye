@@ -55,14 +55,16 @@ class PackageSerializer(Serializer):
     def hash(self, email):
         return hashlib.md5(email).hexdigest()
 
-
     def get_data(self, package):
         data = super().get_data(package)
         data['metadata'] = package.metadata
         data['version'] = package.get_last_release().version
-        # import ipdb; ipdb.set_trace()
-        # data['gravatar_hash'] = self.hash(package.metadata['maintainer_email'].encode('latin-1')) if package.metadata['maintainer_email'] or package.metadata['maintainer_email'] != 'None' else self.hash(package.metadata['author_email'].encode('latin-1'))
-        data['gravatar_hash'] = self.hash(package.metadata['author_email'].encode('latin-1'))
+        if package.metadata['maintainer_email']:
+            data['gravatar_hash'] = self.hash(package.metadata['maintainer_email'].encode('latin-1'))
+        elif package.metadata['author_email']:
+            data['gravatar_hash'] = self.hash(package.metadata['author_email'].encode('latin-1'))
+        else:
+            data['gravatar_hash'] = None
         return data
 
 
@@ -74,6 +76,6 @@ class ReleaseSerializer(Serializer):
     def get_data(self, release):
         return {
             'name': release.__parent__.name,
-            'version': release.name,
+            'version': release.version,
             'metadata': release.metadata,
         }

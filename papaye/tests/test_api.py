@@ -18,8 +18,14 @@ class APIPackageViewTest(unittest.TestCase):
         root = Root()
         root['package1'] = Package(name='package1')
         root['package2'] = Package(name='package2')
-        root['package1']['1.0'] = Release('1.0', '1.0', {'summary': 'The package 1'})
-        root['package2']['1.0'] = Release('1.0', '1.0', {'summary': 'The package 2'})
+        root['package1']['1.0'] = Release('1.0', '1.0', {
+            'summary': 'The package 1',
+            'description': 'A description',
+        })
+        root['package2']['1.0'] = Release('1.0', '1.0', {
+            'summary': 'The package 2',
+            'description': 'A description',
+        })
         expected = [{
             'name': 'package1',
             'summary': 'The package 1',
@@ -54,8 +60,14 @@ class APIPackageViewTest(unittest.TestCase):
         root = Root()
         root['package1'] = Package(name='package1')
         root['package2'] = Package(name='package2')
-        root['package1']['1.0'] = Release('1.0', '1.0', {'summary': 'The package 1'})
-        root['package2']['1.0'] = Release('1.0', '1.0', {'summary': 'The package 2'})
+        root['package1']['1.0'] = Release('1.0', '1.0', {
+            'summary': 'The package 1',
+            'description': 'A description',
+        })
+        root['package2']['1.0'] = Release('1.0', '1.0', {
+            'summary': 'The package 2',
+            'description': 'A description',
+        })
         self.request.context = root
         self.request.matchdict = {'package_name': 'package1'}
 
@@ -82,8 +94,11 @@ class APIPackageViewTest(unittest.TestCase):
         root = Root()
         root['package1'] = Package(name='package1')
         root['package2'] = Package(name='package2')
-        root['package1']['1.0'] = Release('1.0', '1.0', {'summary': 'The package 1'})
-        root['package2']['1.0'] = Release('1.0', '1.0', {'summary': 'The package 2'})
+        root['package1']['1.0'] = Release('1.0', '1.0', {
+            'summary': 'The package 1',
+            'description': 'A description',
+        })
+        root['package2']['1.0'] = Release('1.0', '1.0', {'summary': 'The package 2', 'description': ''})
         self.request.context = root
         self.request.matchdict = {'package_name': 'package1', 'version': '1.0'}
 
