@@ -30,14 +30,15 @@ def get_package(request):
     if package_name:
         package = request.context[package_name]
         if package:
-            return PackageSerializer(package).data
+            return PackageSerializer().serialize(package)
         else:
             return HTTPNotFound()
 
 
 @packages.get()
 def list_packages(request):
-    return [PackageListSerializer(package).data for package in request.context.values()]
+    serializer = PackageListSerializer()
+    return [serializer.serialize(package) for package in request.context.values()]
 
 
 @package_version.get()
@@ -45,6 +46,7 @@ def get_package_by_version(request):
     package_name = request.matchdict.get('package_name')
     version = request.matchdict.get('version')
     if package_name in request.context and version in request.context[package_name].releases.keys():
-        return ReleaseSerializer(request.context[package_name][version]).data
+        serializer = ReleaseSerializer()
+        return serializer.serialize(request.context[package_name][version])
     else:
         return HTTPNotFound()

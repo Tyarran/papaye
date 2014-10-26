@@ -1,4 +1,3 @@
-import collections
 import unittest
 
 from pyramid import testing
@@ -34,7 +33,7 @@ class APIPackageViewTest(unittest.TestCase):
 
         self.assertIsInstance(result, list)
         self.assertEqual(len(result), 2)
-        self.assertIsInstance(result[0], collections.OrderedDict)
+        self.assertIsInstance(result[0], dict)
         self.assertEqual([dict(element) for element in result], expected)
 
     def test_get_packages_with_no_package_in_database(self):
@@ -62,7 +61,7 @@ class APIPackageViewTest(unittest.TestCase):
 
         result = get_package(self.request)
 
-        self.assertIsInstance(result, collections.OrderedDict)
+        self.assertIsInstance(result, dict)
         self.assertEqual(result['name'], 'package1')
         self.assertIn('metadata', result)
 
@@ -90,7 +89,7 @@ class APIPackageViewTest(unittest.TestCase):
 
         result = get_package_by_version(self.request)
 
-        self.assertIsInstance(result, collections.OrderedDict)
+        self.assertIsInstance(result, dict)
 
     def test_get_package_by_version_with_unknown_package(self):
         from papaye.views.api import get_package_by_version
