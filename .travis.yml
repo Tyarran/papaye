@@ -6,10 +6,9 @@ python:
   - "3.4"
 
 install:
-  - "pip install ."
   - "pip install -r requirements_develop.txt"
 
-script: "nose2"
+script: "py.test"
 
 notifications:
   email:

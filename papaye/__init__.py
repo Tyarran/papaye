@@ -7,7 +7,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid_beaker import set_cache_regions_from_settings
 from pyramid.threadlocal import get_current_registry
 
-from papaye.bundles import jst, bootstrap_js, papaye_css, papaye_font
+from papaye.bundles import papaye_js, papaye_css, papaye_font
 from papaye.factories import repository_root_factory, user_root_factory
 from papaye.models import User
 from papaye.tasks.devices import Scheduler, Producer
@@ -61,7 +61,7 @@ def main(global_config, **settings):
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
     config.add_static_view('static', 'static', cache_max_age=3600)
-    config.add_route('browse', '/browse*traverse', factory=repository_root_factory)
+    config.add_route('browse', '/browse')
     config.add_route('simple', '/simple*traverse', factory=repository_root_factory)
     config.add_notfound_view(notfound, append_slash=True)
     config.add_jinja2_extension('webassets.ext.jinja2.AssetsExtension')
@@ -69,8 +69,8 @@ def main(global_config, **settings):
     config.commit()
     jinja2_env = config.get_jinja2_environment()
     jinja2_env.assets_environment = assets_env
-    config.add_webasset('test', jst)
-    config.add_webasset('bootstrap_js', bootstrap_js)
+    # config.add_webasset('test', jst)
+    config.add_webasset('papaye_js', papaye_js)
     config.add_webasset('papaye_css', papaye_css)
     config.add_webasset('papaye_font', papaye_font)
     config.check_database_config()

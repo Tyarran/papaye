@@ -1,3 +1,4 @@
+
 import unittest
 
 from mock import patch
@@ -134,6 +135,14 @@ class PackageTest(unittest.TestCase):
         result = package.get_last_release()
         self.assertEqual(result.version, '1.0')
 
+    def test_get_last_release_without_release(self):
+        from papaye.models import Package
+
+        package = Package(name='package1')
+
+        result = package.get_last_release()
+        self.assertIsNone(result)
+
 
 class ReleaseTest(unittest.TestCase):
 
@@ -170,7 +179,6 @@ class ReleaseFileTest(unittest.TestCase):
         self.config = testing.setUp(request=self.request)
         self.blob_dir = set_database_connection(self.request)
 
-
     def test__init__(self):
         from papaye.models import ReleaseFile
 
@@ -178,7 +186,6 @@ class ReleaseFileTest(unittest.TestCase):
             release_file = ReleaseFile('pyramid-1.5.tar.gz', tar_gz.read())
 
         self.assertEqual(release_file.size, 2413504)
-
 
 
 class UserTest(unittest.TestCase):
@@ -216,4 +223,33 @@ class UserTest(unittest.TestCase):
 
         result = User.by_username('a_user', self.request)
 
+        self.assertIsNone(result)
+
+
+class BaseModelTest(unittest.TestCase):
+
+    from papaye.models import BaseModel
+
+    class Model(BaseModel):
+        subobjects_attr = 'attribute'
+
+    def test_get(self):
+        model_instance = self.Model()
+        model_instance.attribute = {'test': 'ok'}
+
+        result = model_instance.get('test')
+        self.assertEqual(result, 'ok')
+
+    def test_get_with_default(self):
+        model_instance = self.Model()
+        model_instance.attribute = {'test': 'ok'}
+
+        result = model_instance.get('test', None)
+        self.assertEqual(result, 'ok')
+
+    def test_get_with_default_returned(self):
+        model_instance = self.Model()
+        model_instance.attribute = {'test': 'ok'}
+
+        result = model_instance.get('oups', None)
         self.assertIsNone(result)

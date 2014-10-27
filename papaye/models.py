@@ -24,7 +24,7 @@ from papaye.schemas import Metadata
 
 
 logger = logging.getLogger(__name__)
-SW_VERSION = 1
+SW_VERSION = 2
 
 
 def get_manager(config):
@@ -71,8 +71,24 @@ class Root(OOBTree):
             return self.get(keys[0])
 
 
-class Package(Persistent):
+class BaseModel(Persistent):
+    subobjects_attr = None
+
+    def get_subobjects(self):
+        collection = getattr(self, self.subobjects_attr)
+        return collection
+
+    def get(self, key, default=None):
+        getitem_object = self.get_subobjects()
+        if key in getitem_object.keys():
+            return getitem_object[key]
+        else:
+            return default
+
+
+class Package(BaseModel):
     pypi_url = 'http://pypi.python.org/pypi/{}/json'
+    subobjects_attr = 'releases'
 
     def __init__(self, name):
         self.__name__ = name
@@ -120,20 +136,33 @@ class Package(Persistent):
         return root[name] if name in root else None
 
     def get_last_release(self):
+        if not len(self.releases.items()):
+            return None
         max_version = max([parse_version(version) for version in self.releases.keys()])
         for version, release in self.releases.items():
             if parse_version(version) == max_version:
                 return release
 
+    @property
+    def metadata(self):
+        last_release = self.get_last_release()
+        if last_release:
+            return last_release.metadata
+        else:
+            return {}
 
-class Release(Persistent):
+
+class Release(BaseModel):
+    subobjects_attr = 'release_files'
 
     def __init__(self, name, version, metadata):
         self.__name__ = name
         self.release_files = OOBTree()
         self.version = version
         self.original_metadata = metadata
-        self.metadata = Metadata().deserialize(metadata)
+        schema = Metadata()
+        self.metadata = schema.serialize(metadata)
+        self.metadata = schema.deserialize(self.metadata)
 
     def __getitem__(self, release_file_name):
         return self.release_files[format_key(release_file_name)]
@@ -170,7 +199,7 @@ class ReleaseFile(Persistent):
         self.size = len(content)
 
 
-class User(Persistent):
+class User(BaseModel):
 
     def __init__(self, username, password, **kwargs):
         self.username = username

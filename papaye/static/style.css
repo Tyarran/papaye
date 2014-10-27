@@ -6,7 +6,7 @@
 
 body {
     /*font-family: 'open_sansregular';*/
-} 
+}
 
 #tags, #tags {
     margin: 0px;
@@ -17,4 +17,10 @@ header {
     font-weight: bold;
     border-bottom: 1px solid #EEEEEE;
     margin-bottom: 5px;
-}             
+}
+
+.table-hover > tbody > tr:hover > td,
+.table-hover > tbody > tr:hover > th {
+    background-color: #428BCA;
+    color: #FFFFFF;
+}

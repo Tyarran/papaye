@@ -7,10 +7,11 @@ from setuptools import setup, find_packages
 HERE = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(HERE, 'README.rst')).read()
 CHANGES = open(os.path.join(HERE, 'CHANGES.txt')).read()
-VERSION = '0.1.3-dev'
+VERSION = '0.2.0-dev'
 
 requires = [
-    'colander',
+    'colander==1.0b1',
+    'cornice',
     'docutils',
     'filemagic',
     'pyramid',
@@ -55,7 +56,5 @@ setup(name='papaye',
       [console_scripts]
       papaye_init = papaye.scripts.initialize:main
       papaye_evolve = papaye.scripts.evolve:main
-      # papaye_worker = papaye.scripts.worker:main
-      papaye = papaye.scripts.papaye:main
       """,
       )

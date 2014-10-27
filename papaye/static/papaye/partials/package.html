@@ -1,0 +1,106 @@
+<div ng-controller="SinglePackageController">
+    <div class="jumbotron">
+        <h1>{{ release.name }} <small>{{ release.version }}</small></h1>
+        <p>{{ release.metadata.summary }}</p>
+        <p><a class="btn btn-primary btn-lg" role="button" href="{{ release.download_url }}">Download {{ release.name }} v{{ release.version }}</a></p>
+    </div>
+    <div class="row">
+        <div class="col-md-9">
+            <!-- <p style="white-space: pre;" ng-bind-html="description"> -->
+            <p ng-if="htmlDescription" ng-bind-html="description">
+            </p>
+            <p ng-if="!htmlDescription" style="white-space: pre;" ng-bind-html="description">
+            </p>
+        </div>
+        <div class="col-md-3">
+            <div>
+                <header>Author</header>
+                <p>
+                {{ release.metadata.author }}<br>{{ release.metadata.author_email }}
+                </p>
+            </div>
+            <div>
+                <header>Licence</header>
+                <p>
+                {{ release.metadata.license }}
+                </p>
+            </div>
+            <div>
+                <header>Platform</header>
+                <p>
+                {{ release.metadata.platform }}
+                </p>
+            </div>
+            <div>
+                <header>Classifiers</header>
+                <p> <div ng-repeat="classifier in release.metadata.classifiers">{{ classifier }}</div> </p>
+            </div>
+            <div>
+                <header>Keywords</header>
+                <p>
+                    <style>
+                        #tags li { display: inline-block;}
+                        #tags ul { padding-left: 0px;}
+                    </style>
+                    <ul id='tags'>
+                        <li><span class="label label-default" ng-repeat="tag in release.metadata.keywords">{{ tag }}</span></li>
+                    </ul>
+                </p>
+            </div>
+            <div>
+                <header>Maintainer</header>
+                <p>
+                <img src="http://www.gravatar.com/avatar/{{ release.gravatar_hash }}" alt="">
+                </p>
+            </div>
+            <div>
+                <a class="btn btn-info" href="{{ release.metadata.home_page }}" target="blank" class="glyphicon glyphicon-home"></i> Project home page</a>
+            </div>
+        </div>
+    </div>
+    <section id="download_link">
+            <ul id="download-tab" class="nav nav-tabs" role="tablist">
+                <li ng-class="{ active: activeTab == 'current' }" ng-click="tabClick(1)">
+                    <a href="" role="tab" data-toggle="tab">Files</a>
+                </li>
+                <li ng-class="{ active: activeTab == 'other' }" ng-click="tabClick(2)">
+                    <a href="" role="tab" data-toggle="tab">Other releases</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="tab-pane" ng-class="{ active: activeTab == 'current' }">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>File</th>
+                                <th>Version</th>
+                                <th>Upload date</th>
+                                <th>Size</th>
+                            </tr>
+                        </thead>
+                        <tr ng-repeat="release_file in release.release_files">
+                            <td><a href="{{ release_file.url }}">{{ release_file.filename }}</a></td>
+                            <td>{{ release_file.version }}</td>
+                            <td>{{ release_file.upload_date }}</td>
+                            <td>{{ release_file.size }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="tab-pane" ng-class="{ active: activeTab == 'other' }">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Version</th>
+                                <th>Url</th>
+                            </tr>
+                        </thead>
+                        <tr ng-repeat="other_release in release.other_releases">
+                            <td>{{ other_release.version }}</td>
+                            <td><a href="{{ other_release.url }}">{{ other_release.url }}</a></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+    </section>
+</div>

@@ -1,3 +1,4 @@
+import colander
 import os
 import shutil
 import tempfile
@@ -8,7 +9,9 @@ from ZODB.blob import BlobStorage
 from ZODB.DB import DB
 from ZODB.MappingStorage import MappingStorage
 
+from papaye.models import BaseModel
 from papaye.scripts.initialize import create_app_root
+from papaye.serializers import Serializer
 
 
 HERE = os.path.abspath(os.path.dirname(__name__))
@@ -105,3 +108,14 @@ def disable_cache(settings=None):
         settings = cache_settings
     set_cache_regions_from_settings(settings)
     return settings
+
+
+class TestModel(BaseModel):
+
+    def __init__(self, value):
+        self.value = value
+
+
+class TestSerializer(Serializer):
+    model = TestModel
+    value = colander.SchemaNode(colander.String())
