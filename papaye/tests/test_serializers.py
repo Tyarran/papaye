@@ -55,6 +55,7 @@ class ReleaseAPISerializerTest(unittest.TestCase):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
         self.config = testing.setUp(request=self.request)
         self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
+        self.config.add_route('browse', '/')
         registry = get_current_registry()
         registry.settings = disable_cache()
 
@@ -73,6 +74,10 @@ class ReleaseAPISerializerTest(unittest.TestCase):
         serializer = ReleaseAPISerializer(request=self.request)
         package = Package(name='package')
         package['1.0'] = Release('1.0', '1.0', {
+            'summary': 'The package',
+            'description': 'A description',
+        })
+        package['2.0'] = Release('2.0', '2.0', {
             'summary': 'The package',
             'description': 'A description',
         })
@@ -104,6 +109,10 @@ class ReleaseAPISerializerTest(unittest.TestCase):
                 'version': '1.0',
                 'upload_date': str(package['1.0']['package-1.0.tar.gz'].upload_date),
             }],
+            'other_releases': [{
+                'url': 'http://example.com/#/package/package/2.0',
+                'version': '2.0',
+            }]
         }
 
         result = serializer.serialize(package['1.0'])

@@ -81,7 +81,16 @@ class ReleaseFile(colander.MappingSchema):
     url = colander.SchemaNode(colander.String())
 
 
-class ReleaseFiles(colander.SequenceSchema):
+class APIOtherRelease(colander.MappingSchema):
+    url = colander.SchemaNode(colander.String())
+    version = colander.SchemaNode(colander.String())
+
+
+class APIOtherReleases(colander.SequenceSchema):
+    other_releases = APIOtherRelease()
+
+
+class APIReleaseFiles(colander.SequenceSchema):
     release_files = ReleaseFile()
 
 

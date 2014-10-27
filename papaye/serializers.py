@@ -2,7 +2,7 @@ import colander
 import hashlib
 
 
-from papaye.schemas import APIMetadata, String, ReleaseFiles
+from papaye.schemas import APIMetadata, String, APIReleaseFiles, APIOtherReleases
 
 
 class Serializer(object):
@@ -52,7 +52,8 @@ class ReleaseAPISerializer(Serializer):
     gravatar_hash = colander.SchemaNode(String(), missing=None)
     metadata = APIMetadata()
     download_url = colander.SchemaNode(String())
-    release_files = ReleaseFiles()
+    other_releases = APIOtherReleases()
+    release_files = APIReleaseFiles()
 
     def __init__(self, request):
         self.request = request
@@ -102,4 +103,18 @@ class ReleaseAPISerializer(Serializer):
             route_name='simple',
         )
         data['release_files'] = self.get_release_files(release)
+        data['other_releases'] = self.get_other_releases(release)
         return data
+
+    def get_other_releases(self, current_release):
+        package = current_release.__parent__
+        result = []
+        for release in package.releases.values():
+            if release.version != current_release.version:
+                item = {'version': release.version}
+                item['url'] = self.request.resource_url(
+                    release,
+                    route_name='browse',
+                ) + "#/package/{}/{}".format(package.name, release.version)
+                result.append(item)
+        return result
