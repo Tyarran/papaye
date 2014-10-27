@@ -10,7 +10,7 @@ CHANGES = open(os.path.join(HERE, 'CHANGES.txt')).read()
 VERSION = '0.1.3-dev'
 
 requires = [
-    'colander',
+    'colander==1.0b1',
     'cornice',
     'docutils',
     'filemagic',
