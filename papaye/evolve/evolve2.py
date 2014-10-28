@@ -1,5 +1,3 @@
-import os
-
 from papaye.schemas import Metadata
 
 
