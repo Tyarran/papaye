@@ -88,18 +88,24 @@
                     </table>
                 </div>
                 <div class="tab-pane" ng-class="{ active: activeTab == 'other' }">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Version</th>
-                                <th>Url</th>
+                    <div ng-switch="release.other_releases.length">
+                        <p ng-switch-when="0">
+                            They are no other release in the repository
+                        </p>
+                        <table class="table table-striped" ng-switch-default>
+                            <thead>
+                                <tr>
+                                    <th>Version</th>
+                                    <th>Url</th>
+                                </tr>
+                            </thead>
+                            <tr ng-repeat="other_release in release.other_releases">
+                                <td>{{ other_release.version }}</td>
+                                <td><a href="{{ other_release.url }}">{{ other_release.url }}</a></td>
                             </tr>
-                        </thead>
-                        <tr ng-repeat="other_release in release.other_releases">
-                            <td>{{ other_release.version }}</td>
-                            <td><a href="{{ other_release.url }}">{{ other_release.url }}</a></td>
-                        </tr>
-                    </table>
+                        </table>
+
+                    </div>
                 </div>
             </div>
     </section>
