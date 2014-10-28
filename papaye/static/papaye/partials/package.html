@@ -89,8 +89,8 @@
                 </div>
                 <div class="tab-pane spacer" ng-class="{ active: activeTab == 'other' }">
                     <div ng-switch="release.other_releases.length">
-                        <div class="alert alert-info">
-                            <p ng-switch-when="0">
+                        <div class="alert alert-info" ng-switch-when="0">
+                            <p>
                                 They are no other release in the repository
                             </p>
                         </div>
