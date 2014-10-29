@@ -25,10 +25,13 @@ papaye.controller('MainController', ['$scope', function($scope){
         version = $routeParams.version;
     }
     $scope.activeTab = 'current';
+    $scope.error = null;
     $scope.release = Package.get({packageName: name, version: version}, function(release) {
         $scope.description = $sce.trustAsHtml(release.metadata.description.content);
         $scope.htmlDescription = release.metadata.description.html;
-        console.log(release);
+        $scope.error = 200;
+    }, function(error) {
+        $scope.error = 404;
     });
 
     $scope.tabClick = function(index) {

@@ -5,12 +5,18 @@
 }
 
 body {
-    /*font-family: 'open_sansregular';*/
+    font-family: 'open_sansregular';
 }
 
-#tags, #tags {
+#tags {
     margin: 0px;
     padding: 0px;
+}
+
+#tags .label {
+    display: inline-block;
+    margin-left: 1px;
+    margin-right: 1px;
 }
 
 header {
@@ -27,4 +33,12 @@ header {
 
 .spacer {
     margin-top: 10px;
+}
+
+table#list_packages tbody > tr:hover {
+    cursor: pointer;
+}
+
+#nav-btn {
+    margin-bottom: 10px;
 }
