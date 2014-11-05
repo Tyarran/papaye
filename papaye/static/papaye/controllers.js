@@ -7,9 +7,7 @@ papaye.controller('MainController', ['$scope', function($scope){
 
 }])
 
-.controller('ListPackageController', ['$scope', '$location', '$resource', 'Package', function($scope, $location, $resource, Package) {
-    $scope.packages = [];
-
+.controller('ListPackageController', ['$scope', '$location', 'Package', function($scope, $location, Package) {
     $scope.packages = Package.query();
 
     $scope.selectPackage = function(packageId) {
