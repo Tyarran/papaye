@@ -1,8 +1,13 @@
 <table class="table table-striped table-hover" id="list_packages" >
     <form>
-        <input type="text"/>
+        <span class="input-group">
+            <input type="text" class="form-control" ng-model="test"/>
+            <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+        </span>
+        {{ test }}
     </form>
-    <thead>
+    <div class="spacer"></div>
+    <thead class="spacer">
         <tr>
             <th>Package</th>
             <th>Package</th>
@@ -15,3 +20,4 @@
         </tr>
     </tbody>
 </table>
+<p>{{ packageCount }} packages</p>

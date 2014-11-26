@@ -220,3 +220,16 @@ class User(BaseModel):
             return None
         else:
             return root[username]
+
+
+class RestrictedContext(object):
+
+    def __acl__(self):
+        from pyramid.security import Everyone
+        return [
+            (Allow, 'test', ALL_PERMISSIONS)
+            # (Allow, Everyone, ALL_PERMISSIONS)
+        ]
+
+    def __init__(self):
+        pass

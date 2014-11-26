@@ -30,5 +30,6 @@ papaye_js = Bundle(
     angular_js,
     bootstrap_js,
     'papaye/app.js',
+    'papaye/services.js',
     'papaye/controllers.js',
 )

@@ -3,38 +3,36 @@
 <html lang="en" ng-app="papaye" ng-controller="MainController">
     <head>
         <title>Papaye Index Home - {{ main.title }}</title>
+{% endraw %}
+        {# Styles  #}
+        {% assets "papaye_css" %}
+        <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
+        {% endassets %}
+        {% assets "papaye_font" %}
+        <link type="application/x-font-woff" href="{{ ASSET_URL }}" />
+        {% endassets %}
+{% raw %}
     </head>
     <body>
-            <nav class="navbar navbar-default" role="navigation">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <div class="nav navbar-nav navbar-left">
-                        <a class="navbar-brand" href="#">Papaye</a>
-                    </div>
-                    <ul class="nav navbar-nav" role='tablist'>
-                        <li class='active'><a href="#">Browse</a></li>
-                    </ul>
-                    <ul class="nav navbar-nav navbar-right">
-                        <li><a href="#"><span class="glyphicon glyphicon-search"></span> Admin</a></li>
-                    </ul>
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="navbar-header">
+                <div class="nav navbar-nav">
+                    <a class="navbar-brand" href="#">Papaye</a>
                 </div>
-            </nav>
+                <ul class="nav navbar-nav" role='tablist'>
+                    <li class='active'><a href="#">Browse</a></li>
+                </ul>
+                <ul class="nav navbar-nav" ng-show="login.username">
+                    <li><a href="#" ng-click="logout()"><span class="glyphicon glyphicon-user"></span>{{ login.username }} LOGOUT</a></li>
+                </ul>
+            </div>
+        </nav>
         <div class="container" ng-view>
         </div>
+    <pre>{{ login | json }}</pre>
     </body>
 {% endraw %}
-    {# Script and CSS #}
-    {% assets "papaye_css" %}
-    <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
-    {% endassets %}
-    {% assets "papaye_font" %}
-    <link type="application/x-font-woff" href="{{ ASSET_URL }}" />
-    {% endassets %}
+    {# Scripts #}
     {% assets "papaye_js" %}
      <script type="text/javascript" src="{{ ASSET_URL }}"></script>
     {% endassets %}

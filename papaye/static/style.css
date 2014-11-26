@@ -42,3 +42,9 @@ table#list_packages tbody > tr:hover {
 #nav-btn {
     margin-bottom: 10px;
 }
+
+.form-signin  {
+    max-width: 330px;
+    margin-left: auto;
+    margin-right: auto;
+}

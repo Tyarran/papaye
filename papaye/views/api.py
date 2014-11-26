@@ -39,7 +39,11 @@ def get_package(request):
 @packages.get()
 def list_packages(request):
     serializer = PackageListSerializer()
-    return [serializer.serialize(package) for package in request.context.values()]
+    packages = [serializer.serialize(package) for package in request.context.values()]
+    return {
+        'count': len(packages),
+        'result': packages,
+    }
 
 
 @package_version.get()

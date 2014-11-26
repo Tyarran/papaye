@@ -1,14 +1,29 @@
 'use strict';
 
-papaye.controller('MainController', ['$scope', function($scope){
+papaye.controller('MainController', ['$scope', 'login', function($scope, login){
     $scope.main = {
-        'title': 'Home'
+        'title': 'Home',
+    };
+    $scope.login = {
+        username: login.getUsername(),
     };
 
+    $scope.logout = function() {
+        login.setUsername("");
+        login.logout($scope);
+        $scope.refresh();
+    }
+
+    $scope.refresh = function() {
+        $scope.login.username = login.getUsername();
+    }
 }])
 
 .controller('ListPackageController', ['$scope', '$location', 'Package', function($scope, $location, Package) {
-    $scope.packages = Package.query();
+    Package.all(function(response) {
+        $scope.packages = response.result;
+        $scope.packageCount = response.count;
+    });
 
     $scope.selectPackage = function(packageId) {
         $location.path('/package/#'.replace('#', packageId));
@@ -40,4 +55,30 @@ papaye.controller('MainController', ['$scope', function($scope){
             $scope.activeTab = 'other';
         }
     };
+}])
+
+.controller('LoginController', ['$scope', '$http', '$location', 'login', function($scope, $http, $location, login) {
+    $scope.sendForm = function(loginForm) {
+
+        if (loginForm.$valid) {
+            $http({
+                url: '/login',
+                method: 'POST',
+                data: $.param({login: $scope.identifiant.username, password: $scope.identifiant.password}),
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+            }).
+            success(function(data, status, headers, config) {
+                login.setUsername(data);
+                $scope.$parent.refresh();
+                $location.url('/');
+            }).
+            error(function(data, status, headers, config) {
+                noty({text: 'An error has occurred', type: "error", layout: "bottom", timeout: 5000});
+                alert('NOK');
+            });
+        }
+        else {
+            alert("Pas valide");
+        }
+    }
 }]);
