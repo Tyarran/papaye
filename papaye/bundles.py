@@ -1,5 +1,9 @@
 from webassets import Bundle
 
+noty_js = Bundle(
+    'includes/noty/packaged/jquery.noty.packaged.min.js',
+)
+
 angular_js = Bundle(
     'includes/angular/angular.min.js',
     'includes/angular/angular-route.min.js',
@@ -29,6 +33,7 @@ papaye_font = Bundle(
 papaye_js = Bundle(
     angular_js,
     bootstrap_js,
+    noty_js,
     'papaye/app.js',
     'papaye/services.js',
     'papaye/controllers.js',
