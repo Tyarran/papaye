@@ -1,5 +1,7 @@
 import sys
 
+from random import choice
+
 from pyramid.authentication import BasicAuthAuthenticationPolicy, AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator, ConfigurationError
@@ -21,7 +23,9 @@ def auth_check_func(username, password, request):
         return user.groups
     return None
 
-my_session_factory = SignedCookieSessionFactory('itsaseekreet')
+random_passphrase = lambda: ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
+
+my_session_factory = SignedCookieSessionFactory(random_passphrase())
 
 def check_database_config(config):
     from papaye.models import get_manager
@@ -59,7 +63,7 @@ def main(global_config, **settings):
     set_cache_regions_from_settings(settings)
     config = Configurator(settings=settings)
     add_directives(config)
-    authn_policy = AuthTktAuthenticationPolicy('seekrit', hashalg='sha512')
+    authn_policy = AuthTktAuthenticationPolicy(random_passphrase(), hashalg='sha512')
     # authn_policy = AuthenticationStackPolicy()
     # authn_policy.add_policy('basic', BasicAuthAuthenticationPolicy(check=auth_check_func))
     # authn_policy.add_policy('tkt', AuthTktAuthenticationPolicy(secret='1234'))

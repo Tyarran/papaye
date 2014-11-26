@@ -15,7 +15,10 @@ def forbidden_browse_view(request):
 
 @view_config(route_name='islogged', renderer='json', permission="test")
 def index_view2(request):
-    return request.session.get('username')
+    username = request.session.get('username', None)
+    if not username:
+        return Response(status_code=401)
+    return username
 
 
 @forbidden_view_config(route_name='islogged', renderer='json')

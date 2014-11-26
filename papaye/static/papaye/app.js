@@ -7,20 +7,20 @@ var papaye = angular.module('papaye', ['ngRoute', 'ngResource'])
         var deferred = $q.defer();
     
         $http.get('/islogged', {responseType: 'json'}).success(function(data, status, headers, config) {
-            if (status === 401) {
-                login.setUsername('');
-                $timeout(deferred.reject, 0);
-                $location.url('/login');
-            }
-            else {
-                login.setUsername(data);
-                $timeout(deferred.resolve, 0);
-            }
+            login.setUsername(data);
+            $timeout(deferred.resolve, 0);
         })
         .error(function(data, status, headers, config) {
             if (status == 401) {
+                var url = $location.$$url;
+
                 login.setUsername("");
-                $location.url('/login');
+                if (url !== '/' || url !== '/login') {
+                    $location.url('/login/' + url.slice(1).replace('/', '-'));
+                }
+                else {
+                    $location.url('/login');
+                }
             }
             else {
                 noty({text: 'An error has occurred', type: "error", layout: "bottom", timeout: 5000});
@@ -37,6 +37,10 @@ var papaye = angular.module('papaye', ['ngRoute', 'ngResource'])
         }
     })
     $routeProvider.when('/login', {
+        templateUrl: 'static/papaye/partials/login.html',
+        controller: 'LoginController',
+    })
+    $routeProvider.when('/login/:to', {
         templateUrl: 'static/papaye/partials/login.html',
         controller: 'LoginController',
     })

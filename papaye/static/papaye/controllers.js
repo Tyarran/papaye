@@ -20,6 +20,7 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
 }])
 
 .controller('ListPackageController', ['$scope', '$location', 'Package', function($scope, $location, Package) {
+    $scope.$parent.refresh();
     Package.all(function(response) {
         $scope.packages = response.result;
         $scope.packageCount = response.count;
@@ -32,6 +33,7 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
 }])
 
 .controller('SinglePackageController', ['$scope', '$sce', '$routeParams', 'Package', function($scope, $sce, $routeParams, Package) {
+    $scope.$parent.refresh();
     var name = $routeParams.name,
         version = null;
     if ($routeParams.version !== undefined) {
@@ -57,9 +59,10 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
     };
 }])
 
-.controller('LoginController', ['$scope', '$http', '$location', 'login', function($scope, $http, $location, login) {
-    $scope.sendForm = function(loginForm) {
+.controller('LoginController', ['$scope', '$http', '$location', '$routeParams', 'login', function($scope, $http, $location, $routeParams, login) {
+    $scope.$parent.refresh();
 
+    $scope.sendForm = function(loginForm) {
         if (loginForm.$valid) {
             $http({
                 url: '/login',
@@ -70,7 +73,12 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
             success(function(data, status, headers, config) {
                 login.setUsername(data);
                 $scope.$parent.refresh();
-                $location.url('/');
+                if ($routeParams.to) {
+                    $location.url($routeParams.to.replace('-', '/'));
+                }
+                else {
+                    $location.url('/');
+                }
             }).
             error(function(data, status, headers, config) {
                 noty({text: 'An error has occurred', type: "error", layout: "bottom", timeout: 5000});
