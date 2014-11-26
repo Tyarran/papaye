@@ -26,6 +26,7 @@ random_passphrase = lambda: ''.join([choice('abcdefghijklmnopqrstuvwxyz012345678
 
 my_session_factory = SignedCookieSessionFactory(random_passphrase())
 
+
 def check_database_config(config):
     from papaye.models import get_manager
     manager = get_manager(config)
