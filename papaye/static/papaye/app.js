@@ -4,7 +4,9 @@ var papaye = angular.module('papaye', ['ngRoute', 'ngResource'])
 
 .config(['$routeProvider', function($routeProvider) {
     var checkIsConnected = function($q, $timeout, $http, $location, login) {
-        var deferred = $q.defer();
+        var deferred = $q.defer(),
+            url = $location.$$url;
+            console.log(url);
     
         $http.get('/islogged', {responseType: 'json'}).success(function(data, status, headers, config) {
             login.setUsername(data);
@@ -12,10 +14,8 @@ var papaye = angular.module('papaye', ['ngRoute', 'ngResource'])
         })
         .error(function(data, status, headers, config) {
             if (status == 401) {
-                var url = $location.$$url;
-
                 login.setUsername("");
-                if (url !== '/' || url !== '/login') {
+                if (url !== '/') {
                     $location.url('/login/' + url.slice(1).replace('/', '-'));
                 }
                 else {

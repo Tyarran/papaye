@@ -1,6 +1,7 @@
 'use strict';
 
 papaye.controller('MainController', ['$scope', 'login', function($scope, login){
+    login.setScope($scope);
     $scope.main = {
         'title': 'Home',
     };
@@ -9,9 +10,8 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
     };
 
     $scope.logout = function() {
-        login.setUsername("");
+        $scope.login.username = '';
         login.logout($scope);
-        $scope.refresh();
     }
 
     $scope.refresh = function() {
@@ -20,7 +20,6 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
 }])
 
 .controller('ListPackageController', ['$scope', '$location', 'Package', function($scope, $location, Package) {
-    $scope.$parent.refresh();
     Package.all(function(response) {
         $scope.packages = response.result;
         $scope.packageCount = response.count;
@@ -33,7 +32,6 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
 }])
 
 .controller('SinglePackageController', ['$scope', '$sce', '$routeParams', 'Package', function($scope, $sce, $routeParams, Package) {
-    $scope.$parent.refresh();
     var name = $routeParams.name,
         version = null;
     if ($routeParams.version !== undefined) {
@@ -60,8 +58,6 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
 }])
 
 .controller('LoginController', ['$scope', '$http', '$location', '$routeParams', 'login', function($scope, $http, $location, $routeParams, login) {
-    $scope.$parent.refresh();
-
     $scope.sendForm = function(loginForm) {
         if (loginForm.$valid) {
             $http({
@@ -71,8 +67,6 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'}
             }).
             success(function(data, status, headers, config) {
-                login.setUsername(data);
-                $scope.$parent.refresh();
                 if ($routeParams.to) {
                     $location.url($routeParams.to.replace('-', '/'));
                 }
