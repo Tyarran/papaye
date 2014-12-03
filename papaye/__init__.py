@@ -7,7 +7,6 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator, ConfigurationError
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.threadlocal import get_current_registry
-from pyramid_authstack import AuthenticationStackPolicy
 from pyramid_beaker import set_cache_regions_from_settings
 from pyramid.session import SignedCookieSessionFactory
 
