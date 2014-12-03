@@ -69,7 +69,7 @@ class Description(object):
 
 
 class APIDescription(colander.MappingSchema):
-    content = colander.SchemaNode(colander.String())
+    content = colander.SchemaNode(colander.String(), missing=None)
     html = colander.SchemaNode(colander.Boolean())
 
 

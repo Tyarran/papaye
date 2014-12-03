@@ -524,225 +524,38 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
         self.assertEqual(list(result2['objects']), [('http://example.com/simple/my_package/2.0/foo2.tar.gz/',
                                                      package['2.0']['foo2.tar.gz'])])
 
+    def test_upload_release_with_spaces(self):
+        from papaye.models import Root, Package, Release, ReleaseFile
+        from papaye.views.simple import UploadView
 
-# class BroseViewTest(unittest.TestCase):
+        # Create a fake test file
+        uploaded_file = io.BytesIO(b"content")
+        storage = FieldStorage()
+        storage.filename = 'foo.tar.gz'
+        storage.file = uploaded_file
 
-#     def setUp(self):
-#         config = testing.setUp(request=testing.DummyRequest())
-#         config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
+        self.request.POST = {
+            "content": storage,
+            "some_metadata": "Fake Metadata",
+            "version": "1.0",
+            "name": "my package",
+            ":action": "file_upload",
+            "md5_digest": "Fake MD5"
+        }
+        root = Root()
+        self.request.root = root
+        view = UploadView(root, self.request)
+        result = view()
 
-#     def test_context(self):
-#         from papaye.views.browse import BrowseView
-#         from papaye.models import Package, Release, ReleaseFile
-#         matched_route = FakeRoute('browse')
-#         request = get_current_request()
-#         request.matched_route = matched_route
-#         package = Package(name='TEST')
-#         release = Release('1.0', '1.0', metadata={})
-#         release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
-#         release.metadata = {
-#             'maintainer_email': 'test@papaye.com',
-#             'description': 'Test package',
-#         }
-#         package['1.0'] = release
-#         release['releasefile-1.0.tar.gz'] = release_file
-#         view = BrowseView(package, request)
-
-#         result = view()
-
-#         self.assertIsInstance(result, dict)
-#         self.assertIn('package', result)
-#         self.assertIn('release', result)
-#         self.assertIn('gravatar_hash', result)
-#         self.assertIn('release_file', result)
-#         self.assertEqual(result['release_file'], release_file)
-
-#     def test_not_context(self):
-#         from papaye.views.browse import BrowseView
-#         matched_route = FakeRoute('browse')
-#         request = get_current_request()
-#         request.matched_route = matched_route
-#         view = BrowseView(None, request)
-
-#         result = view()
-
-#         self.assertIsInstance(result, HTTPNotFound)
-
-#     def test_get_package_with_package(self):
-#         from papaye.views.browse import BrowseView
-#         from papaye.models import Package
-#         matched_route = FakeRoute('browse')
-#         request = get_current_request()
-#         request.matched_route = matched_route
-#         package = Package(name='TEST')
-#         view = BrowseView(package, request)
-
-#         result = view.get_package(package)
-
-#         self.assertEqual(result, package)
-
-#     def test_get_package_with_release(self):
-#         from papaye.views.browse import BrowseView
-#         from papaye.models import Package, Release
-#         matched_route = FakeRoute('browse')
-#         request = get_current_request()
-#         request.matched_route = matched_route
-#         package = Package(name='TEST')
-#         release = Release('1.0', '1.0', metadata={})
-#         package['1.0'] = release
-#         view = BrowseView(release, request)
-
-#         result = view.get_package(release)
-
-#         self.assertEqual(result, package)
-
-#     def test_get_package_with_release_file(self):
-#         from papaye.views.browse import BrowseView
-#         from papaye.models import Package, Release, ReleaseFile
-#         matched_route = FakeRoute('browse')
-#         request = get_current_request()
-#         request.matched_route = matched_route
-#         package = Package(name='TEST')
-#         release = Release('1.0', '1.0', metadata={})
-#         release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
-#         package['1.0'] = release
-#         release['releasefile-1.0.tar.gz'] = release_file
-#         view = BrowseView(release_file, request)
-
-#         result = view.get_package(release)
-
-#         self.assertEqual(result, package)
-
-#     def test_get_package_with_another_object(self):
-#         from papaye.views.browse import BrowseView
-#         matched_route = FakeRoute('browse')
-#         request = get_current_request()
-#         request.matched_route = matched_route
-#         obj = object()
-#         view = BrowseView(obj, request)
-
-#         self.assertRaises(AttributeError, view.get_package, obj)
-
-#     def test_get_release_with_package(self):
-#         from papaye.views.browse import BrowseView
-#         from papaye.models import Package, Release
-
-#         matched_route = FakeRoute('browse')
-#         request = get_current_request()
-#         request.matched_route = matched_route
-#         package = Package(name='TEST')
-#         release1 = Release('1.0', '1.0', metadata={})
-#         release2 = Release('2.0', '2.0', metadata={})
-#         package['1.0'] = release1
-#         package['2.0'] = release2
-#         view = BrowseView(package, request)
-
-#         result = view.get_release(package)
-
-#         self.assertEqual(result, release2)
-
-#     def test_get_release_with_package_multiple_releases(self):
-#         from papaye.views.browse import BrowseView
-#         from papaye.models import Package, Release
-
-#         matched_route = FakeRoute('browse')
-#         request = get_current_request()
-#         request.matched_route = matched_route
-#         package = Package(name='TEST')
-#         release1 = Release('1.0', '1.0', metadata={})
-#         release2 = Release('2.0', '2.0', metadata={})
-#         release3 = Release('2.1', '2.1', metadata={})
-#         package['1.0'] = release1
-#         package['2.1'] = release3
-#         package['2.0'] = release2
-#         view = BrowseView(package, request)
-
-#         result = view.get_release(package)
-
-#         self.assertEqual(result, release3)
-
-#     def test_get_release_with_release(self):
-#         from papaye.views.browse import BrowseView
-#         from papaye.models import Release
-
-#         matched_route = FakeRoute('browse')
-#         request = get_current_request()
-#         request.matched_route = matched_route
-#         release = Release('1.0', '1.0', metadata={})
-#         view = BrowseView(release, request)
-
-#         result = view.get_release(release)
-
-#         self.assertEqual(result, release)
-
-#     def test_get_release_with_release_file(self):
-#         from papaye.views.browse import BrowseView
-#         from papaye.models import Release, ReleaseFile
-
-#         matched_route = FakeRoute('browse')
-#         request = get_current_request()
-#         request.matched_route = matched_route
-#         release = Release('1.0', '1.0', metadata={})
-#         release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
-#         release['releasefile-1.0.tar.gz'] = release_file
-#         view = BrowseView(release, request)
-
-#         result = view.get_release(release_file)
-
-#         self.assertEqual(result, release)
-
-#     def test_get_release_file(self):
-#         from papaye.views.browse import BrowseView
-#         from papaye.models import Package, Release, ReleaseFile
-
-#         matched_route = FakeRoute('browse')
-#         request = get_current_request()
-#         request.matched_route = matched_route
-#         package = Package(name='TEST')
-#         release = Release('1.0', '1.0', metadata={})
-#         release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
-#         package['1.0'] = release
-#         release['releasefile-1.0.tar.gz'] = release_file
-#         view = BrowseView(release, request)
-
-#         result = view.get_release_file(release)
-
-#         self.assertEqual(result, release_file)
-
-#     def test_get_release_file_without_tar_gz(self):
-#             from papaye.views.browse import BrowseView
-#             from papaye.models import Package, Release, ReleaseFile
-
-#             matched_route = FakeRoute('browse')
-#             request = get_current_request()
-#             request.matched_route = matched_route
-#             package = Package(name='TEST')
-#             release = Release('1.0', '1.0', metadata={})
-#             release_file = ReleaseFile(filename='releasefile-1.0.whl', content=b'Hello')
-#             package['1.0'] = release
-#             release['releasefile-1.0.whl'] = release_file
-#             view = BrowseView(release, request)
-
-#             result = view.get_release_file(release)
-
-#             self.assertEqual(result, release_file)
-
-#     def test_get_release_file_with_multiple_file(self):
-#             from papaye.views.browse import BrowseView
-#             from papaye.models import Package, Release, ReleaseFile
-
-#             matched_route = FakeRoute('browse')
-#             request = get_current_request()
-#             request.matched_route = matched_route
-#             package = Package(name='TEST')
-#             release = Release('1.0', '1.0', metadata={})
-#             release_file1 = ReleaseFile(filename='releasefile-1.0.whl', content=b'Hello')
-#             release_file2 = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
-#             package['1.0'] = release
-#             release['releasefile-1.0.whl'] = release_file1
-#             release['releasefile-1.0.tar.gz'] = release_file2
-#             view = BrowseView(release, request)
-
-#             result = view.get_release_file(release)
-
-#             self.assertEqual(result, release_file2)
+        self.assertIsInstance(result, Response)
+        self.assertEqual(result.status_int, 200)
+        self.assertTrue('my-package' in root)
+        self.assertIsInstance(root['my-package'], Package)
+        self.assertTrue(root['my-package'].releases.get('1.0', False))
+        self.assertIsInstance(root['my-package']['1.0'], Release)
+        self.assertTrue(root['my-package']['1.0'].release_files.get('foo.tar.gz', b''))
+        self.assertIsInstance(root['my-package']['1.0']['foo.tar.gz'], ReleaseFile)
+        self.assertEqual(root['my-package']['1.0']['foo.tar.gz'].md5_digest, "Fake MD5")
+        self.assertIsNotNone(root['my-package']['1.0'].metadata)
+        self.assertIsInstance(root['my-package']['1.0'].metadata, dict)
+        self.assertEqual(root['my-package']['1.0'].release_files.get('foo.tar.gz', b'').size, 7)

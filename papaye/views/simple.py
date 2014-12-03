@@ -84,6 +84,7 @@ class ListReleaseFileView(BaseView):
         release_files = []
         for release in package.releases.values():
             for release_file in release.release_files.values():
+                release_file.__name__ = release_file.__name__.replace(' ', '-')
                 release_files.append(release_file)
         context = {
             'objects': ((self.request.resource_url(
@@ -144,6 +145,8 @@ class UploadView():
         metadata = dict([(key, value) for key, value in post.items() if key != 'content'])
         if post.get(':action') == "file_upload":
             name = post.get('name')
+            if ' ' in name:
+                name = name.replace(' ', '-')
             version = post.get('version')
             content = post.get('content')
             md5_digest = post.get('md5_digest')
