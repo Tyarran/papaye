@@ -2,3 +2,4 @@ Contributors
 ############
 
 - Olivier Demah (FoxMaSk), 2014/10/22
+- Ludovic Delauné (ldgeo), 2014/12/03

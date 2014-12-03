@@ -5,6 +5,7 @@ Changelist
 #########
 
 - Package browse UI
+- Fix relative path on zodbconn.uri (#3)
 
 0.1.2
 #####
