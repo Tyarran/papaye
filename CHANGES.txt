@@ -6,6 +6,7 @@ Changelist
 
 - Package browse UI
 - Fix relative path on zodbconn.uri (#3)
+- Fix package name with spaces
 
 0.1.2
 #####
