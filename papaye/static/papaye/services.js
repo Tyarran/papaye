@@ -39,6 +39,7 @@ papaye.factory('Package', ['$resource',
             success(function(data, status, headers, config) {
                 setUsername('');
                 noty({text: 'You are now disconnected', type: "success", layout: "bottom", timeout: 5000});
+                $scope.login.username = ''
                 $location.url('/login');
             }).
             error(function(data, status, headers, config) {

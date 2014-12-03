@@ -10,7 +10,6 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
     };
 
     $scope.logout = function() {
-        $scope.login.username = '';
         login.logout($scope);
     }
 
