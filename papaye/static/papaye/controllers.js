@@ -66,6 +66,7 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'}
             }).
             success(function(data, status, headers, config) {
+                noty({text: 'You are now connected', type: "success", layout: "bottom", timeout: 5000});
                 if ($routeParams.to) {
                     $location.url($routeParams.to.replace('-', '/'));
                 }
