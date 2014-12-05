@@ -73,7 +73,7 @@ def main(global_config, **settings):
     config.set_session_factory(my_session_factory)
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('islogged', '/islogged', factory=index_root_factory)
-    config.add_route('login', '/login')
+    config.add_route('login', '/login', factory=user_root_factory)
     config.add_route('logout', '/logout')
     config.add_route('browse', '/browse', factory=index_root_factory)
     config.add_route('simple', '/simple*traverse', factory=repository_root_factory)

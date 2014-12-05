@@ -6,6 +6,8 @@ import unittest
 from cgi import FieldStorage
 from mock import patch
 from pyramid import testing
+from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
 from pyramid.threadlocal import get_current_registry
@@ -559,3 +561,42 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
         self.assertIsNotNone(root['my-package']['1.0'].metadata)
         self.assertIsInstance(root['my-package']['1.0'].metadata, dict)
         self.assertEqual(root['my-package']['1.0'].release_files.get('foo.tar.gz', b'').size, 7)
+
+
+def test_login_view():
+    from papaye.models import User
+    from papaye.views.index import login_view
+    config = testing.setUp()
+    authn_policy = AuthTktAuthenticationPolicy('seekrit', hashalg='sha512')
+    authz_policy = ACLAuthorizationPolicy()
+    config.set_authorization_policy(authz_policy)
+    config.set_authentication_policy(authn_policy)
+    request = testing.DummyRequest()
+    request.POST = {'login': 'user', 'password': 'seekrit'}
+    request.root = {'user': User('user', 'seekrit')}
+
+    result = login_view(request)
+
+    assert isinstance(result, Response) is True
+    assert 'Set-Cookie' in result.headers
+    assert 'username' in request.session
+    assert request.session['username'] == 'user'
+
+
+def test_login_view_bad_password():
+    from papaye.models import User
+    from papaye.views.index import login_view
+    config = testing.setUp()
+    authn_policy = AuthTktAuthenticationPolicy('seekrit', hashalg='sha512')
+    authz_policy = ACLAuthorizationPolicy()
+    config.set_authorization_policy(authz_policy)
+    config.set_authentication_policy(authn_policy)
+    request = testing.DummyRequest()
+    request.POST = {'login': 'user', 'password': 'seekrit'}
+    request.root = {'user': User('user', 'bad password')}
+
+    result = login_view(request)
+
+    assert isinstance(result, Response) is True
+    assert result.status_code == 401
+    assert 'username' not in request.session

@@ -74,12 +74,10 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
                 }
             }).
             error(function(data, status, headers, config) {
-                noty({text: 'An error has occurred', type: "error", layout: "bottom", timeout: 5000});
-                alert('NOK');
+                noty({text: 'Identification failed', type: "error", layout: "bottom", timeout: 5000});
             });
         }
         else {
-            alert("Pas valide");
         }
     }
 }]);
