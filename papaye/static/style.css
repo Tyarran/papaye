@@ -48,3 +48,7 @@ table#list_packages tbody > tr:hover {
     margin-left: auto;
     margin-right: auto;
 }
+
+.dropdown, .dropdown-menu li {
+    cursor: pointer;
+}
