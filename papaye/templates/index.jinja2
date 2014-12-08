@@ -5,10 +5,13 @@
         <title>Papaye Index Home - {{ main.title }}</title>
 {% endraw %}
         {# Styles  #}
+        {% assets "external_css" %}
+        <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
+        {% endassets %}
         {% assets "papaye_css" %}
         <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
         {% endassets %}
-        {% assets "papaye_font" %}
+        {% assets "papaye_fonts" %}
         <link type="application/x-font-woff" href="{{ ASSET_URL }}" />
         {% endassets %}
 {% raw %}
@@ -24,7 +27,7 @@
                 </ul>
                 <ul class="nav navbar-nav" ng-show="login.username">
                     <li class="dropdown">
-                        <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="glyphicon glyphicon-user"></span>{{ login.username }}<span class="caret"></span></a>
+                        <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-user"></i> {{ login.username }}<span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
                             <li><a ng-click="logout()">Logout</a></li>
                         </ul>

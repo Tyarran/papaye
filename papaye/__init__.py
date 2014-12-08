@@ -10,7 +10,7 @@ from pyramid.threadlocal import get_current_registry
 from pyramid_beaker import set_cache_regions_from_settings
 from pyramid.session import SignedCookieSessionFactory
 
-from papaye.bundles import papaye_js, papaye_css, papaye_font
+from papaye.bundles import papaye_js, papaye_css, papaye_fonts, external_css
 from papaye.factories import repository_root_factory, user_root_factory, index_root_factory
 from papaye.models import User
 from papaye.tasks.devices import Scheduler, Producer
@@ -85,7 +85,8 @@ def main(global_config, **settings):
     jinja2_env.assets_environment = assets_env
     config.add_webasset('papaye_js', papaye_js)
     config.add_webasset('papaye_css', papaye_css)
-    config.add_webasset('papaye_font', papaye_font)
+    config.add_webasset('external_css', external_css)
+    config.add_webasset('papaye_fonts', papaye_fonts)
     config.check_database_config()
     config.scan()
     config.start_scheduler()

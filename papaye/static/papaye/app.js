@@ -62,4 +62,4 @@ var papaye = angular.module('papaye', ['ngRoute', 'ngResource'])
         redirectTo: '/'
     });
 }
-])
+]);

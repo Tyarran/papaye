@@ -12,8 +12,10 @@ VERSION = '0.2.0-dev'
 requires = [
     'colander==1.0b1',
     'cornice',
+    'cssmin',
     'docutils',
     'filemagic',
+    'jsmin',
     'pyramid',
     'pyramid_beaker',
     'pyramid_debugtoolbar',
