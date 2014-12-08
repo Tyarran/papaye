@@ -6,7 +6,6 @@ var papaye = angular.module('papaye', ['ngRoute', 'ngResource'])
     var checkIsConnected = function($q, $timeout, $http, $location, login) {
         var deferred = $q.defer(),
             url = $location.$$url;
-            console.log(url);
     
         $http.get('/islogged', {responseType: 'json'}).success(function(data, status, headers, config) {
             login.setUsername(data);
