@@ -154,6 +154,22 @@ class ReleaseTest(unittest.TestCase):
     def tearDown(self):
         remove_blob_dir(self.blob_dir)
 
+    def test_instantiante(self):
+        from papaye.models import Release
+
+        result = Release('1.0', '1.0', metadata={})
+
+        assert result.version == '1.0'
+        assert result.metadata is not None
+
+    def test_instantiante_without_deserialize_metadata(self):
+        from papaye.models import Release
+
+        result = Release('1.0', '1.0', metadata={}, deserialize_metadata=False)
+
+        assert result.version == '1.0'
+        assert not hasattr(result, 'metadata')
+
     def test_by_packagename(self):
         from papaye.models import Release, Package
         from papaye.factories import repository_root_factory

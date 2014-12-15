@@ -155,14 +155,15 @@ class Package(BaseModel):
 class Release(BaseModel):
     subobjects_attr = 'release_files'
 
-    def __init__(self, name, version, metadata):
+    def __init__(self, name, version, metadata, deserialize_metadata=True):
         self.__name__ = name
         self.release_files = OOBTree()
         self.version = version
         self.original_metadata = metadata
-        schema = Metadata()
-        self.metadata = schema.serialize(metadata)
-        self.metadata = schema.deserialize(self.metadata)
+        if deserialize_metadata:
+            schema = Metadata()
+            self.metadata = schema.serialize(metadata)
+            self.metadata = schema.deserialize(self.metadata)
 
     def __getitem__(self, release_file_name):
         return self.release_files[format_key(release_file_name)]
