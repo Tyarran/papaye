@@ -39,7 +39,7 @@ class PyPiProxy:
         except ConnectionError:
             return None
 
-    def build_repository(self, release_name=None):
+    def build_repository(self, release_name=None, with_metadata=False):
         root = repository_root_factory(self.request_or_dbconn)
         package_name = self.get_remote_package_name(self.package_name)
         if not package_name:
@@ -54,7 +54,7 @@ class PyPiProxy:
             remote_releases = [release_name, ] if release_name else info['releases'].keys()
 
             for remote_release in remote_releases:
-                release = Release(remote_release, remote_release, metadata=info['info'])
+                release = Release(remote_release, remote_release, metadata=info['info'], deserialize_metadata=with_metadata)
                 package[remote_release] = release
 
                 for remote_release_file in info['releases'][remote_release]:

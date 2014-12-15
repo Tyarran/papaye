@@ -20,7 +20,7 @@ def get_connection(config):
 def download_release_from_pypi(config, package_name, release_name):
     conn = get_connection(config)
     proxy = PyPiProxy(conn, package_name)
-    package = proxy.build_repository(release_name=release_name)
+    package = proxy.build_repository(release_name=release_name, with_metadata=True)
     if not package:
         logger.error('Package {} not found on PYPI'.format(package_name))
     root = repository_root_factory(conn)

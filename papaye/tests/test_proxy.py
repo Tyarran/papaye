@@ -66,7 +66,7 @@ class ProxyTest(unittest.TestCase):
         info_dict = json.loads(self.pypi_response.content.decode('utf-8'))
 
         proxy = PyPiProxy(self.request, 'pyramid')
-        result = proxy.build_repository()
+        result = proxy.build_repository(with_metadata=True)
 
         self.assertIsInstance(result, Package)
         for release in result.releases.values():
