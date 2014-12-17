@@ -20,11 +20,11 @@ from requests.exceptions import ConnectionError
 from pytz import utc
 
 from papaye.factories import user_root_factory, repository_root_factory, APP_ROOT_NAME
-from papaye.schemas import Metadata
+from papaye.schemas import Metadata, NullableMapping
 
 
 logger = logging.getLogger(__name__)
-SW_VERSION = 2
+SW_VERSION = 3
 
 
 def get_manager(config):
@@ -226,7 +226,7 @@ class User(BaseModel):
 class RestrictedContext(object):
 
     def __acl__(self):
-        from pyramid.security import Everyone
+        # from pyramid.security import Everyone
         return [
             (Allow, 'test', ALL_PERMISSIONS)
             # (Allow, Everyone, ALL_PERMISSIONS)

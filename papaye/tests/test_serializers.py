@@ -118,3 +118,41 @@ class ReleaseAPISerializerTest(unittest.TestCase):
         result = serializer.serialize(package['1.0'])
 
         self.assertEqual(result, expected)
+
+    def test_serialize_with_metadata_is_none(self):
+        from papaye.serializers import ReleaseAPISerializer
+        from papaye.models import Package, Release, ReleaseFile
+        serializer = ReleaseAPISerializer(request=self.request)
+        package = Package(name='package')
+        package['1.0'] = Release('1.0', '1.0', {
+            'summary': 'The package',
+            'description': 'A description',
+        })
+        package['1.0'].metadata = None
+        package['2.0'] = Release('2.0', '2.0', {
+            'summary': 'The package',
+            'description': 'A description',
+        })
+        package['1.0']['package-1.0.tar.gz'] = ReleaseFile('package-1.0.tar.gz', b'')
+        expected = {
+            'name': 'package',
+            'version': '1.0',
+            'gravatar_hash': None,
+            'metadata': None,
+            'download_url': 'http://example.com/simple/package/1.0/package-1.0.tar.gz/',
+            'release_files': [{
+                'size': '0',
+                'filename': 'package-1.0.tar.gz',
+                'url': 'http://example.com/simple/package/1.0/package-1.0.tar.gz/',
+                'version': '1.0',
+                'upload_date': str(package['1.0']['package-1.0.tar.gz'].upload_date),
+            }],
+            'other_releases': [{
+                'url': 'http://example.com/#/package/package/2.0',
+                'version': '2.0',
+            }]
+        }
+
+        result = serializer.serialize(package['1.0'])
+
+        self.assertEqual(result, expected)

@@ -44,6 +44,7 @@ class TestDownloadTask(unittest.TestCase):
         ]
 
         download_release_from_pypi(request.registry.settings, 'pyramid', '1.5')
+
         self.assertEqual(request_mock.call_count, 3)
         root = repository_root_factory(self.conn)
         self.assertIn('pyramid', root)
@@ -54,6 +55,7 @@ class TestDownloadTask(unittest.TestCase):
         self.assertEqual(release_file.filename, "pyramid-1.5.tar.gz")
         self.assertEqual(release_file.size, 2413504)
         self.assertEqual(list(root['pyramid'].releases.keys()), ['1.5', ])
+        assert root['pyramid']['1.5'].metadata is not None
 
     @patch('requests.get')
     @patch('papaye.tasks.download.get_connection')

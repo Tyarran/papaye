@@ -39,8 +39,10 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
     $scope.activeTab = 'current';
     $scope.error = null;
     $scope.release = Package.get({packageName: name, version: version}, function(release) {
-        $scope.description = $sce.trustAsHtml(release.metadata.description.content);
-        $scope.htmlDescription = release.metadata.description.html;
+        if (release.metadata) {
+            $scope.description = $sce.trustAsHtml(release.metadata.description.content);
+            $scope.htmlDescription = release.metadata.description.html;
+        }
         $scope.error = 200;
     }, function(error) {
         $scope.error = 404;

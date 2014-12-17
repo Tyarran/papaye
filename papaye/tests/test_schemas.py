@@ -128,6 +128,7 @@ class MetadataTest(unittest.TestCase):
         ])
 
         result = schema.deserialize({})
+
         self.assertIsNotNone(result)
         self.assertIsInstance(result, dict)
         self.assertEqual(expected_keys, sorted([key for key in result.keys()]))

@@ -2,7 +2,7 @@ import colander
 import hashlib
 
 
-from papaye.schemas import APIMetadata, String, APIReleaseFiles, APIOtherReleases
+from papaye.schemas import APIMetadata, String, APIReleaseFiles, APIOtherReleases, NullableMapping
 
 
 class Serializer(object):
@@ -38,11 +38,14 @@ class Serializer(object):
 
 class PackageListSerializer(Serializer):
     name = colander.SchemaNode(colander.String())
-    summary = colander.SchemaNode(colander.String())
+    summary = colander.SchemaNode(String(), missing=None)
 
     def get_data(self, package):
         data = super().get_data(package)
-        data['summary'] = package.metadata.get('summary')
+        if package.metadata and 'summary' in package.metadata:
+            data['summary'] = package.metadata.get('summary')
+        else:
+            data['summary'] = None
         return data
 
 
@@ -50,7 +53,7 @@ class ReleaseAPISerializer(Serializer):
     name = colander.SchemaNode(String())
     version = colander.SchemaNode(String())
     gravatar_hash = colander.SchemaNode(String(), missing=None)
-    metadata = APIMetadata()
+    metadata = APIMetadata(typ=NullableMapping(), missing=None)
     download_url = colander.SchemaNode(String())
     other_releases = APIOtherReleases()
     release_files = APIReleaseFiles()
@@ -91,12 +94,13 @@ class ReleaseAPISerializer(Serializer):
         data['name'] = release.__parent__.name
         data['metadata'] = release.metadata
         data['version'] = release.version
-        if release.metadata['maintainer_email']:
-            data['gravatar_hash'] = self.hash(release.metadata['maintainer_email'].encode('latin-1'))
-        elif release.metadata['author_email']:
-            data['gravatar_hash'] = self.hash(release.metadata['author_email'].encode('latin-1'))
-        else:
-            data['gravatar_hash'] = None
+        if release.metadata:
+            if release.metadata['maintainer_email']:
+                data['gravatar_hash'] = self.hash(release.metadata['maintainer_email'].encode('latin-1'))
+            elif release.metadata['author_email']:
+                data['gravatar_hash'] = self.hash(release.metadata['author_email'].encode('latin-1'))
+            else:
+                data['gravatar_hash'] = None
         release_file = self.get_release_file(release)
         data['download_url'] = self.request.resource_url(
             release_file,

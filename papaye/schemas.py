@@ -68,6 +68,19 @@ class Description(object):
                 return {'content': cstruct, 'html': False}
 
 
+class NullableMapping(colander.Mapping):
+
+    def serialize(self, node, appstruct):
+        if appstruct is None or appstruct == {}:
+            return colander.null
+        return super(NullableMapping, self).serialize(node, appstruct)
+
+    def deserialize(self, node, cstruct):
+        if cstruct == colander.null or cstruct == {}:
+            return None
+        return super(NullableMapping, self).deserialize(node, cstruct)
+
+
 class APIDescription(colander.MappingSchema):
     content = colander.SchemaNode(colander.String(), missing=None)
     html = colander.SchemaNode(colander.Boolean())
@@ -120,7 +133,7 @@ class APIMetadata(colander.MappingSchema):
     summary = colander.SchemaNode(String(), missing=None)
     maintainer = colander.SchemaNode(String(), missing=None)
     maintainer_email = colander.SchemaNode(String(), missing=None)
-    description = APIDescription()
+    description = APIDescription(typ=NullableMapping(), missing=None)
     platform = colander.SchemaNode(String(), missing=None)
     classifiers = colander.SchemaNode(Classifiers(), default=[])
     name = colander.SchemaNode(String(), missing=None)
