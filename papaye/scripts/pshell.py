@@ -12,5 +12,5 @@ def set_database_version(request, version):
 
 def setup(env):
     env['user_root'] = user_root_factory(env['request'])
-    env['repository_root'] = repository_root_factory(env['request'])
-    env['set_database_version'] = functools.partial(set_database_version, env['request'])
+    env['repo_root'] = repository_root_factory(env['request'])
+    env['set_db_version'] = functools.partial(set_database_version, env['request'])

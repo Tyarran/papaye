@@ -1,6 +1,7 @@
 import datetime
 import hashlib
 import io
+import itertools
 import json
 import logging
 import magic
@@ -64,14 +65,26 @@ class Root(OOBTree):
             acl.append((Allow, Everyone, 'install'))
         return acl
 
-    def __getitem__(self, package_name):
+    def __iter__(self):
+        return (package for package in self.values())
+
+
+    def __getitem__(self, name_or_index):
+        if isinstance(name_or_index, int):
+            return next(itertools.islice(self.__iter__(), name_or_index, name_or_index + 1))
         keys = [key for key in self.keys()
-                if format_key(key) == format_key(package_name)]
+                if format_key(key) == format_key(name_or_index)]
         if len(keys) == 1:
             return self.get(keys[0])
 
 
 class BaseModel(Persistent):
+
+    def __repr__(self):
+        return '<{}.{} "{}" at {}>'.format(self.__module__, self.__class__.__name__, self.__name__, id(self))
+
+
+class SubscriptableBaseModel(BaseModel):
     subobjects_attr = None
 
     def get_subobjects(self):
@@ -86,7 +99,7 @@ class BaseModel(Persistent):
             return default
 
 
-class Package(BaseModel):
+class Package(SubscriptableBaseModel):
     pypi_url = 'http://pypi.python.org/pypi/{}/json'
     subobjects_attr = 'releases'
 
@@ -95,8 +108,13 @@ class Package(BaseModel):
         self.name = name
         self.releases = OOBTree()
 
-    def __getitem__(self, release_name):
-        return self.releases[release_name]
+    def __iter__(self):
+        return (self.releases[release] for release in self.releases)
+
+    def __getitem__(self, release_name_or_index):
+        if isinstance(release_name_or_index, int):
+            return next(itertools.islice(self.__iter__(), release_name_or_index, release_name_or_index + 1))
+        return self.releases[release_name_or_index]
 
     def __setitem__(self, key, value):
         key = format_key(key)
@@ -152,7 +170,7 @@ class Package(BaseModel):
             return {}
 
 
-class Release(BaseModel):
+class Release(SubscriptableBaseModel):
     subobjects_attr = 'release_files'
 
     def __init__(self, name, version, metadata, deserialize_metadata=True):
@@ -165,8 +183,13 @@ class Release(BaseModel):
             self.metadata = schema.serialize(metadata)
             self.metadata = schema.deserialize(self.metadata)
 
-    def __getitem__(self, release_file_name):
-        return self.release_files[format_key(release_file_name)]
+    def __iter__(self):
+        return (self.release_files[release_file] for release_file in self.release_files)
+
+    def __getitem__(self, name_or_index):
+        if isinstance(name_or_index, int):
+            return next(itertools.islice(self.__iter__(), name_or_index, name_or_index + 1))
+        return self.release_files[format_key(name_or_index)]
 
     def __setitem__(self, key, value):
         key = format_key(key)
@@ -181,7 +204,7 @@ class Release(BaseModel):
         return list(root[package].releases.values())
 
 
-class ReleaseFile(Persistent):
+class ReleaseFile(BaseModel):
 
     def __init__(self, filename, content, md5_digest=None):
         self.filename = self.__name__ = filename

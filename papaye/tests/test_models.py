@@ -1,4 +1,4 @@
-
+import types
 import unittest
 
 from mock import patch
@@ -13,6 +13,30 @@ from papaye.tests.tools import (
     set_database_connection,
     get_resource,
 )
+
+
+class TestRoot(unittest.TestCase):
+
+    def test_iter(self):
+        from papaye.models import Root, Package
+        root = Root()
+        package = Package(name='package1')
+        root['package'] = package
+
+        result = iter(root)
+
+        assert isinstance(result, types.GeneratorType)
+        assert list(result) == [package, ]
+
+    def test_get_index(self):
+        from papaye.models import Root, Package
+        root = Root()
+        package = Package(name='package1')
+        root['package'] = package
+
+        result = root[0]
+
+        assert result == package
 
 
 class PackageTest(unittest.TestCase):
@@ -143,6 +167,28 @@ class PackageTest(unittest.TestCase):
         result = package.get_last_release()
         self.assertIsNone(result)
 
+    def test_iter(self):
+        from papaye.models import Package, Release
+        package = Package(name='package1')
+        release = Release('1.0', '1.0', metadata={})
+        package['release'] = release
+
+        result = iter(package)
+
+        assert isinstance(result, types.GeneratorType)
+        assert list(result) == [release, ]
+
+    def test_get_index(self):
+        from papaye.models import Package, Release
+        package = Package(name='package1')
+        release = Release('1.0', '1.0', metadata={})
+        package['release'] = release
+
+        result = package[0]
+
+        assert result == release
+
+
 
 class ReleaseTest(unittest.TestCase):
 
@@ -186,6 +232,27 @@ class ReleaseTest(unittest.TestCase):
 
         result = Release.by_packagename('package1', self.request)
         self.assertEqual(result, None)
+
+    def test_iter(self):
+        from papaye.models import Package, Release, ReleaseFile
+        release = Release('1.0', '1.0', metadata={})
+        release_file = ReleaseFile('filename.tar.gz', b'')
+        release['filename.tar.gz'] = release_file
+
+        result = iter(release)
+
+        assert isinstance(result, types.GeneratorType)
+        assert list(result) == [release_file, ]
+
+    def test_get_index(self):
+        from papaye.models import Package, Release, ReleaseFile
+        release = Release('1.0', '1.0', metadata={})
+        release_file = ReleaseFile('filename.tar.gz', b'')
+        release['filename.tar.gz'] = release_file
+
+        result = release[0]
+
+        assert result == release_file
 
 
 class ReleaseFileTest(unittest.TestCase):
