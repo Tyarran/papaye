@@ -25,7 +25,7 @@ from papaye.schemas import Metadata
 
 
 logger = logging.getLogger(__name__)
-SW_VERSION = 3
+SW_VERSION = 4
 
 
 def get_manager(config):
