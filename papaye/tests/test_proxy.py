@@ -61,9 +61,10 @@ class ProxyTest(unittest.TestCase):
     @patch('requests.get')
     def test_build_repository(self, mock):
         from papaye.proxy import PyPiProxy
-        from papaye.models import Package, ReleaseFile
+        from papaye.models import Package, ReleaseFile, Root
         mock.return_value = self.pypi_response
         info_dict = json.loads(self.pypi_response.content.decode('utf-8'))
+        root = Root()
 
         proxy = PyPiProxy(self.request, 'pyramid')
         result = proxy.build_repository(with_metadata=True)
@@ -78,6 +79,31 @@ class ProxyTest(unittest.TestCase):
         self.assertEqual(result['1.5'].release_files.values()[0].pypi_url,
                          "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.5.tar.gz")
         self.assertIsNotNone(result['1.5'].metadata)
+        assert result is not root
+
+    @patch('requests.get')
+    def test_build_repository_with_specified_root(self, mock):
+        from papaye.proxy import PyPiProxy
+        from papaye.models import Package, ReleaseFile, Root
+        mock.return_value = self.pypi_response
+        info_dict = json.loads(self.pypi_response.content.decode('utf-8'))
+        root = Root()
+
+        proxy = PyPiProxy(self.request, 'pyramid')
+        result = proxy.build_repository(with_metadata=True, root=root)
+
+        self.assertIsInstance(result, Package)
+        for release in result.releases.values():
+            self.assertIn(release.__name__, info_dict['releases'].keys())
+        self.assertEqual(len(result.releases.keys()), len(info_dict['releases'].keys()))
+        self.assertEqual(len(result['1.5'].release_files.keys()), 1)
+        self.assertIsInstance(result['1.5'].release_files.values()[0], ReleaseFile)
+        self.assertTrue(getattr(result['1.5'].release_files.values()[0], 'pypi_url', None))
+        self.assertEqual(result['1.5'].release_files.values()[0].pypi_url,
+                         "https://pypi.python.org/packages/source/p/pyramid/pyramid-1.5.tar.gz")
+        self.assertIsNotNone(result['1.5'].metadata)
+        assert result.__parent__ is root
+
 
     @patch('requests.get')
     def test_build_repository_404_error(self, mock):

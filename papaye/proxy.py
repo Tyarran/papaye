@@ -39,17 +39,16 @@ class PyPiProxy:
         except ConnectionError:
             return None
 
-    def build_repository(self, release_name=None, with_metadata=False):
-        root = repository_root_factory(self.request_or_dbconn)
+    def build_repository(self, release_name=None, with_metadata=False, root=None):
+        root = repository_root_factory(self.request_or_dbconn) if root is None else root
         package_name = self.get_remote_package_name(self.package_name)
         if not package_name:
             return None
         info = self.get_remote_informations(self.pypi_url.format(package_name))
         if info:
-            package_root = Root()
             package = Package(info['info']['name'])
-            package.__parent__ = package_root
-            package_root[package.name] = package
+            package.__parent__ = root
+            root[package.name] = package
 
             remote_releases = [release_name, ] if release_name else info['releases'].keys()
 
@@ -70,10 +69,12 @@ class PyPiProxy:
         if package.name not in root:
             return package
         else:
-            merged_package = copy.deepcopy(root[package.name])
+            merged_package = copy.copy(root[package.name])
             to_delete_releases_name = [release for release in package.releases.keys()
                                        if release in merged_package.releases.keys()]
             to_update_releases = [(key, value) for key, value in package.releases.items()
                                   if key not in to_delete_releases_name]
             merged_package.releases.update(to_update_releases)
+            for release in merged_package:
+                release.__parent__ = merged_package
             return merged_package

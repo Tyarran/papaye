@@ -23,6 +23,7 @@ class TestDownloadTask(unittest.TestCase):
         settings = disable_cache()
         self.config = testing.setUp(request=request, settings=settings)
         self.conn = get_db_connection(self.blob_dir)
+        self.root = self.conn.root()['papaye_root']['repository']
 
     def tearDown(self):
         shutil.rmtree(self.blob_dir)
@@ -47,6 +48,7 @@ class TestDownloadTask(unittest.TestCase):
 
         self.assertEqual(request_mock.call_count, 3)
         root = repository_root_factory(self.conn)
+
         self.assertIn('pyramid', root)
         self.assertIn('1.5', root['pyramid'].releases)
         self.assertIn('pyramid-1.5.tar.gz', root['pyramid']['1.5'].release_files)
@@ -56,6 +58,9 @@ class TestDownloadTask(unittest.TestCase):
         self.assertEqual(release_file.size, 2413504)
         self.assertEqual(list(root['pyramid'].releases.keys()), ['1.5', ])
         assert root['pyramid']['1.5'].metadata is not None
+        assert root['pyramid'].__parent__ is root
+        assert root['pyramid']['1.5'].__parent__ is root['pyramid']
+        assert root['pyramid']['1.5']['pyramid-1.5.tar.gz'].__parent__ is root['pyramid']['1.5']
 
     @patch('requests.get')
     @patch('papaye.tasks.download.get_connection')
@@ -76,4 +81,6 @@ class TestDownloadTask(unittest.TestCase):
         self.assertRaises(IOError, download_release_from_pypi, request.registry.settings, 'pyramid', '1.5')
         self.assertEqual(request_mock.call_count, 3)
         root = repository_root_factory(self.conn)
-        self.assertNotIn('pyramid', root)
+
+        assert root is self.root
+        self.assertIn('pyramid', root)
