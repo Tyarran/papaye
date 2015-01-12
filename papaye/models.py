@@ -21,7 +21,7 @@ from requests.exceptions import ConnectionError
 from pytz import utc
 
 from papaye.factories import user_root_factory, repository_root_factory, APP_ROOT_NAME
-from papaye.schemas import Metadata, NullableMapping
+from papaye.schemas import Metadata
 
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,8 @@ def get_connection(settings):
 
 
 class Root(OOBTree):
-    __name__ = __parent__ = None
+    __name__ = ''
+    __parent__ = None
 
     def __acl__(self):
         acl = [
@@ -67,7 +68,6 @@ class Root(OOBTree):
 
     def __iter__(self):
         return (package for package in self.values())
-
 
     def __getitem__(self, name_or_index):
         if isinstance(name_or_index, int):

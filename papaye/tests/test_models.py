@@ -309,11 +309,11 @@ class UserTest(unittest.TestCase):
         self.assertIsNone(result)
 
 
-class BaseModelTest(unittest.TestCase):
+class SubscriptableModelTest(unittest.TestCase):
 
-    from papaye.models import BaseModel
+    from papaye.models import SubscriptableBaseModel
 
-    class Model(BaseModel):
+    class Model(SubscriptableBaseModel):
         subobjects_attr = 'attribute'
 
     def test_get(self):

@@ -130,7 +130,7 @@ class DownloadReleaseView(BaseView):
         response.charset = 'utf-8'
         response.content_type = self.context.content_type
         response.body_file = self.context.content.open()
-        response.response.content_length = self.context.size
+        response.content_length = self.context.size
         return response
 
 
