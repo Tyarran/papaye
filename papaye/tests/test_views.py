@@ -495,6 +495,7 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
 
         self.assertIsInstance(result, dict)
         self.assertIn('objects', result)
+        import pdb; pdb.set_trace()
         self.assertEqual(list(result['objects']), [('http://example.com/simple/my_package/1.0/foo.tar.gz/',
                                                     package['1.0']['foo.tar.gz'])])
 

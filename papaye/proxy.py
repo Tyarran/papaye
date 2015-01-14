@@ -40,20 +40,25 @@ class PyPiProxy:
             return None
 
     def build_repository(self, release_name=None, with_metadata=False, root=None):
-        root = repository_root_factory(self.request_or_dbconn) if root is None else root
         package_name = self.get_remote_package_name(self.package_name)
         if not package_name:
             return None
         info = self.get_remote_informations(self.pypi_url.format(package_name))
         if info:
+            package_root = Root() if root is None else root
             package = Package(info['info']['name'])
-            package.__parent__ = root
-            root[package.name] = package
+            package.__parent__ = package_root
+            package_root[package.name] = package
 
             remote_releases = [release_name, ] if release_name else info['releases'].keys()
 
             for remote_release in remote_releases:
-                release = Release(remote_release, remote_release, metadata=info['info'], deserialize_metadata=with_metadata)
+                release = Release(
+                    remote_release,
+                    remote_release,
+                    metadata=info['info'],
+                    deserialize_metadata=with_metadata
+                )
                 package[remote_release] = release
 
                 for remote_release_file in info['releases'][remote_release]:
@@ -62,7 +67,9 @@ class PyPiProxy:
                     release_file = ReleaseFile(filename, b'', md5_digest)
                     setattr(release_file, 'pypi_url', remote_release_file['url'])
                     release[filename] = release_file
-            return self.smart_merge(root, package)
+            if root:
+                return self.smart_merge(root, package)
+            return package
         return None
 
     def smart_merge(self, root, package):
@@ -70,6 +77,7 @@ class PyPiProxy:
             return package
         else:
             merged_package = copy.copy(root[package.name])
+            merged_package.__parent__ = root
             to_delete_releases_name = [release for release in package.releases.keys()
                                        if release in merged_package.releases.keys()]
             to_update_releases = [(key, value) for key, value in package.releases.items()

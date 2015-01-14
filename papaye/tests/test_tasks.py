@@ -78,9 +78,7 @@ class TestDownloadTask(unittest.TestCase):
             FakeGRequestResponse(200, release_file_content.read()),
         ]
 
-        self.assertRaises(IOError, download_release_from_pypi, request.registry.settings, 'pyramid', '1.5')
+        download_release_from_pypi(request.registry.settings, 'pyramid', '1.5')
         self.assertEqual(request_mock.call_count, 3)
-        root = repository_root_factory(self.conn)
 
-        assert root is self.root
-        self.assertIn('pyramid', root)
+        assert 'pyramid' not in self.root

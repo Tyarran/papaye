@@ -51,8 +51,7 @@ def get_connection(settings):
 
 
 class Root(OOBTree):
-    __name__ = ''
-    __parent__ = None
+    __name__ = __parent__ = None
 
     def __acl__(self):
         acl = [
@@ -76,6 +75,11 @@ class Root(OOBTree):
                 if format_key(key) == format_key(name_or_index)]
         if len(keys) == 1:
             return self.get(keys[0])
+
+    def __setitem__(self, key, package):
+        if isinstance(package, Package):
+            package.__parent__ = self
+        super().__setitem__(key, package)
 
 
 class BaseModel(Persistent):
@@ -120,6 +124,10 @@ class Package(SubscriptableBaseModel):
         key = format_key(key)
         self.releases[key] = value
         self.releases[key].__parent__ = self
+
+    def __delitem__(self, key):
+        key = format_key(key)
+        del(self.releases[key])
 
     @classmethod
     @cache_region('pypi', 'get_last_remote_filename')
