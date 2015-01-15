@@ -7,6 +7,7 @@ Changelist
 - Package browse UI
 - Fix relative path on zodbconn.uri (#3)
 - Fix package name with spaces
+- Fix multiple bugs with the database tree
 
 0.1.2
 #####
@@ -20,6 +21,7 @@ Changelist
 
 0.1
 ###
+
 Initial version
 
 - Works with PIP
