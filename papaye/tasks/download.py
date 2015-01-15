@@ -33,10 +33,10 @@ def download_release_from_pypi(config, package_name, release_name):
                 binary_content = content.read()
                 if hashlib.md5(binary_content).hexdigest() != release_file.md5_digest:
                     continue
-                    # raise IOError('md5 check error')
             release_file.size = len(binary_content)
             repository_is_updated = True
             
+        package = proxy.smart_merge(root, package)
         if repository_is_updated:
             root[package.name] = package
             for release in package:
