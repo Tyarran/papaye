@@ -27,7 +27,7 @@ class ListPackageViewTest(unittest.TestCase):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
         self.blob_dir = set_database_connection(self.request)
         self.config = testing.setUp(request=self.request)
-        self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
+        self.config.add_route('simple', '/simple*traverse', factory='papaye.factories:repository_root_factory')
         registry = get_current_registry()
         registry.settings = disable_cache()
 
@@ -72,7 +72,7 @@ class ListReleaseViewTest(unittest.TestCase):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
         self.blob_dir = set_database_connection(self.request)
         self.config = testing.setUp(request=self.request)
-        self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
+        self.config.add_route('simple', '/simple*traverse', factory='papaye.factories:repository_root_factory')
         registry = get_current_registry()
         registry.settings = disable_cache()
 
@@ -270,7 +270,7 @@ class DownloadReleaseViewTest(unittest.TestCase):
         self.blob_dir = set_database_connection(self.request)
         settings = disable_cache()
         self.config = testing.setUp(request=self.request, settings=settings)
-        self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
+        self.config.add_route('simple', '/simple*traverse', factory='papaye.factories:repository_root_factory')
 
     def tearDown(self):
         remove_blob_dir(self.blob_dir)
@@ -468,7 +468,7 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
         self.blob_dir = set_database_connection(self.request)
         self.config = testing.setUp(request=self.request)
-        self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
+        self.config.add_route('simple', '/simple*traverse', factory='papaye.factories:repository_root_factory')
         registry = get_current_registry()
         registry.settings = {
             'cache.regions': 'pypi',
@@ -495,7 +495,6 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
 
         self.assertIsInstance(result, dict)
         self.assertIn('objects', result)
-        import pdb; pdb.set_trace()
         self.assertEqual(list(result['objects']), [('http://example.com/simple/my_package/1.0/foo.tar.gz/',
                                                     package['1.0']['foo.tar.gz'])])
 

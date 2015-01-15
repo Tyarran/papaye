@@ -38,7 +38,6 @@ def download_release_from_pypi(config, package_name, release_name):
             repository_is_updated = True
             
         if repository_is_updated:
-            import pdb; pdb.set_trace()
             root[package.name] = package
             for release in package:
                 release.__parent__ = package
