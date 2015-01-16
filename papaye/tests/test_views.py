@@ -16,6 +16,7 @@ from papaye.tests.tools import (
     FakeGRequestResponse,
     FakeRoute,
     disable_cache,
+    mock_proxy_response,
     remove_blob_dir,
     set_database_connection,
 )

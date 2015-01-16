@@ -9,6 +9,7 @@ from papaye.tests.tools import (
     FakeGRequestResponse,
     disable_cache,
     get_resource,
+    mock_proxy_response,
     remove_blob_dir,
     set_database_connection,
 )
@@ -21,8 +22,6 @@ class ProxyTest(unittest.TestCase):
         self.blob_dir = set_database_connection(self.request)
         settings = disable_cache()
         self.config = testing.setUp(request=self.request, settings=settings)
-        with open(get_resource('pyramid.json'), 'rb') as pyramid_json:
-            self.pypi_response = FakeGRequestResponse(200, pyramid_json.read())
 
     def tearDown(self):
         remove_blob_dir(self.blob_dir)
@@ -30,7 +29,7 @@ class ProxyTest(unittest.TestCase):
     @patch('requests.get')
     def test_get_remote_informations(self, mock):
         from papaye.proxy import PyPiProxy
-        mock.return_value = self.pypi_response
+        mock_proxy_response(mock)
         url = "http://pypi.python.org/pypi/pyramid/json"
 
         proxy = PyPiProxy(self.request, 'pyramid')
@@ -62,8 +61,9 @@ class ProxyTest(unittest.TestCase):
     def test_build_repository(self, mock):
         from papaye.proxy import PyPiProxy
         from papaye.models import Package, ReleaseFile, Root
-        mock.return_value = self.pypi_response
-        info_dict = json.loads(self.pypi_response.content.decode('utf-8'))
+        mock_proxy_response(mock)
+        pypi_response = mock()
+        info_dict = json.loads(pypi_response.content.decode('utf-8'))
         root = Root()
 
         proxy = PyPiProxy(self.request, 'pyramid')
@@ -85,8 +85,9 @@ class ProxyTest(unittest.TestCase):
     def test_build_repository_with_specified_root(self, mock):
         from papaye.proxy import PyPiProxy
         from papaye.models import Package, ReleaseFile, Root
-        mock.return_value = self.pypi_response
-        info_dict = json.loads(self.pypi_response.content.decode('utf-8'))
+        mock_proxy_response(mock)
+        pypi_response = mock()
+        info_dict = json.loads(pypi_response.content.decode('utf-8'))
         root = Root()
 
         proxy = PyPiProxy(self.request, 'pyramid')
@@ -120,7 +121,7 @@ class ProxyTest(unittest.TestCase):
         from papaye.proxy import PyPiProxy
         from papaye.factories import repository_root_factory
         from papaye.models import Package, Release, ReleaseFile
-        mock.return_value = self.pypi_response
+        mock_proxy_response(mock)
         root = repository_root_factory(self.request)
 
         # Existing releases
@@ -150,7 +151,7 @@ class ProxyTest(unittest.TestCase):
         from papaye.proxy import PyPiProxy
         from papaye.factories import repository_root_factory
         from papaye.models import Package, Release, ReleaseFile
-        mock.return_value = self.pypi_response
+        mock_proxy_response(mock)
         root = repository_root_factory(self.request)
 
         # Existing releases
@@ -181,7 +182,7 @@ class ProxyTest(unittest.TestCase):
         from papaye.proxy import PyPiProxy
         from papaye.factories import repository_root_factory
         from papaye.models import Package, Release, ReleaseFile
-        mock.return_value = self.pypi_response
+        mock_proxy_response(mock)
         root = repository_root_factory(self.request)
 
         package = Package(name='pyramid')
