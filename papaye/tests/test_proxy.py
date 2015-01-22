@@ -1,4 +1,3 @@
-import json
 import unittest
 
 from mock import patch
@@ -211,9 +210,7 @@ class ProxyTest(unittest.TestCase):
         )
         root = Root()
 
-        import pdb; pdb.set_trace()
         result = smart_merge(package1, package2, root=root)
-
 
         assert isinstance(result, Package)
         assert len(list(result)) == 1
@@ -354,3 +351,21 @@ class ProxyTest(unittest.TestCase):
         assert isinstance(result, Root)
         assert [pack.__name__ for pack in result] == ["pyramid", ]
         assert len(list(result['pyramid'])) == 1
+
+    def test_clone(self):
+        from papaye.proxy import clone
+        from papaye.models import Package, Release, ReleaseFile
+        package = Package(name='pyramid')
+        package['1.5'] = Release(name='1.5', version='1.5', metadata={})
+        package['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
+            filename='pyramid-1.5.tar.gz',
+            content=b'a existing content',
+            md5_digest='12345'
+        )
+
+        result = clone(package)
+
+        assert result is not None
+        assert result is not package
+        assert '1.5' in list(result.releases.keys())
+        assert result['1.5'] is not package['1.5']

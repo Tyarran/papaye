@@ -189,7 +189,6 @@ class PackageTest(unittest.TestCase):
         assert result == release
 
 
-
 class ReleaseTest(unittest.TestCase):
 
     def setUp(self):
@@ -234,7 +233,7 @@ class ReleaseTest(unittest.TestCase):
         self.assertEqual(result, None)
 
     def test_iter(self):
-        from papaye.models import Package, Release, ReleaseFile
+        from papaye.models import Release, ReleaseFile
         release = Release('1.0', '1.0', metadata={})
         release_file = ReleaseFile('filename.tar.gz', b'')
         release['filename.tar.gz'] = release_file
@@ -245,7 +244,7 @@ class ReleaseTest(unittest.TestCase):
         assert list(result) == [release_file, ]
 
     def test_get_index(self):
-        from papaye.models import Package, Release, ReleaseFile
+        from papaye.models import Release, ReleaseFile
         release = Release('1.0', '1.0', metadata={})
         release_file = ReleaseFile('filename.tar.gz', b'')
         release['filename.tar.gz'] = release_file
@@ -336,3 +335,22 @@ class SubscriptableModelTest(unittest.TestCase):
 
         result = model_instance.get('oups', None)
         self.assertIsNone(result)
+
+
+class BaseModelTest(unittest.TestCase):
+
+    from papaye.models import BaseModel
+
+    class TestModel(BaseModel):
+        def __init__(self, attr1, attr2):
+            self.attr1 = attr1
+            self.attr2 = attr2
+
+    def test_clone(self):
+        model = self.TestModel('one', 'two')
+
+        result = self.TestModel.clone(model)
+
+        assert result is not model
+        assert result.attr1 == 'one'
+        assert result.attr2 == 'two'

@@ -1,3 +1,4 @@
+import copy
 import datetime
 import hashlib
 import io
@@ -83,9 +84,15 @@ class Root(OOBTree):
 
 
 class BaseModel(Persistent):
+    __name__ = ''
 
     def __repr__(self):
         return '<{}.{} "{}" at {}>'.format(self.__module__, self.__class__.__name__, self.__name__, id(self))
+
+    @staticmethod
+    def clone(model_obj):
+        """Return a clone on given object"""
+        return copy.copy(model_obj)
 
 
 class SubscriptableBaseModel(BaseModel):

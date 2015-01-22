@@ -1,16 +1,29 @@
-import copy
 import json
 import requests
 
+from BTrees.OOBTree import OOBTree
 from beaker.cache import cache_region
 from requests.exceptions import ConnectionError
 
 from papaye.models import Package, Release, ReleaseFile, Root
 
 
+def clone(package):
+    """Clone a package and they subobjects"""
+    clone = Package.clone(package)
+    clone.releases = OOBTree()
+    clone.__parent__ = Root()
+
+    for release in package:
+        clone[release.__name__] = Release.clone(release)
+        for release_file in release:
+            clone[release.__name__][release_file.__name__] = ReleaseFile.clone(release_file)
+    return clone
+
+
 def smart_merge(repository_package, remote_package, root=None):
     """Merge package content into the given root if not exists"""
-    merged_package = copy.deepcopy(repository_package)
+    merged_package = clone(repository_package)
     root = root if root is not None else Root()
     merged_package.__parent__ = root
 
