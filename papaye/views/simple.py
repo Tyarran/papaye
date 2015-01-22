@@ -1,4 +1,5 @@
 import logging
+import transaction
 
 from pyramid.httpexceptions import (
     HTTPBadRequest,
@@ -35,8 +36,16 @@ def not_found(request):
     if not proxy:
         return HTTPNotFound()
     try:
-        proxy = PyPiProxy(request, request.matchdict['traverse'][0])
-        package = proxy.build_repository()
+        proxy = PyPiProxy()
+        package_name = request.matchdict['traverse'][0]
+        root = request.root
+        local_package = root[package_name] if package_name in root else Package(package_name)
+
+        if len(request.matchdict['traverse']) == 2:
+            merged_repository = proxy.merged_repository(local_package, remote_package=request.matchdict['traverse'][1])
+        else:
+            merged_repository = proxy.merged_repository(local_package)
+        package = merged_repository[package_name]
         if not package:
             return HTTPNotFound()
         if len(request.matchdict['traverse']) == 1:
@@ -81,8 +90,14 @@ class ListReleaseFileView(BaseView):
 
     def __call__(self):
         package = self.context
+        if self.proxy:
+            proxy = PyPiProxy()
+            repository = proxy.merged_repository(package)
+        else:
+            repository = package.__parent__
         release_files = []
-        for release in package.releases.values():
+
+        for release in repository[package.__name__].releases.values():
             for release_file in release.release_files.values():
                 release_file.__name__ = release_file.__name__.replace(' ', '-')
                 release_files.append(release_file)
@@ -92,7 +107,7 @@ class ListReleaseFileView(BaseView):
                 route_name='simple'
             )[:-1] + "#md5={}".format(release_file.md5_digest), release_file) for release_file in release_files),
         }
-        if package.repository_is_up_to_date(Package.get_last_remote_version(self.proxy, package.name)):
+        if len(release_files):
             return context
         else:
             return not_found(self.request)

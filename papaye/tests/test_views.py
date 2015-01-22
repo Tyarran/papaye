@@ -11,11 +11,12 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
 from pyramid.threadlocal import get_current_registry
+from requests.exceptions import ConnectionError
 
 from papaye.tests.tools import (
+    disable_cache,
     FakeGRequestResponse,
     FakeRoute,
-    disable_cache,
     mock_proxy_response,
     remove_blob_dir,
     set_database_connection,
@@ -262,6 +263,32 @@ class ListReleaseViewTest(unittest.TestCase):
         response = view()
 
         self.assertIsInstance(response, dict)
+
+    @patch('requests.get')
+    def test_list_releases_with_proxy(self, mock):
+        from papaye.views.simple import ListReleaseFileView
+        from papaye.models import Package, Release, Root, ReleaseFile
+
+        mock_proxy_response(mock)
+
+        # Test packages
+        root = Root()
+        root['pyramid'] = Package(name='pyramid')
+        root['pyramid']['release1'] = Release(name='release1', version='1.0', metadata={})
+        root['pyramid']['release1'].__parent__ = root['pyramid']
+        root['pyramid']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
+                                                                         content=b'',
+                                                                         md5_digest='12345')
+        root['pyramid']['release1']['releasefile1.tar.gz'].__parent__ = root['pyramid']['release1']
+
+        self.request.matchdict['traverse'] = (root['pyramid'].__name__, root['pyramid']['release1'].__name__)
+        self.request.registry.settings['papaye.proxy'] = 'true'
+        view = ListReleaseFileView(root['pyramid'], self.request)
+
+        response = view()
+
+        self.assertIsInstance(response, dict)
+        assert len(list(response['objects'])) == 82
 
 
 class DownloadReleaseViewTest(unittest.TestCase):
@@ -601,3 +628,16 @@ def test_login_view_bad_password():
     assert isinstance(result, Response) is True
     assert result.status_code == 401
     assert 'username' not in request.session
+
+
+@patch('requests.get')
+def test_not_found_view(mock):
+    from papaye.views.simple import not_found
+    settings = {'papaye.proxy': True}
+    request = testing.DummyRequest()
+    testing.setUp(request=request, settings=settings)
+    mock.side_effect = ConnectionError
+
+    result = not_found(request)
+
+    assert isinstance(result, HTTPNotFound)

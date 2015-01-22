@@ -61,6 +61,7 @@ class TestDownloadTask(unittest.TestCase):
         assert root['pyramid'].__parent__ is root
         assert root['pyramid']['1.5'].__parent__ is root['pyramid']
         assert root['pyramid']['1.5']['pyramid-1.5.tar.gz'].__parent__ is root['pyramid']['1.5']
+        assert len(list(root['pyramid'])) == 1
 
     @patch('requests.get')
     @patch('papaye.tasks.download.get_connection')

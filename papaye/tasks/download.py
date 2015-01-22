@@ -4,8 +4,9 @@ import requests
 import transaction
 
 from papaye.factories import repository_root_factory
-from papaye.tasks import task
+from papaye.models import Package
 from papaye.proxy import PyPiProxy
+from papaye.tasks import task
 
 
 logger = logging.getLogger(__name__)
@@ -18,15 +19,28 @@ def get_connection(config):
 
 @task
 def download_release_from_pypi(config, package_name, release_name):
-    try:
-        repository_is_updated = False
-        conn = get_connection(config)
-        proxy = PyPiProxy(conn, package_name)
-        root = repository_root_factory(conn)
-        package = proxy.build_repository(release_name=release_name, with_metadata=True)
-        if not package:
-            logger.error('Package {} not found on PYPI'.format(package_name))
-        for release_file in package[release_name].release_files.values():
+    # if not package:
+    #     logger.error('Package {} not found on PYPI'.format(package_name))
+    repository_is_updated = False
+    conn = get_connection(config)
+    proxy = PyPiProxy()
+    root = repository_root_factory(conn)
+    local_package = root[package_name]
+    if local_package is None:
+        local_package = Package(package_name)
+        created_package = True
+    else:
+        created_package = False
+    # package = proxy.build_remote_repository(package.__name__, metadata=True)
+    merged_repository = proxy.merged_repository(
+        local_package,
+        metadata=True,
+        release_name=release_name,
+        root=root
+    )
+
+    for release_file in merged_repository[package_name][release_name].release_files.values():
+        if release_file.__name__ not in list(local_package.releases):
             logger.info('Download file "{}"'.format(release_file.filename))
             release_file.set_content(requests.get(release_file.pypi_url).content)
             with release_file.content.open() as content:
@@ -35,15 +49,9 @@ def download_release_from_pypi(config, package_name, release_name):
                     continue
             release_file.size = len(binary_content)
             repository_is_updated = True
-            
-        package = proxy.smart_merge(root, package)
-        if repository_is_updated:
-            root[package.name] = package
-            for release in package:
-                release.__parent__ = package
-                for release_file in release:
-                    release_file.__parent__ = release
-
+    if repository_is_updated:
         transaction.commit()
-    except:
+    else:
+        if created_package:
+            del(root[package_name])
         transaction.abort()
