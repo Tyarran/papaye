@@ -88,6 +88,6 @@ def main(global_config, **settings):
     config.add_webasset('external_css', external_css)
     config.add_webasset('papaye_fonts', papaye_fonts)
     config.check_database_config()
-    config.scan()
+    config.scan(ignore='papaye.tests')
     config.start_scheduler()
     return config.make_wsgi_app()
