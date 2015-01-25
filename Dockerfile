@@ -10,4 +10,6 @@ RUN mkdir /srv/papaye
 ADD . /srv/papaye
 WORKDIR /srv/papaye/
 RUN /srv/papaye-venv/bin/pip install -r /srv/papaye/requirements.txt
+RUN /srv/papaye/bin/papaye_init --user admin --password admin /srv/papaye/production.ini
+RUN /srv/papaye/bin/papaye_evolve /srv/papaye/production.ini
 ENTRYPOINT /srv/papaye-venv/bin/uwsgi --http=0.0.0.0:8080 --paste config:/srv/papaye/production.ini --master --processes 4
