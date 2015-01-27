@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import requests
 import transaction
@@ -25,15 +26,11 @@ def download_release_from_pypi(config, package_name, release_name):
     local_package = root[package_name]
     if local_package is None:
         local_package = Package(package_name)
-        created_package = True
-    else:
-        created_package = False
 
     merged_repository = proxy.merged_repository(
         local_package,
         metadata=True,
         release_name=release_name,
-        # root=root
     )
 
     for release_file in merged_repository[package_name][release_name].release_files.values():
@@ -42,20 +39,13 @@ def download_release_from_pypi(config, package_name, release_name):
             response = requests.get(release_file.pypi_url)
             if response.status_code == 200:
                 release_file.set_content(response.content)
-                repository_is_updated = True
+                if release_file.md5_digest == hashlib.md5(response.content).hexdigest():
+                    repository_is_updated = True
+                    continue
             release_file.size = len(release_file.content.open().read())
     if repository_is_updated:
-        # proxy.merged_repository(
-        #     merged_repository[package_name],
-        #     metadata=True,
-        #     release_name=release_name,
-        #     root=root,
-        # )
         smart_merge(local_package, merged_repository[package_name], root=root)
         transaction.commit()
-        conn.close()
     else:
-        if created_package:
-            del(root[package_name])
         transaction.abort()
-        conn.close()
+    conn.close()

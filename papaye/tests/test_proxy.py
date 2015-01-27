@@ -287,7 +287,7 @@ class ProxyTest(unittest.TestCase):
 
         assert isinstance(result, Root)
         assert [pack.__name__ for pack in result] == ["pyramid", ]
-        assert len(list(result['pyramid'])) == 85
+        assert len(list(result['pyramid'])) == 82
         assert '100.5' in [rel for rel in result['pyramid'].releases]
         assert not hasattr(result['pyramid']['1.5'], 'metadata')
         for release in result['pyramid']:
@@ -311,7 +311,7 @@ class ProxyTest(unittest.TestCase):
 
         assert isinstance(result, Root)
         assert [pack.__name__ for pack in result] == ["pyramid", ]
-        assert len(list(result['pyramid'])) == 85
+        assert len(list(result['pyramid'])) == 82
         assert '100.5' in [rel for rel in result['pyramid'].releases]
         assert hasattr(result['pyramid']['1.5'], 'metadata')
 

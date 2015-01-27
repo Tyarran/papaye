@@ -55,9 +55,7 @@ class ListPackageViewTest(unittest.TestCase):
 
     def test_list_packages_without_package(self):
         from papaye.views.simple import ListPackagesView
-        from papaye.models import Root
-
-        # Test packages
+        from papaye.models import Root # Test packages
         root = Root()
 
         view = ListPackagesView(root, self.request)
@@ -102,9 +100,9 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertIn('objects', response)
         self.assertIsInstance(response['objects'], types.GeneratorType)
         self.assertEqual(
-            [(url, release) for url, release in response['objects']],
+            [(url, release.__name__) for url, release in response['objects']],
             [('http://example.com/simple/package1/release1/releasefile1.tar.gz#md5=12345',
-              root['package1']['release1']['releasefile1.tar.gz'])]
+              root['package1']['release1']['releasefile1.tar.gz'].__name__)]
         )
 
     def test_list_releases_files_with_multiple_files(self):
@@ -132,12 +130,12 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertIn('objects', response)
         self.assertIsInstance(response['objects'], types.GeneratorType)
         self.assertEqual(
-            [(url, release) for url, release in response['objects']],
+            [(url, release.__name__) for url, release in response['objects']],
             [
                 ('http://example.com/simple/package1/release1/releasefile1.tar.gz#md5=12345',
-                 root['package1']['release1']['releasefile1.tar.gz']),
+                 root['package1']['release1']['releasefile1.tar.gz'].__name__),
                 ('http://example.com/simple/package1/release1/releasefile2.tar.gz#md5=12345',
-                 root['package1']['release1']['releasefile2.tar.gz']),
+                 root['package1']['release1']['releasefile2.tar.gz'].__name__),
             ],
         )
 
@@ -168,12 +166,12 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertIn('objects', response)
         self.assertIsInstance(response['objects'], types.GeneratorType)
         self.assertEqual(
-            [(url, release) for url, release in response['objects']],
+            [(url, release.__name__) for url, release in response['objects']],
             [
                 ('http://example.com/simple/package1/release1/releasefile1.tar.gz#md5=12345',
-                 root['package1']['release1']['releasefile1.tar.gz']),
+                 root['package1']['release1']['releasefile1.tar.gz'].__name__),
                 ('http://example.com/simple/package1/release2/releasefile2.tar.gz#md5=12345',
-                 root['package1']['release2']['releasefile2.tar.gz']),
+                 root['package1']['release2']['releasefile2.tar.gz'].__name__),
             ],
         )
 
@@ -205,10 +203,10 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertIn('objects', response)
         self.assertIsInstance(response['objects'], types.GeneratorType)
         self.assertEqual(
-            [(url, release) for url, release in response['objects']],
+            [(url, release.__name__) for url, release in response['objects']],
             [
                 ('http://example.com/simple/package1/release1/releasefile1.tar.gz#md5=12345',
-                 root['package1']['release1']['releasefile1.tar.gz']),
+                 root['package1']['release1']['releasefile1.tar.gz'].__name__),
             ],
         )
 
@@ -219,10 +217,10 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertIn('objects', response)
         self.assertIsInstance(response['objects'], types.GeneratorType)
         self.assertEqual(
-            [(url, release) for url, release in response['objects']],
+            [(url, release.__name__) for url, release in response['objects']],
             [
                 ('http://example.com/simple/package2/release2/releasefile2.tar.gz#md5=12345',
-                 root['package2']['release2']['releasefile2.tar.gz']),
+                 root['package2']['release2']['releasefile2.tar.gz'].__name__),
             ],
         )
 

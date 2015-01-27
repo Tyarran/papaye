@@ -47,25 +47,25 @@ class TestDownloadTask(unittest.TestCase):
         download_release_from_pypi(request.registry.settings, 'pyramid', '1.5')
 
         self.assertEqual(request_mock.call_count, 3)
-        root = repository_root_factory(self.conn)
 
-        self.assertIn('pyramid', root)
-        self.assertIn('1.5', root['pyramid'].releases)
-        self.assertIn('pyramid-1.5.tar.gz', root['pyramid']['1.5'].release_files)
-        release_file = root['pyramid']['1.5']['pyramid-1.5.tar.gz']
+        self.assertIn('pyramid', self.root)
+        self.assertIn('1.5', self.root['pyramid'].releases)
+        self.assertIn('pyramid-1.5.tar.gz', self.root['pyramid']['1.5'].release_files)
+        release_file = self.root['pyramid']['1.5']['pyramid-1.5.tar.gz']
         self.assertEqual(release_file.md5_digest, "8747658dcbab709a9c491e43d3b0d58b")
         self.assertEqual(release_file.filename, "pyramid-1.5.tar.gz")
         self.assertEqual(release_file.size, 2413504)
-        self.assertEqual(list(root['pyramid'].releases.keys()), ['1.5', ])
-        assert root['pyramid']['1.5'].metadata is not None
-        assert root['pyramid'].__parent__ is root
-        assert root['pyramid']['1.5'].__parent__ is root['pyramid']
-        assert root['pyramid']['1.5']['pyramid-1.5.tar.gz'].__parent__ is root['pyramid']['1.5']
-        assert len(list(root['pyramid'])) == 1
+        self.assertEqual(list(self.root['pyramid'].releases.keys()), ['1.5', ])
+        assert self.root['pyramid']['1.5'].metadata is not None
+        assert self.root['pyramid'].__parent__ is self.root
+        assert self.root['pyramid']['1.5'].__parent__ is self.root['pyramid']
+        assert self.root['pyramid']['1.5']['pyramid-1.5.tar.gz'].__parent__ is self.root['pyramid']['1.5']
+        assert len(list(self.root['pyramid'])) == 1
 
     @patch('requests.get')
     @patch('papaye.tasks.download.get_connection')
     def test_download_release_from_pypi_with_bad_md5(self, get_connection_mock, request_mock):
+        from papaye.factories import repository_root_factory
         from papaye.tasks.download import download_release_from_pypi
         request = get_current_request()
         get_connection_mock.return_value = self.conn
@@ -77,11 +77,12 @@ class TestDownloadTask(unittest.TestCase):
             FakeGRequestResponse(200, json_response.read()),
             FakeGRequestResponse(200, release_file_content.read()),
         ]
+        root = repository_root_factory(self.conn)
 
         download_release_from_pypi(request.registry.settings, 'pyramid', '1.5')
         self.assertEqual(request_mock.call_count, 3)
 
-        assert 'pyramid' not in self.root
+        assert 'pyramid' not in root
 
     @patch('requests.get')
     @patch('papaye.tasks.download.get_connection')

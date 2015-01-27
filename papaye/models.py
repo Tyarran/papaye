@@ -179,8 +179,10 @@ class Package(SubscriptableBaseModel):
         return root[name] if name in root else None
 
     def get_last_release(self):
-        if not len(self.releases.items()):
+        if not len(self):
             return None
+        elif len(self) == 1:
+            return list(self)[0]
         max_version = max([parse_version(version) for version in self.releases.keys()])
         for version, release in self.releases.items():
             if parse_version(version) == max_version:
@@ -189,7 +191,7 @@ class Package(SubscriptableBaseModel):
     @property
     def metadata(self):
         last_release = self.get_last_release()
-        if last_release:
+        if last_release is not None:
             return last_release.metadata
         else:
             return {}
@@ -254,8 +256,10 @@ class ReleaseFile(BaseModel):
         clone.__name__ = model_obj.__name__
         clone.filename = model_obj.filename
         clone.md5_digest = model_obj.md5_digest
+        clone.size = model_obj.size
         setattr(clone, 'content', Blob(model_obj.content.open().read()))
-        clone.upload_date = copy.deepcopy(datetime.datetime.now(tz=utc))
+        clone.upload_date = copy.copy(model_obj.upload_date)
+        clone.content_type = model_obj.content_type
         return clone
 
 

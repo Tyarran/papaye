@@ -111,7 +111,7 @@ def disable_cache(settings=None):
 
 
 def mock_proxy_response(mock):
-    with open(get_resource('pyramid2.json'), 'rb') as pyramid_json:
+    with open(get_resource('pyramid.json'), 'rb') as pyramid_json:
         pypi_response = FakeGRequestResponse(200, pyramid_json.read())
     mock.return_value = pypi_response
 

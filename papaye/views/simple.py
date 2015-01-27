@@ -1,5 +1,4 @@
 import logging
-import transaction
 
 from pyramid.httpexceptions import (
     HTTPBadRequest,
@@ -90,43 +89,13 @@ class ListReleaseFileView(BaseView):
 
     def __call__(self):
         package = self.context
-        # if self.proxy:
         proxy = PyPiProxy()
         repository = proxy.merged_repository(package)
-        # else:
-            # repository = package.__parent__
-        # release_files = []
-
-        # for release in repository[package.__name__].releases.values():
-        #     for release_file in release.release_files.values():
-        #         release_file.__name__ = release_file.__name__.replace(' ', '-')
-        #         release_files.append(release_file)
-        # import pdb; pdb.set_trace()
-        # for release in repository[package.__name__]:
-        #     for rf in release:
-        #         try:
-        #             assert hasattr(rf, 'md5_digest')
-        #         except:
-        #             import pdb; pdb.set_trace()
-
-        # release_files = []
-        # for release in repository[package.__name__]:
-        #     for rfile in release:
-        #         release_files.append(rfile)
         rfiles = [rfile for rel in repository[package.__name__] for rfile in rel]
-        # import ipdb; ipdb.set_trace()
-        context = {'objects': [(self.request.resource_url(
+        context = {'objects': ((self.request.resource_url(
             rfile,
             route_name='simple'
-        )[:-1] + "#md5={}".format(rfile.md5_digest), rfile) for rfile in rfiles]}
-
-
-        # context = {
-            # 'objects': [(self.request.resource_url(
-                # release_file,
-                # route_name='simple'
-            # )[:-1] + "#md5={}".format(release_file.md5_digest), release_file) for release_file in list(repository[package.__name__])],
-        # }
+        )[:-1] + "#md5={}".format(rfile.md5_digest), rfile) for rfile in rfiles)}
         if len(rfiles):
             return context
         else:
