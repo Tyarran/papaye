@@ -1,11 +1,10 @@
-import hashlib
 import logging
 import requests
 import transaction
 
 from papaye.factories import repository_root_factory
 from papaye.models import Package
-from papaye.proxy import PyPiProxy
+from papaye.proxy import PyPiProxy, smart_merge
 from papaye.tasks import task
 
 
@@ -19,8 +18,6 @@ def get_connection(config):
 
 @task
 def download_release_from_pypi(config, package_name, release_name):
-    # if not package:
-    #     logger.error('Package {} not found on PYPI'.format(package_name))
     repository_is_updated = False
     conn = get_connection(config)
     proxy = PyPiProxy()
@@ -31,27 +28,34 @@ def download_release_from_pypi(config, package_name, release_name):
         created_package = True
     else:
         created_package = False
-    # package = proxy.build_remote_repository(package.__name__, metadata=True)
+
     merged_repository = proxy.merged_repository(
         local_package,
         metadata=True,
         release_name=release_name,
-        root=root
+        # root=root
     )
 
     for release_file in merged_repository[package_name][release_name].release_files.values():
         if release_file.__name__ not in list(local_package.releases):
             logger.info('Download file "{}"'.format(release_file.filename))
-            release_file.set_content(requests.get(release_file.pypi_url).content)
-            with release_file.content.open() as content:
-                binary_content = content.read()
-                if hashlib.md5(binary_content).hexdigest() != release_file.md5_digest:
-                    continue
-            release_file.size = len(binary_content)
-            repository_is_updated = True
+            response = requests.get(release_file.pypi_url)
+            if response.status_code == 200:
+                release_file.set_content(response.content)
+                repository_is_updated = True
+            release_file.size = len(release_file.content.open().read())
     if repository_is_updated:
+        # proxy.merged_repository(
+        #     merged_repository[package_name],
+        #     metadata=True,
+        #     release_name=release_name,
+        #     root=root,
+        # )
+        smart_merge(local_package, merged_repository[package_name], root=root)
         transaction.commit()
+        conn.close()
     else:
         if created_package:
             del(root[package_name])
         transaction.abort()
+        conn.close()

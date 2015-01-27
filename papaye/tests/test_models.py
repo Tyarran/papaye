@@ -253,6 +253,20 @@ class ReleaseTest(unittest.TestCase):
 
         assert result == release_file
 
+    def test_clone(self):
+        from papaye.models import Release
+        release = Release('A release', '1.0', metadata={})
+
+        result = Release.clone(release)
+
+        assert result is not release
+        assert result.__name__ == release.__name__
+        assert result.version == release.version
+        assert result.original_metadata == release.original_metadata
+        assert result.metadata == release.metadata
+        assert hasattr(result, 'release_files')
+        assert len(list(result)) == len(list(release))
+
 
 class ReleaseFileTest(unittest.TestCase):
 
@@ -268,6 +282,23 @@ class ReleaseFileTest(unittest.TestCase):
             release_file = ReleaseFile('pyramid-1.5.tar.gz', tar_gz.read())
 
         self.assertEqual(release_file.size, 2413504)
+
+    def test_clone(self):
+        from papaye.models import ReleaseFile
+        with open(get_resource('pyramid-1.5.tar.gz'), 'rb') as tar_gz:
+            release_file = ReleaseFile('pyramid-1.5.tar.gz', tar_gz.read())
+
+        result = ReleaseFile.clone(release_file)
+
+        assert result is not release_file
+        assert result.filename == release_file.filename
+        assert result.md5_digest == release_file.md5_digest
+        assert result.upload_date == release_file.upload_date
+        assert result.content.open().read() == release_file.content.open().read()
+        assert result.content_type == release_file.content_type
+        assert result.size == release_file.size
+        assert result.__name__ == release_file.__name__
+        assert id(result) != id(release_file)
 
 
 class UserTest(unittest.TestCase):

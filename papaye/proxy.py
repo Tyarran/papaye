@@ -9,15 +9,19 @@ from papaye.models import Package, Release, ReleaseFile, Root
 
 
 def clone(package):
-    """Clone a package and they subobjects"""
+    """Clone a package and his subobjects"""
     clone = Package.clone(package)
     clone.releases = OOBTree()
     clone.__parent__ = Root()
 
     for release in package:
-        clone[release.__name__] = Release.clone(release)
+        release_clone = Release.clone(release)
+        release_clone.release_files = OOBTree()
+        clone[release.__name__] = release_clone
         for release_file in release:
-            clone[release.__name__][release_file.__name__] = ReleaseFile.clone(release_file)
+            rf_clone = ReleaseFile.clone(release_file)
+            assert hasattr(rf_clone, 'md5_digest')
+            clone[release.__name__][release_file.__name__] = rf_clone
     return clone
 
 

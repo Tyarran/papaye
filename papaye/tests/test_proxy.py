@@ -287,9 +287,12 @@ class ProxyTest(unittest.TestCase):
 
         assert isinstance(result, Root)
         assert [pack.__name__ for pack in result] == ["pyramid", ]
-        assert len(list(result['pyramid'])) == 82
+        assert len(list(result['pyramid'])) == 85
         assert '100.5' in [rel for rel in result['pyramid'].releases]
         assert not hasattr(result['pyramid']['1.5'], 'metadata')
+        for release in result['pyramid']:
+            for release_file in release:
+                assert hasattr(release_file, 'md5_digest')
 
     @patch('requests.get')
     def test_merged_repository_with_metadata(self, mock):
@@ -308,7 +311,7 @@ class ProxyTest(unittest.TestCase):
 
         assert isinstance(result, Root)
         assert [pack.__name__ for pack in result] == ["pyramid", ]
-        assert len(list(result['pyramid'])) == 82
+        assert len(list(result['pyramid'])) == 85
         assert '100.5' in [rel for rel in result['pyramid'].releases]
         assert hasattr(result['pyramid']['1.5'], 'metadata')
 
@@ -367,5 +370,67 @@ class ProxyTest(unittest.TestCase):
 
         assert result is not None
         assert result is not package
+        assert result.__name__ == package.__name__
         assert '1.5' in list(result.releases.keys())
         assert result['1.5'] is not package['1.5']
+
+    def test_clone_complexe(self):
+        from papaye.proxy import clone
+        from papaye.models import Package, Release, ReleaseFile
+        package = Package(name='pyramid')
+        package['1.3'] = Release(name='1.3', version='1.3', metadata={})
+        package['1.4'] = Release(name='1.4', version='1.4', metadata={})
+        package['1.5'] = Release(name='1.5', version='1.5', metadata={})
+        package['1.3']['pyramid-1.3.tar.gz'] = ReleaseFile(
+            filename='pyramid-1.3.tar.gz',
+            content=b'a existing content',
+            md5_digest='12345'
+        )
+        package['1.4']['pyramid-1.4.tar.gz'] = ReleaseFile(
+            filename='pyramid-1.4.tar.gz',
+            content=b'a existing content',
+            md5_digest='12345'
+        )
+        package['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
+            filename='pyramid-1.5.tar.gz',
+            content=b'a existing content',
+            md5_digest='12345'
+        )
+        package['1.5']['pyramid-1.5.whl'] = ReleaseFile(
+            filename='pyramid-1.5.whl',
+            content=b'a existing content',
+            md5_digest='12345'
+        )
+
+        result = clone(package)
+
+        assert result is not None
+        assert result is not package
+        assert ['1.3', '1.4', '1.5'] == list(result.releases.keys())
+        for release_name in ['1.3', '1.4', '1.5']:
+            assert result[release_name] != package[release_name]
+
+        assert 'pyramid-1.3.tar.gz' in list(result['1.3'].release_files.keys())
+        release_file = result['1.3']['pyramid-1.3.tar.gz']
+        assert release_file is not package['1.3']['pyramid-1.3.tar.gz']
+        assert release_file.content.open().read() == package['1.3']['pyramid-1.3.tar.gz'].content.open().read()
+        assert release_file.md5_digest == package['1.3']['pyramid-1.3.tar.gz'].md5_digest
+        assert release_file.size == package['1.3']['pyramid-1.3.tar.gz'].size
+
+        release_file = result['1.4']['pyramid-1.4.tar.gz']
+        assert release_file is not package['1.4']['pyramid-1.4.tar.gz']
+        assert release_file.content.open().read() == package['1.4']['pyramid-1.4.tar.gz'].content.open().read()
+        assert release_file.md5_digest == package['1.4']['pyramid-1.4.tar.gz'].md5_digest
+        assert release_file.size == package['1.4']['pyramid-1.4.tar.gz'].size
+
+        release_file = result['1.5']['pyramid-1.5.tar.gz']
+        assert release_file is not package['1.5']['pyramid-1.5.tar.gz']
+        assert release_file.content.open().read() == package['1.5']['pyramid-1.5.tar.gz'].content.open().read()
+        assert release_file.md5_digest == package['1.5']['pyramid-1.5.tar.gz'].md5_digest
+        assert release_file.size == package['1.5']['pyramid-1.5.tar.gz'].size
+
+        release_file = result['1.5']['pyramid-1.5.whl']
+        assert release_file is not package['1.5']['pyramid-1.5.whl']
+        assert release_file.content.open().read() == package['1.5']['pyramid-1.5.whl'].content.open().read()
+        assert release_file.md5_digest == package['1.5']['pyramid-1.5.whl'].md5_digest
+        assert release_file.size == package['1.5']['pyramid-1.5.whl'].size

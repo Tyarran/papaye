@@ -67,7 +67,6 @@ class TestDownloadTask(unittest.TestCase):
     @patch('papaye.tasks.download.get_connection')
     def test_download_release_from_pypi_with_bad_md5(self, get_connection_mock, request_mock):
         from papaye.tasks.download import download_release_from_pypi
-        from papaye.factories import repository_root_factory
         request = get_current_request()
         get_connection_mock.return_value = self.conn
 
@@ -105,7 +104,36 @@ class TestDownloadTask(unittest.TestCase):
         release_file = ReleaseFile('pyramid-1.0.tar.gz', b'')
         root['pyramid'] = package
         root['pyramid']['1.0'] = release
-        root['pyramid']['1.0']['pyramid-1.0.tar.gz']= release_file
+        root['pyramid']['1.0']['pyramid-1.0.tar.gz'] = release_file
+
+        download_release_from_pypi(request.registry.settings, 'pyramid', '1.5')
+
+        self.assertEqual(request_mock.call_count, 3)
+        assert request_mock.call_count == 3
+        assert len(list(root['pyramid'])) == 2
+
+    @patch('requests.get')
+    @patch('papaye.tasks.download.get_connection')
+    def test_download_release_from_pypi_different_metadata_by_release(self, get_connection_mock, request_mock):
+        from papaye.factories import repository_root_factory
+        from papaye.models import Package, Release, ReleaseFile
+        from papaye.tasks.download import download_release_from_pypi
+        request = get_current_request()
+        get_connection_mock.return_value = self.conn
+        json_response = open(get_resource('pyramid.json'), 'rb')
+        release_file_content = open(get_resource('pyramid-1.5.tar.gz'), 'rb')
+        request_mock.side_effect = [
+            FakeGRequestResponse(200, b'', 'http://pypi.python.org/simple/pyramid/'),
+            FakeGRequestResponse(200, json_response.read()),
+            FakeGRequestResponse(200, release_file_content.read()),
+        ]
+        root = repository_root_factory(self.conn)
+        package = Package('pyramid')
+        release = Release('1.0', '1.0', metadata={})
+        release_file = ReleaseFile('pyramid-1.0.tar.gz', b'')
+        root['pyramid'] = package
+        root['pyramid']['1.0'] = release
+        root['pyramid']['1.0']['pyramid-1.0.tar.gz'] = release_file
 
         download_release_from_pypi(request.registry.settings, 'pyramid', '1.5')
 

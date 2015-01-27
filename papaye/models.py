@@ -89,10 +89,17 @@ class BaseModel(Persistent):
     def __repr__(self):
         return '<{}.{} "{}" at {}>'.format(self.__module__, self.__class__.__name__, self.__name__, id(self))
 
-    @staticmethod
-    def clone(model_obj):
+    @classmethod
+    def clone(cls, model_obj):
         """Return a clone on given object"""
-        return copy.copy(model_obj)
+        clone = cls.__new__(cls)
+        for key, value in model_obj.__dict__.items():
+            if isinstance(value, Blob):
+                setattr(clone, key, Blob(value.open().read()))
+            else:
+                setattr(clone, key, copy.copy(value))
+        clone.__name__ = model_obj.__name__
+        return clone
 
 
 class SubscriptableBaseModel(BaseModel):
@@ -108,6 +115,9 @@ class SubscriptableBaseModel(BaseModel):
             return getitem_object[key]
         else:
             return default
+
+    def __len__(self):
+        return len(list(getattr(self, self.subobjects_attr)))
 
 
 class Package(SubscriptableBaseModel):
@@ -236,6 +246,17 @@ class ReleaseFile(BaseModel):
         self.content = Blob(content)
         self.content_type = self.get_content_type(content)
         self.size = len(content)
+
+    @classmethod
+    def clone(cls, model_obj):
+        """Return a clone on given object"""
+        clone = cls.__new__(cls)
+        clone.__name__ = model_obj.__name__
+        clone.filename = model_obj.filename
+        clone.md5_digest = model_obj.md5_digest
+        setattr(clone, 'content', Blob(model_obj.content.open().read()))
+        clone.upload_date = copy.deepcopy(datetime.datetime.now(tz=utc))
+        return clone
 
 
 class User(BaseModel):
