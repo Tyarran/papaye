@@ -85,7 +85,8 @@ class ListReleaseFileView(BaseView):
     def __call__(self):
         package = self.context
         proxy = PyPiProxy()
-        repository = proxy.merged_repository(package)
+        stop = hasattr(self, 'stop') and self.stop
+        repository = package.__parent__ if stop else proxy.merged_repository(package)
         rfiles = [rfile for rel in repository[package.__name__] for rfile in rel]
         context = {'objects': ((self.request.resource_url(
             rfile,
@@ -93,7 +94,7 @@ class ListReleaseFileView(BaseView):
         )[:-1] + "#md5={}".format(rfile.md5_digest), rfile) for rfile in rfiles)}
         if len(rfiles):
             return context
-        elif hasattr(self, 'stop') and self.stop:
+        elif stop:
             return HTTPNotFound()
         else:
             return not_found(self.request)
