@@ -629,10 +629,27 @@ def test_login_view_bad_password():
 
 
 @patch('requests.get')
-def test_not_found_view(mock):
+def test_not_found_view_with_no_proxy(mock):
     from papaye.views.simple import not_found
-    settings = {'papaye.proxy': True}
+    settings = {'papaye.proxy': 'false'}
     request = testing.DummyRequest()
+    request.matchdict = {'traverse': ('package',)}
+    testing.setUp(request=request, settings=settings)
+    mock.side_effect = ConnectionError
+
+    result = not_found(request)
+
+    assert isinstance(result, HTTPNotFound)
+
+
+@patch('requests.get')
+def test_not_found_view_package_not_found(mock):
+    from papaye.views.simple import not_found
+    settings = {'papaye.proxy': 'true'}
+    settings = disable_cache(settings)
+    request = testing.DummyRequest()
+    request.matchdict = {'traverse': ('package',)}
+    request.root = {}
     testing.setUp(request=request, settings=settings)
     mock.side_effect = ConnectionError
 

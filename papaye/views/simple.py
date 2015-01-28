@@ -27,38 +27,33 @@ def basic_challenge(request):
     return response
 
 
-@notfound_view_config(route_name="simple", renderer='simple.jinja2')
-def not_found(request):
-    settings = request.registry.settings
+def proxy_activated(settings):
     proxy = settings.get('papaye.proxy', False)
-    proxy = True if proxy and proxy == 'true' else False
-    if not proxy:
-        return HTTPNotFound()
-    try:
-        proxy = PyPiProxy()
-        package_name = request.matchdict['traverse'][0]
-        root = request.root
-        local_package = root[package_name] if package_name in root else Package(package_name)
+    return True if proxy and proxy == 'true' else False
 
-        if len(request.matchdict['traverse']) == 2:
-            merged_repository = proxy.merged_repository(local_package, remote_package=request.matchdict['traverse'][1])
-        else:
-            merged_repository = proxy.merged_repository(local_package)
-        package = merged_repository[package_name]
-        if not package:
-            return HTTPNotFound()
-        if len(request.matchdict['traverse']) == 1:
-            view = ListReleaseFileView(package, request)
-        elif len(request.matchdict['traverse']) == 2:
-            context = package[request.matchdict['traverse'][1]]
-            view = ListReleaseFileByReleaseView(context, request)
-        elif len(request.matchdict['traverse']) == 3:
-            release_file = package[request.matchdict['traverse'][1]][request.matchdict['traverse'][2]]
-            package_name, release_name, _ = request.matchdict['traverse']
-            download_release_from_pypi.delay(package_name, release_name)
-            return HTTPTemporaryRedirect(location=release_file.pypi_url)
-    except KeyError:
+
+@notfound_view_config(route_name="simple", renderer='simple.jinja2')
+def not_found(request, stop=None):
+    if not proxy_activated(request.registry.settings) or stop is not None:
         return HTTPNotFound()
+    proxy = PyPiProxy()
+    package_name = request.matchdict['traverse'][0]
+    local_package = request.root[package_name] if package_name in request.root else Package(package_name)
+    merged_repository = proxy.merged_repository(local_package)
+
+    package = merged_repository[package_name]
+    traversed = len(request.matchdict['traverse'])
+    if traversed == 1:
+        view = ListReleaseFileView(package, request)
+        view.stop = True
+    elif traversed == 2:
+        context = package[request.matchdict['traverse'][1]]
+        view = ListReleaseFileByReleaseView(context, request)
+    elif traversed == 3:
+        release_file = package[request.matchdict['traverse'][1]][request.matchdict['traverse'][2]]
+        package_name, release_name, _ = request.matchdict['traverse']
+        download_release_from_pypi.delay(package_name, release_name)
+        return HTTPTemporaryRedirect(location=release_file.pypi_url)
     return view()
 
 
@@ -98,6 +93,8 @@ class ListReleaseFileView(BaseView):
         )[:-1] + "#md5={}".format(rfile.md5_digest), rfile) for rfile in rfiles)}
         if len(rfiles):
             return context
+        elif hasattr(self, 'stop') and self.stop:
+            return HTTPNotFound()
         else:
             return not_found(self.request)
 
