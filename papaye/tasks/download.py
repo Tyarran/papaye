@@ -1,4 +1,5 @@
 import hashlib
+import json
 import logging
 import requests
 import transaction
@@ -7,6 +8,7 @@ from papaye.factories import repository_root_factory
 from papaye.models import Package
 from papaye.proxy import PyPiProxy, smart_merge
 from papaye.tasks import task
+from papaye.schemas import Metadata
 
 
 logger = logging.getLogger(__name__)
@@ -15,6 +17,14 @@ logger = logging.getLogger(__name__)
 def get_connection(config):
     conn = config.registry._zodb_databases[''].open()
     return conn
+
+
+def get_release_metadatas(package_name, release_name):
+    schema = Metadata()
+    response = requests.get('https://pypi.python.org/pypi/{}/{}/json'.format(package_name, release_name))
+    if response.status_code == 200:
+        original_metadata = json.loads(response.content.decode('utf-8'))['info']
+    return original_metadata, schema.deserialize(schema.serialize(original_metadata))
 
 
 @task
@@ -34,6 +44,9 @@ def download_release_from_pypi(config, package_name, release_name):
     )
 
     for release_file in merged_repository[package_name][release_name].release_files.values():
+        original_metadata, metadata = get_release_metadatas(package_name, release_name)
+        release_file.original_metadata = original_metadata
+        release_file.metadata = metadata
         if release_file.__name__ not in list(local_package.releases):
             logger.info('Download file "{}"'.format(release_file.filename))
             response = requests.get(release_file.pypi_url)

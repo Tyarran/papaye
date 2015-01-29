@@ -32,21 +32,22 @@ class TestDownloadTask(unittest.TestCase):
     @patch('papaye.tasks.download.get_connection')
     def test_download_release_from_pypi(self, get_connection_mock, request_mock):
         from papaye.tasks.download import download_release_from_pypi
-        from papaye.factories import repository_root_factory
         request = get_current_request()
         get_connection_mock.return_value = self.conn
 
         json_response = open(get_resource('pyramid.json'), 'rb')
+        json_request_response = open(get_resource('pyramid1.4.json'), 'rb')
         release_file_content = open(get_resource('pyramid-1.5.tar.gz'), 'rb')
         request_mock.side_effect = [
             FakeGRequestResponse(200, b'', 'http://pypi.python.org/simple/pyramid/'),
             FakeGRequestResponse(200, json_response.read()),
+            FakeGRequestResponse(200, json_request_response.read()),
             FakeGRequestResponse(200, release_file_content.read()),
         ]
 
         download_release_from_pypi(request.registry.settings, 'pyramid', '1.5')
 
-        self.assertEqual(request_mock.call_count, 3)
+        self.assertEqual(request_mock.call_count, 4)
 
         self.assertIn('pyramid', self.root)
         self.assertIn('1.5', self.root['pyramid'].releases)
@@ -71,16 +72,18 @@ class TestDownloadTask(unittest.TestCase):
         get_connection_mock.return_value = self.conn
 
         json_response = open(get_resource('pyramid.json'), 'rb')
+        json_request_response = open(get_resource('pyramid1.4.json'), 'rb')
         release_file_content = io.BytesIO(b'corrupted_file')
         request_mock.side_effect = [
             FakeGRequestResponse(200, b'', 'http://pypi.python.org/simple/pyramid/'),
             FakeGRequestResponse(200, json_response.read()),
+            FakeGRequestResponse(200, json_request_response.read()),
             FakeGRequestResponse(200, release_file_content.read()),
         ]
         root = repository_root_factory(self.conn)
 
         download_release_from_pypi(request.registry.settings, 'pyramid', '1.5')
-        self.assertEqual(request_mock.call_count, 3)
+        self.assertEqual(request_mock.call_count, 4)
 
         assert 'pyramid' not in root
 
@@ -93,10 +96,12 @@ class TestDownloadTask(unittest.TestCase):
         request = get_current_request()
         get_connection_mock.return_value = self.conn
         json_response = open(get_resource('pyramid.json'), 'rb')
+        json_request_response = open(get_resource('pyramid1.4.json'), 'rb')
         release_file_content = open(get_resource('pyramid-1.5.tar.gz'), 'rb')
         request_mock.side_effect = [
             FakeGRequestResponse(200, b'', 'http://pypi.python.org/simple/pyramid/'),
             FakeGRequestResponse(200, json_response.read()),
+            FakeGRequestResponse(200, json_request_response.read()),
             FakeGRequestResponse(200, release_file_content.read()),
         ]
         root = repository_root_factory(self.conn)
@@ -109,23 +114,35 @@ class TestDownloadTask(unittest.TestCase):
 
         download_release_from_pypi(request.registry.settings, 'pyramid', '1.5')
 
-        self.assertEqual(request_mock.call_count, 3)
-        assert request_mock.call_count == 3
+        assert request_mock.call_count == 4
         assert len(list(root['pyramid'])) == 2
 
+    @patch('hashlib.md5')
     @patch('requests.get')
     @patch('papaye.tasks.download.get_connection')
-    def test_download_release_from_pypi_different_metadata_by_release(self, get_connection_mock, request_mock):
+    def test_download_release_from_pypi_different_metadata(self, get_connection_mock, request_mock, md5mock):
         from papaye.factories import repository_root_factory
         from papaye.models import Package, Release, ReleaseFile
         from papaye.tasks.download import download_release_from_pypi
         request = get_current_request()
         get_connection_mock.return_value = self.conn
+
+        class FakeHexdigestMethod(object):
+
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def hexdigest(self):
+                return 'd72b664cf3852570faa44a81eb0e448b'
+
+        md5mock.return_value = FakeHexdigestMethod()
         json_response = open(get_resource('pyramid.json'), 'rb')
+        json_request_response = open(get_resource('pyramid1.4.json'), 'rb')
         release_file_content = open(get_resource('pyramid-1.5.tar.gz'), 'rb')
         request_mock.side_effect = [
             FakeGRequestResponse(200, b'', 'http://pypi.python.org/simple/pyramid/'),
             FakeGRequestResponse(200, json_response.read()),
+            FakeGRequestResponse(200, json_request_response.read()),
             FakeGRequestResponse(200, release_file_content.read()),
         ]
         root = repository_root_factory(self.conn)
@@ -136,8 +153,8 @@ class TestDownloadTask(unittest.TestCase):
         root['pyramid']['1.0'] = release
         root['pyramid']['1.0']['pyramid-1.0.tar.gz'] = release_file
 
-        download_release_from_pypi(request.registry.settings, 'pyramid', '1.5')
+        download_release_from_pypi(request.registry.settings, 'pyramid', '1.4')
 
-        self.assertEqual(request_mock.call_count, 3)
-        assert request_mock.call_count == 3
+        assert request_mock.call_count == 4
+        assert md5mock.call_count == 1
         assert len(list(root['pyramid'])) == 2
