@@ -37,27 +37,29 @@ def download_release_from_pypi(config, package_name, release_name):
     if local_package is None:
         local_package = Package(package_name)
 
-    merged_repository = proxy.merged_repository(
-        local_package,
+    remote_repository = proxy.build_remote_repository(
+        package_name,
         metadata=True,
         release_name=release_name,
     )
 
-    for release_file in merged_repository[package_name][release_name].release_files.values():
-        original_metadata, metadata = get_release_metadatas(package_name, release_name)
-        release_file.original_metadata = original_metadata
-        release_file.metadata = metadata
+    original_metadata, metadata = get_release_metadatas(package_name, release_name)
+    remote_repository[package_name][release_name].original_metadata = original_metadata
+    remote_repository[package_name][release_name].metadata = metadata
+
+    for release_file in remote_repository[package_name][release_name].release_files.values():
+
         if release_file.__name__ not in list(local_package.releases):
             logger.info('Download file "{}"'.format(release_file.filename))
             response = requests.get(release_file.pypi_url)
             if response.status_code == 200:
                 release_file.set_content(response.content)
-                if release_file.md5_digest == hashlib.md5(response.content).hexdigest():
-                    repository_is_updated = True
+                if release_file.md5_digest != hashlib.md5(response.content).hexdigest():
                     continue
+                repository_is_updated = True
             release_file.size = len(release_file.content.open().read())
     if repository_is_updated:
-        smart_merge(local_package, merged_repository[package_name], root=root)
+        smart_merge(local_package, remote_repository[package_name], root=root)
         transaction.commit()
     else:
         transaction.abort()

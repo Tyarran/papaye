@@ -147,14 +147,17 @@ class TestDownloadTask(unittest.TestCase):
         ]
         root = repository_root_factory(self.conn)
         package = Package('pyramid')
-        release = Release('1.0', '1.0', metadata={})
-        release_file = ReleaseFile('pyramid-1.0.tar.gz', b'')
+        release = Release('1.5', '1.5', metadata={'version': '1.5'}, deserialize_metadata=True)
+        release_file = ReleaseFile('pyramid-1.5.tar.gz', b'')
         root['pyramid'] = package
-        root['pyramid']['1.0'] = release
-        root['pyramid']['1.0']['pyramid-1.0.tar.gz'] = release_file
+        root['pyramid']['1.5'] = release
+        root['pyramid']['1.5']['pyramid-1.5.tar.gz'] = release_file
 
         download_release_from_pypi(request.registry.settings, 'pyramid', '1.4')
 
         assert request_mock.call_count == 4
         assert md5mock.call_count == 1
         assert len(list(root['pyramid'])) == 2
+        assert '1.4' == root['pyramid']['1.4'].metadata['version']
+        existing_version = root['pyramid']['1.5'].metadata['version']
+        assert existing_version != root['pyramid']['1.4'].metadata['version']
