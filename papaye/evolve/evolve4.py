@@ -13,4 +13,4 @@ def evolve(context):
             for release_file in release:
                 release_file.__parent__ = release
                 print('\t\tUpgrade {} file'.format(release_file.__name__))
-    context.evolved = 3
+    context.evolved = 4

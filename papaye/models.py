@@ -28,7 +28,7 @@ from papaye.schemas import Metadata
 
 logger = logging.getLogger(__name__)
 status_type = collections.namedtuple('status', ('local', 'cached', 'distant'))
-SW_VERSION = 4
+SW_VERSION = 5
 STATUS = status_type(*range(0, len(status_type._fields)))
 
 
