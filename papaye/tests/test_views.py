@@ -381,7 +381,7 @@ class UploadReleaseViewTest(unittest.TestCase):
         self.config = testing.setUp(request=self.request)
 
     def test_upload_release(self):
-        from papaye.models import Root, Package, Release, ReleaseFile
+        from papaye.models import Root, Package, Release, ReleaseFile, STATUS
         from papaye.views.simple import UploadView
 
         # Create a fake test file
@@ -405,16 +405,17 @@ class UploadReleaseViewTest(unittest.TestCase):
 
         self.assertIsInstance(result, Response)
         self.assertEqual(result.status_int, 200)
-        self.assertTrue('my_package' in root)
-        self.assertIsInstance(root['my_package'], Package)
-        self.assertTrue(root['my_package'].releases.get('1.0', False))
-        self.assertIsInstance(root['my_package']['1.0'], Release)
-        self.assertTrue(root['my_package']['1.0'].release_files.get('foo.tar.gz', b''))
-        self.assertIsInstance(root['my_package']['1.0']['foo.tar.gz'], ReleaseFile)
-        self.assertEqual(root['my_package']['1.0']['foo.tar.gz'].md5_digest, "Fake MD5")
-        self.assertIsNotNone(root['my_package']['1.0'].metadata)
-        self.assertIsInstance(root['my_package']['1.0'].metadata, dict)
-        self.assertEqual(root['my_package']['1.0'].release_files.get('foo.tar.gz', b'').size, 7)
+        self.assertTrue('my-package' in root)
+        self.assertIsInstance(root['my-package'], Package)
+        self.assertTrue(root['my-package'].releases.get('1.0', False))
+        self.assertIsInstance(root['my-package']['1.0'], Release)
+        self.assertTrue(root['my-package']['1.0'].release_files.get('foo.tar.gz', b''))
+        self.assertIsInstance(root['my-package']['1.0']['foo.tar.gz'], ReleaseFile)
+        self.assertEqual(root['my-package']['1.0']['foo.tar.gz'].md5_digest, "Fake MD5")
+        self.assertIsNotNone(root['my-package']['1.0'].metadata)
+        self.assertIsInstance(root['my-package']['1.0'].metadata, dict)
+        self.assertEqual(root['my-package']['1.0'].release_files.get('foo.tar.gz', b'').size, 7)
+        assert root['my-package']['1.0']['foo.tar.gz'].status == STATUS.local
 
     def test_upload_release_already_exists(self):
         from papaye.models import Root, Package, Release, ReleaseFile
@@ -439,7 +440,7 @@ class UploadReleaseViewTest(unittest.TestCase):
         package = Package('my_package')
         package['1.0'] = Release('1.0', '1.0', metadata={})
         package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
-        root['my_package'] = package
+        root['my-package'] = package
 
         view = UploadView(root, self.request)
         result = view()
@@ -467,25 +468,25 @@ class UploadReleaseViewTest(unittest.TestCase):
         root = Root()
 
         # Create initial release
-        package = Package('my_package')
+        package = Package('my-package')
         package['1.0'] = Release('1.0', '1.0', metadata={})
         package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'Fake Content')
-        root['my_package'] = package
+        root['my-package'] = package
 
         view = UploadView(root, self.request)
         result = view()
 
         self.assertIsInstance(result, Response)
         self.assertEqual(result.status_int, 200)
-        self.assertTrue('my_package' in root)
-        self.assertIsInstance(root['my_package'], Package)
-        self.assertTrue(root['my_package'].releases.get('1.0', False))
-        self.assertIsInstance(root['my_package']['1.0'], Release)
-        self.assertTrue(root['my_package']['1.0'].release_files.get('foo.tar.gz', b''))
-        self.assertIsInstance(root['my_package']['1.0']['foo.tar.gz'], ReleaseFile)
-        self.assertTrue(root['my_package']['1.0'].release_files.get('foo.zip', b''))
-        self.assertIsInstance(root['my_package']['1.0']['foo.zip'], ReleaseFile)
-        self.assertEqual(root['my_package']['1.0'].release_files.get('foo.tar.gz', b'').size, 12)
+        self.assertTrue('my-package' in root)
+        self.assertIsInstance(root['my-package'], Package)
+        self.assertTrue(root['my-package'].releases.get('1.0', False))
+        self.assertIsInstance(root['my-package']['1.0'], Release)
+        self.assertTrue(root['my-package']['1.0'].release_files.get('foo.tar.gz', b''))
+        self.assertIsInstance(root['my-package']['1.0']['foo.tar.gz'], ReleaseFile)
+        self.assertTrue(root['my-package']['1.0'].release_files.get('foo.zip', b''))
+        self.assertIsInstance(root['my-package']['1.0']['foo.zip'], ReleaseFile)
+        self.assertEqual(root['my-package']['1.0'].release_files.get('foo.tar.gz', b'').size, 12)
 
 
 class ListReleaseFileByReleaseViewTest(unittest.TestCase):

@@ -1,4 +1,5 @@
 import logging
+import pkg_resources
 
 from pyramid.httpexceptions import (
     HTTPBadRequest,
@@ -11,7 +12,7 @@ from pyramid.response import Response
 from pyramid.security import forget
 from pyramid.view import view_config, notfound_view_config, forbidden_view_config
 
-from papaye.models import ReleaseFile, Package, Release, Root
+from papaye.models import ReleaseFile, Package, Release, Root, STATUS
 from papaye.proxy import PyPiProxy
 from papaye.views.commons import BaseView
 from papaye.tasks.download import download_release_from_pypi
@@ -147,9 +148,7 @@ class UploadView():
         post = dict(self.request.POST)
         metadata = dict([(key, value) for key, value in post.items() if key != 'content'])
         if post.get(':action') == "file_upload":
-            name = post.get('name')
-            if ' ' in name:
-                name = name.replace(' ', '-')
+            name = pkg_resources.safe_name(post.get('name'))
             version = post.get('version')
             content = post.get('content')
             md5_digest = post.get('md5_digest')
@@ -167,7 +166,12 @@ class UploadView():
             if release.release_files.get(content.filename):
                 return HTTPConflict()
 
-            release_file = ReleaseFile(filename=content.filename, content=content.file.read(), md5_digest=md5_digest)
+            release_file = ReleaseFile(
+                filename=content.filename,
+                content=content.file.read(),
+                md5_digest=md5_digest,
+                status=STATUS.local,
+            )
             release = self.context[name][version]
             self.context[name][version][content.filename] = release_file
             return Response()

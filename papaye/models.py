@@ -1,3 +1,4 @@
+import collections
 import copy
 import datetime
 import hashlib
@@ -26,7 +27,9 @@ from papaye.schemas import Metadata
 
 
 logger = logging.getLogger(__name__)
+status_type = collections.namedtuple('status', ('local', 'cached', 'distant'))
 SW_VERSION = 4
+STATUS = status_type(*range(0, len(status_type._fields)))
 
 
 def get_manager(config):
@@ -233,11 +236,12 @@ class Release(SubscriptableBaseModel):
 
 class ReleaseFile(BaseModel):
 
-    def __init__(self, filename, content, md5_digest=None):
+    def __init__(self, filename, content, md5_digest=None, status=None):
         self.filename = self.__name__ = filename
         self.md5_digest = md5_digest
         self.set_content(content)
         self.upload_date = datetime.datetime.now(tz=utc)
+        self.status = status if status is not None else STATUS.cached
 
     def get_content_type(self, content):
         buf = io.BytesIO(content)
@@ -260,6 +264,7 @@ class ReleaseFile(BaseModel):
         setattr(clone, 'content', Blob(model_obj.content.open().read()))
         clone.upload_date = copy.copy(model_obj.upload_date)
         clone.content_type = model_obj.content_type
+        clone.status = model_obj.status
         return clone
 
 

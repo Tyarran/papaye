@@ -199,7 +199,15 @@ class ReleaseTest(unittest.TestCase):
     def tearDown(self):
         remove_blob_dir(self.blob_dir)
 
-    def test_instantiante(self):
+    def test_instantiate(self):
+        from papaye.models import Release
+
+        result = Release('1.0', '1.0', metadata={})
+
+        assert result.version == '1.0'
+        assert result.metadata is not None
+
+    def test_instantiate_local(self):
         from papaye.models import Release
 
         result = Release('1.0', '1.0', metadata={})
@@ -282,6 +290,24 @@ class ReleaseFileTest(unittest.TestCase):
             release_file = ReleaseFile('pyramid-1.5.tar.gz', tar_gz.read())
 
         self.assertEqual(release_file.size, 2413504)
+
+    def test_instanciate(self):
+        from papaye.models import ReleaseFile, STATUS
+
+        with open(get_resource('pyramid-1.5.tar.gz'), 'rb') as tar_gz:
+            result = ReleaseFile('release file', tar_gz.read())
+
+        assert hasattr(result, 'status')
+        assert result.status == STATUS.cached
+
+    def test_instanciate_local(self):
+        from papaye.models import ReleaseFile, STATUS
+
+        with open(get_resource('pyramid-1.5.tar.gz'), 'rb') as tar_gz:
+            result = ReleaseFile('release file', tar_gz.read(), status=STATUS.local)
+
+        assert hasattr(result, 'status')
+        assert result.status == STATUS.local
 
     def test_clone(self):
         from papaye.models import ReleaseFile
