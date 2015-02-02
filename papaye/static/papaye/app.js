@@ -6,7 +6,7 @@ var papaye = angular.module('papaye', ['ngRoute', 'ngResource'])
     var checkIsConnected = function($q, $timeout, $http, $location, login) {
         var deferred = $q.defer(),
             url = $location.$$url;
-    
+
         $http.get('/islogged', {responseType: 'json'}).success(function(data, status, headers, config) {
             login.setUsername(data);
             $timeout(deferred.resolve, 0);
@@ -25,10 +25,14 @@ var papaye = angular.module('papaye', ['ngRoute', 'ngResource'])
                 noty({text: 'An error has occurred', type: "error", layout: "bottom", timeout: 5000});
             }
         });
-        
+
         return deferred.promise;
     };
     $routeProvider.when('/', {
+        templateUrl: 'static/papaye/partials/index.html',
+        controller: 'MainController',
+    })
+    $routeProvider.when('/browse', {
         templateUrl: 'static/papaye/partials/list_packages.html',
         controller: 'ListPackageController',
         resolve: {
@@ -43,14 +47,14 @@ var papaye = angular.module('papaye', ['ngRoute', 'ngResource'])
         templateUrl: 'static/papaye/partials/login.html',
         controller: 'LoginController',
     })
-    .when('/package/:name', {
+    .when('/browse/:name', {
         templateUrl: 'static/papaye/partials/package.html',
         controller: 'SinglePackageController',
         resolve: {
             connected: checkIsConnected
         }
     })
-    .when('/package/:name/:version', {
+    .when('/browse/:name/:version', {
         templateUrl: 'static/papaye/partials/package.html',
         controller: 'SinglePackageController',
         resolve: {

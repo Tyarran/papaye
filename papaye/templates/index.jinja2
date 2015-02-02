@@ -17,15 +17,19 @@
 {% raw %}
     </head>
     <body>
-        <nav class="navbar navbar-default" role="navigation">
-            <div class="navbar-header">
-                <div class="nav navbar-nav">
+
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
                     <a class="navbar-brand" href="#">Papaye</a>
                 </div>
-                <ul class="nav navbar-nav" role='tablist'>
-                    <li class='active'><a href="#">Browse</a></li>
+
+                 <ul class="nav navbar-nav" role='tablist'>
+                    <li ng-repeat="page in pages"><a href="{{ page[1] }}">{{ page[0] }}</a></li>
+
                 </ul>
-                <ul class="nav navbar-nav" ng-show="login.username">
+
+                <ul class="nav navbar-nav pull-right" ng-show="login.username">
                     <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-user"></i> {{ login.username }}<span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
@@ -35,6 +39,7 @@
                 </ul>
             </div>
         </nav>
+
         <div class="container" ng-view>
         </div>
     </body>

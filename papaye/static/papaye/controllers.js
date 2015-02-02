@@ -9,6 +9,8 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
         username: login.getUsername(),
     };
 
+    $scope.pages = [['Home', '#/'], ['Browse', '#/browse']];
+
     $scope.logout = function() {
         login.logout($scope);
     }
@@ -18,14 +20,14 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
     }
 }])
 
-.controller('ListPackageController', ['$scope', '$location', 'Package', function($scope, $location, Package) {
+.controller('ListPackageController', ['$scope', '$location', '$route', 'Package', function($scope, $location, $route,Package) {
     Package.all(function(response) {
         $scope.packages = response.result;
         $scope.packageCount = response.count;
     });
 
     $scope.selectPackage = function(packageId) {
-        $location.path('/package/#'.replace('#', packageId));
+        $location.path('/browse/#'.replace('#', packageId));
     }
 
 }])

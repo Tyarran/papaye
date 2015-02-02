@@ -118,7 +118,7 @@ class ReleaseAPISerializer(Serializer):
                 item = {'version': release.version}
                 item['url'] = self.request.resource_url(
                     release,
-                    route_name='browse',
+                    route_name='home',
                 ) + "#/package/{}/{}".format(package.name, release.version)
                 result.append(item)
         return result
