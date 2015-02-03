@@ -10,6 +10,7 @@ from pyramid.threadlocal import get_current_registry
 from pyramid_beaker import set_cache_regions_from_settings
 from pyramid.session import SignedCookieSessionFactory
 
+from papaye.authentification import RouteNameAuthPolicy
 from papaye.bundles import papaye_js, papaye_css, papaye_fonts, external_css
 from papaye.factories import repository_root_factory, user_root_factory, index_root_factory
 from papaye.models import User
@@ -63,10 +64,10 @@ def main(global_config, **settings):
     set_cache_regions_from_settings(settings)
     config = Configurator(settings=settings)
     add_directives(config)
-    authn_policy = AuthTktAuthenticationPolicy(random_passphrase(), hashalg='sha512')
-    # authn_policy = AuthenticationStackPolicy()
-    # authn_policy.add_policy('basic', BasicAuthAuthenticationPolicy(check=auth_check_func))
-    # authn_policy.add_policy('tkt', AuthTktAuthenticationPolicy(secret='1234'))
+    authn_policy = RouteNameAuthPolicy(
+        default=AuthTktAuthenticationPolicy(random_passphrase(), hashalg='sha512'),
+        simple=BasicAuthAuthenticationPolicy(check=auth_check_func),
+    )
     authz_policy = ACLAuthorizationPolicy()
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
