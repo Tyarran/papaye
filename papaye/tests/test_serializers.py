@@ -55,7 +55,7 @@ class ReleaseAPISerializerTest(unittest.TestCase):
         self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
         self.config = testing.setUp(request=self.request)
         self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
-        self.config.add_route('browse', '/')
+        self.config.add_route('home', '/')
         registry = get_current_registry()
         registry.settings = disable_cache()
 
