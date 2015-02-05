@@ -53,7 +53,8 @@ def add_directives(config):
 def start_scheduler(config):
     registry = get_current_registry()
     registry.producer = Producer(config)
-    if sys.argv[0].endswith('pserve'):
+    exclude_list = ['pshell', 'pcreate', 'ptweens', 'pviews', 'prequests']
+    if not len([cmd for cmd in exclude_list if sys.argv[0].endswith(cmd)]):
         scheduler = Scheduler(config.registry.settings, config)
         scheduler.run()
 
