@@ -1,5 +1,7 @@
 import argparse
 import getpass
+import os
+import sys
 import transaction
 
 from papaye.scripts.common import get_settings
@@ -15,6 +17,15 @@ def get_database_root(dbconn):
 def app_root_exists(dbconn):
     zodb_root = get_database_root(dbconn)
     if not '{}_root'.format(APP_NAME) in zodb_root:
+        return False
+    return True
+
+
+def database_already_initialized(dbconn):
+    zodb_root = get_database_root(dbconn)
+    if not '{}_root'.format(APP_NAME) in zodb_root:
+        return False
+    if not len([user for user in zodb_root['{}_root'.format(APP_NAME)]['user'] if 'group:admin' in user.groups]):
         return False
     return True
 
@@ -48,30 +59,35 @@ def create_admin_user(dbconn, username, password):
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Initialize Papaye database.')
+    parser = argparse.ArgumentParser(description='Initialize the Papaye database.')
     parser.add_argument('file.ini', type=str, nargs='+', help='configuration INI file')
     parser.add_argument('--user', type=str, help='Admin username')
     parser.add_argument('--password', type=str, help='Admin password')
+    parser.add_argument('--replace', help='Replace the existing admin user if exists', action='store_true')
+    parser.add_argument('-q', help='Quiet mode', dest="quiet", action='store_true')
     return parser.parse_args()
 
 
 def main(*argv, **kwargs):
     args = parse_arguments()
+    if args.quiet:
+        sys.stdout = open(os.devnull, "w")
     settings = get_settings(getattr(args, 'file.ini'))
-    if not args.user:
-        username = input('username for administrator (default="admin"): ')
-        username = 'admin' if not username or username == '' else username.strip()
-    else:
-        username = args.user
-    if not args.password:
-        password = getpass.getpass()
-    else:
-        password = args.password
     conn = get_connection(settings)
-    if not app_root_exists(conn):
-        create_app_root(conn)
-    if admin_already_exists(conn, username):
-        print("There is nothing to do. Username already exists")
+    if database_already_initialized(conn) and not args.replace:
+        print('''There is nothing to do because the database is already initialized.
+If you want to force this action, re-run with the "--replace" argument''')
     else:
+        if not args.user:
+            username = input('username for administrator (default="admin"): ')
+            username = 'admin' if not username or username == '' else username.strip()
+        else:
+            username = args.user
+        if not args.password:
+            password = getpass.getpass()
+        else:
+            password = args.password
+        if not app_root_exists(conn):
+            create_app_root(conn)
         create_admin_user(conn, username, password)
     print("Initialization complete!")
