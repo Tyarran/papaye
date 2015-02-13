@@ -1,10 +1,18 @@
 'use strict';
 
-papaye.controller('MainController', ['$scope', 'login', function($scope, login){
-    login.setScope($scope);
-    $scope.main = {
-        'title': 'Home',
+var BaseChildController = function($scope, title) {
+
+    $scope.$parent.login = {
+        username: $scope.loginService.getUsername(),
     };
+    $scope.$parent.main = {
+        title: title,
+    }
+};
+
+papaye.controller('MainController', ['$scope', '$route', '$http', '$location', 'login', function($scope, $route, $http, $location, login){
+    $scope.loginService = login
+
     $scope.login = {
         username: login.getUsername(),
     };
@@ -12,29 +20,45 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
     $scope.pages = [['Home', '#/'], ['Browse', '#/browse']];
 
     $scope.logout = function() {
-        login.logout($scope);
-    }
+        var redirectUrl = '/reload/' + $location.url().replace(/\//g, "*").slice(1);
 
-    $scope.refresh = function() {
-        $scope.login.username = login.getUsername();
-    }
+        $http({
+            url: '/logout',
+            method: 'get',
+        }).
+        success(function(data, status, headers, config) {
+            login.setUsername('');
+            noty({text: 'You are now disconnected', type: "success", layout: "bottom", timeout: 5000});
+            $location.path(redirectUrl);
+        }).
+        error(function(data, status, headers, config) {
+            alert('NOK');
+        });
+    };
 }])
 
-.controller('ListPackageController', ['$scope', '$location', '$route', 'Package', function($scope, $location, $route,Package) {
+.controller('HomeController', ['$scope', '$location', '$route', '$injector', 'Package', function($scope, $location, $route, $injector, Package) {
+    $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Home'});
+}])
+
+.controller('ListPackageController', ['$scope', '$location', '$route', '$injector', 'Package', function($scope, $location, $route, $injector, Package) {
+    $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Package list'});
     Package.all(function(response) {
         $scope.packages = response.result;
         $scope.packageCount = response.count;
     });
 
     $scope.selectPackage = function(packageId) {
-        $location.path('/browse/#'.replace('#', packageId));
+        $location.url('/browse/#'.replace('#', packageId));
     }
 
 }])
 
-.controller('SinglePackageController', ['$scope', '$sce', '$routeParams', 'Package', function($scope, $sce, $routeParams, Package) {
+.controller('SinglePackageController', ['$scope', '$sce', '$routeParams', '$injector', 'Package', function($scope, $sce, $routeParams, $injector, Package) {
     var name = $routeParams.name,
         version = null;
+
+    $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Package ' + name});
     if ($routeParams.version !== undefined) {
         version = $routeParams.version;
     }
@@ -60,7 +84,8 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
     };
 }])
 
-.controller('LoginController', ['$scope', '$http', '$location', '$routeParams', 'login', function($scope, $http, $location, $routeParams, login) {
+.controller('LoginController', ['$scope', '$http', '$location', '$routeParams', '$injector', 'login', function($scope, $http, $location, $routeParams, $injector, login) {
+    $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Login'});
     $scope.sendForm = function(loginForm) {
         if (loginForm.$valid) {
             $http({
@@ -70,7 +95,9 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'}
             }).
             success(function(data, status, headers, config) {
+                login.setUsername(data);
                 noty({text: 'You are now connected', type: "success", layout: "bottom", timeout: 5000});
+                console.log("logged");
                 if ($routeParams.to) {
                     $location.url($routeParams.to.replace('-', '/'));
                 }
@@ -85,4 +112,12 @@ papaye.controller('MainController', ['$scope', 'login', function($scope, login){
         else {
         }
     }
+}])
+
+.controller('ReloaderController', ['$scope', '$location', '$routeParams', function($scope, $location, $routeParams) {
+    var url = $routeParams.url;
+
+    url = url.replace(/\/reload/g, '');
+    url = url.replace(/\*/g, '/')
+    $location.url(url);
 }]);

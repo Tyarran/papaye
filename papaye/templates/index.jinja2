@@ -2,7 +2,7 @@
 {% raw %}
 <html lang="en" ng-app="papaye" ng-controller="MainController">
     <head>
-        <title>Papaye Index Home - {{ main.title }}</title>
+        <title ng-model="main.title">Papaye Index - {{ main.title }}</title>
 {% endraw %}
         {# Styles  #}
         {% assets "external_css" %}
@@ -32,7 +32,7 @@
                 <ul class="nav navbar-nav pull-right" ng-show="login.username">
                     <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-user"></i> {{ login.username }}<span class="caret"></span></a>
-                        <ul class="dropdown-menu" role="menu">
+                        <ul class="dropdown-menu dropdown-menu-right" role="menu">
                             <li><a ng-click="logout()">Logout</a></li>
                         </ul>
                     </li>

@@ -10,9 +10,8 @@ papaye.factory('Package', ['$resource',
     }]
 )
 
-.service('login', ['$http', '$location', function($http, $location) {
-	var username = "",
-        scope = null;
+.service('login', ['$http', function($http) {
+	var username = "";
 
     return {
         getUsername: function() {
@@ -21,30 +20,6 @@ papaye.factory('Package', ['$resource',
 
         setUsername: function(newUsername) {
             username = newUsername;
-            scope.refresh();
-        },
-
-
-        setScope: function(newScope) {
-            scope = newScope;
-        },
-
-        logout: function($scope) {
-            var setUsername = this.setUsername;
-
-            $http({
-                url: '/logout',
-                method: 'get',
-            }).
-            success(function(data, status, headers, config) {
-                setUsername('');
-                noty({text: 'You are now disconnected', type: "success", layout: "bottom", timeout: 5000});
-                $scope.login.username = ''
-                $location.url('/login');
-            }).
-            error(function(data, status, headers, config) {
-                alert('NOK');
-            });
         },
     }
 }]);
