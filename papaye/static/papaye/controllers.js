@@ -1,12 +1,17 @@
 'use strict';
 
-var BaseChildController = function($scope, title) {
+var BaseChildController = function($scope, title, pageName) {
 
     $scope.$parent.login = {
         username: $scope.loginService.getUsername(),
     };
+
     $scope.$parent.main = {
         title: title,
+    }
+
+    if (pageName !== undefined) {
+        $scope.$parent.activePage = pageName;
     }
 };
 
@@ -35,14 +40,16 @@ papaye.controller('MainController', ['$scope', '$route', '$http', '$location', '
             alert('NOK');
         });
     };
+    
+    $scope.activePage = "Home";
 }])
 
 .controller('HomeController', ['$scope', '$location', '$route', '$injector', 'Package', function($scope, $location, $route, $injector, Package) {
-    $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Home'});
+    $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Home', pageName: 'Home'});
 }])
 
 .controller('ListPackageController', ['$scope', '$location', '$route', '$injector', 'Package', function($scope, $location, $route, $injector, Package) {
-    $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Package list'});
+    $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Package list', pageName: 'Browse'});
     Package.all(function(response) {
         $scope.packages = response.result;
         $scope.packageCount = response.count;
@@ -58,7 +65,7 @@ papaye.controller('MainController', ['$scope', '$route', '$http', '$location', '
     var name = $routeParams.name,
         version = null;
 
-    $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Package ' + name});
+    $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Package ' + name, pageName: 'Browse'});
     if ($routeParams.version !== undefined) {
         version = $routeParams.version;
     }
@@ -85,7 +92,7 @@ papaye.controller('MainController', ['$scope', '$route', '$http', '$location', '
 }])
 
 .controller('LoginController', ['$scope', '$http', '$location', '$routeParams', '$injector', 'login', function($scope, $http, $location, $routeParams, $injector, login) {
-    $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Login'});
+    $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Login', pageName: undefined});
     $scope.sendForm = function(loginForm) {
         if (loginForm.$valid) {
             $http({

@@ -25,7 +25,7 @@
                 </div>
 
                  <ul class="nav navbar-nav" role='tablist'>
-                    <li ng-repeat="page in pages"><a href="{{ page[1] }}">{{ page[0] }}</a></li>
+                     <li ng-repeat="page in pages" ng-class="{ active: activePage == page[0] }"><a href="{{ page[1] }}">{{ page[0] }}</a></li>
 
                 </ul>
 
