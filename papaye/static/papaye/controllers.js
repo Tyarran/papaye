@@ -48,12 +48,21 @@ papaye.controller('MainController', ['$scope', '$route', '$http', '$location', '
     $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Home', pageName: 'Home'});
 }])
 
-.controller('ListPackageController', ['$scope', '$location', '$route', '$injector', 'Package', function($scope, $location, $route, $injector, Package) {
+.controller('ListPackageController', ['$scope', '$location', '$route', '$injector', '$filter', 'Package', function($scope, $location, $route, $injector, $filter, Package) {
     $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Package list', pageName: 'Browse'});
     Package.all(function(response) {
         $scope.packages = response.result;
-        $scope.packageCount = response.count;
     });
+
+    $scope.search = null;
+
+    $scope.emptySearch = function() {
+        $scope.search = null;
+    }
+
+    $scope.filterPackageList = function() {
+        return $filter('filter')($scope.packages, $scope.search);
+    }
 
     $scope.selectPackage = function(packageId) {
         $location.url('/browse/#'.replace('#', packageId));
