@@ -79,8 +79,7 @@ class ReleaseAPISerializer(Serializer):
         keys = ('filename', 'upload_date', 'size')
         result = []
         for release_file in release_files:
-            item = {'filename': None, 'upload_date': None, 'size': None}
-            item.update({key: value for key, value in release_file.__dict__.items() if key in keys})
+            item = {key: getattr(release_file, key, None) for key in keys}
             item['version'] = release.version
             item['url'] = self.request.resource_url(
                 release_file,
