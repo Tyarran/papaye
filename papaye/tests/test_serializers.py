@@ -110,7 +110,7 @@ class ReleaseAPISerializerTest(unittest.TestCase):
                 'upload_date': str(package['1.0']['package-1.0.tar.gz'].upload_date),
             }],
             'other_releases': [{
-                'url': 'http://example.com/#/package/package/2.0',
+                'url': 'http://example.com/#/browse/package/2.0',
                 'version': '2.0',
             }]
         }
@@ -148,7 +148,7 @@ class ReleaseAPISerializerTest(unittest.TestCase):
                 'upload_date': str(package['1.0']['package-1.0.tar.gz'].upload_date),
             }],
             'other_releases': [{
-                'url': 'http://example.com/#/package/package/2.0',
+                'url': 'http://example.com/#/browse/package/2.0',
                 'version': '2.0',
             }]
         }
