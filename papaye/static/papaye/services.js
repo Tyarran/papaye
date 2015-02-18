@@ -22,4 +22,18 @@ papaye.factory('Package', ['$resource',
             username = newUsername;
         },
     }
-}]);
+}])
+
+.service('locationSaver', ['$location', function($location) {
+    var locationUrl = null;
+
+    return {
+        storeLocation: function(NewLocationUrl) {
+            locationUrl = NewLocationUrl;
+        },
+
+        recoverLocation: function() {
+            $location.url(locationUrl);
+        }
+    }
+}]); 

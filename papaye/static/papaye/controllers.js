@@ -1,7 +1,8 @@
 'use strict';
 
 var BaseChildController = function($scope, title, pageName) {
-
+    //console.log('this:', this);
+    
     $scope.$parent.login = {
         username: $scope.loginService.getUsername(),
     };
@@ -25,8 +26,6 @@ papaye.controller('MainController', ['$scope', '$route', '$http', '$location', '
     $scope.pages = [['Home', '#/'], ['Browse', '#/browse']];
 
     $scope.logout = function() {
-        var redirectUrl = '/reload/' + $location.url().replace(/\//g, "*").slice(1);
-
         $http({
             url: '/logout',
             method: 'get',
@@ -34,7 +33,7 @@ papaye.controller('MainController', ['$scope', '$route', '$http', '$location', '
         success(function(data, status, headers, config) {
             login.setUsername('');
             noty({text: 'You are now disconnected', type: "success", layout: "bottom", timeout: 5000});
-            $location.path(redirectUrl);
+            $location.path('/reload/');
         }).
         error(function(data, status, headers, config) {
             alert('NOK');
@@ -100,7 +99,7 @@ papaye.controller('MainController', ['$scope', '$route', '$http', '$location', '
     };
 }])
 
-.controller('LoginController', ['$scope', '$http', '$location', '$routeParams', '$injector', 'login', function($scope, $http, $location, $routeParams, $injector, login) {
+.controller('LoginController', ['$scope', '$http', '$location', '$injector', 'login', 'locationSaver', function($scope, $http, $location, $injector, login, locationSaver) {
     $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Login', pageName: undefined});
     $scope.sendForm = function(loginForm) {
         if (loginForm.$valid) {
@@ -114,26 +113,15 @@ papaye.controller('MainController', ['$scope', '$route', '$http', '$location', '
                 login.setUsername(data);
                 noty({text: 'You are now connected', type: "success", layout: "bottom", timeout: 5000});
                 console.log("logged");
-                if ($routeParams.to) {
-                    $location.url($routeParams.to.replace('-', '/'));
-                }
-                else {
-                    $location.url('/');
-                }
+                locationSaver.recoverLocation();
             }).
             error(function(data, status, headers, config) {
                 noty({text: 'Identification failed', type: "error", layout: "bottom", timeout: 5000});
             });
         }
-        else {
-        }
     }
 }])
 
-.controller('ReloaderController', ['$scope', '$location', '$routeParams', function($scope, $location, $routeParams) {
-    var url = $routeParams.url;
-
-    url = url.replace(/\/reload/g, '');
-    url = url.replace(/\*/g, '/')
-    $location.url(url);
+.controller('ReloaderController', ['locationSaver', function(locationSaver) {
+    locationSaver.recoverLocation();
 }]);

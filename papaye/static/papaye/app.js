@@ -5,14 +5,17 @@ var papaye = angular.module('papaye', ['ngRoute', 'ngResource'])
 .config(['$routeProvider', function($routeProvider) {
 
     var isConnected = function(restricted) {
-        return function($q, $timeout, $http, $location, login) {
+        return function($q, $timeout, $http, $location, login, locationSaver) {
             var deferred = $q.defer(),
                 url = $location.$$url,
                 username = "";
 
+            //Save location
+            if (url !== '/login') {
+                locationSaver.storeLocation(url);
+            }
+
             deferred.promise.then(function(){
-                console.log('then');
-                console.log(username);
                 login.setUsername(username);
             });
 
@@ -21,15 +24,10 @@ var papaye = angular.module('papaye', ['ngRoute', 'ngResource'])
                 $timeout(deferred.resolve, 0);
             })
             .error(function(data, status, headers, config) {
-                console.log('error');
                 login.setUsername(username);
                 if (status == 401) {
                     if (restricted === true) {
-                        var redirectUrl = '/login';
-                        if (url !== '/') {
-                            redirectUrl = redirectUrl + '/' + url.slice(1).replace('/', '-');
-                        }
-                        $location.url(redirectUrl);
+                        $location.url('/login');
                     }
                 }
                 else {
@@ -75,7 +73,7 @@ var papaye = angular.module('papaye', ['ngRoute', 'ngResource'])
             connected: isConnected(true)
         }
     })
-    .when('/reload/:url', {
+    .when('/reload/', {
         templateUrl: 'static/papaye/partials/empty.html',
         controller: 'ReloaderController',
     })
