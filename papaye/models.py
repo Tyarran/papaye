@@ -178,7 +178,10 @@ class Package(SubscriptableBaseModel):
 
     @classmethod
     def by_name(cls, name, request):
-        root = repository_root_factory(request)
+        if hasattr(request, 'root') and request.root is not None:
+            root = request.root
+        else:
+            root = repository_root_factory(request)
         return root[name] if name in root else None
 
     def get_last_release(self):
@@ -232,6 +235,15 @@ class Release(SubscriptableBaseModel):
         if package not in root:
             return None
         return list(root[package].releases.values())
+
+    @classmethod
+    def by_releasename(cls, package, release, request):
+        if hasattr(request, 'root') and request.root is not None:
+            root = request.root
+        else:
+            root = repository_root_factory(request)
+        if package in root:
+            return root[package].get(release, None)
 
 
 class ReleaseFile(BaseModel):

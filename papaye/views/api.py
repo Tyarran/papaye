@@ -3,6 +3,7 @@ from cornice import Service
 
 from papaye.serializers import PackageListSerializer, ReleaseAPISerializer
 from papaye.factories import repository_root_factory
+from papaye.models import Package, Release
 
 packages = Service(
     name="packages",
@@ -34,6 +35,27 @@ def get_package(request):
             return ReleaseAPISerializer(request).serialize(release)
         else:
             return HTTPNotFound()
+
+
+@package.delete()
+def remove_package(request):
+    package_name = request.matchdict.get('package_name')
+    package = Package.by_name(package_name, request)
+    if package is None:
+        return HTTPNotFound()
+    del request.root[package_name]
+    return {'success': True}
+
+
+@package.delete()
+def remove_release(request):
+    package_name = request.matchdict.get('package_name')
+    version = request.matchdict.get('release_name')
+    release = Release.by_releasename(package_name, version, request)
+    if release is None:
+        return HTTPNotFound()
+    del request.root[package_name][version]
+    return {'success': True}
 
 
 @packages.get()

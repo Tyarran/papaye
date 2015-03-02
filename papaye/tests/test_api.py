@@ -3,11 +3,14 @@ import pytest
 from pyramid import testing
 from pyramid.httpexceptions import HTTPNotFound
 
+from papaye.tests.tools import set_database_connection
+
 
 @pytest.fixture
 def setup():
     settings = {'papaye.proxy': False}
-    config = testing.setUp(settings=settings)
+    request = testing.DummyRequest()
+    config = testing.setUp(settings=settings, request=request)
     config.include('pyramid_zodbconn')
     config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
 
@@ -156,3 +159,93 @@ def test_get_package_by_version_with_unknown_release(setup):
     result = get_package_by_version(request)
 
     assert isinstance(result, HTTPNotFound) is True
+
+
+
+
+#   ##### Delete #####
+
+
+def test_remove_package(setup):
+    from papaye.views.api import remove_package
+    from papaye.models import Package, Root, Release
+    request = testing.DummyRequest()
+    root = Root()
+    root['package1'] = Package(name='package1')
+    root['package1']['1.0'] = Release('1.0', '1.0', {'summary': 'The package 1'})
+    request.context = root
+    request.root = root
+    request.matchdict = {'package_name': 'package1'}
+
+    result = remove_package(request)
+
+    assert isinstance(result, dict)
+    assert 'success' in result
+    assert result['success']
+    assert 'package1' not in root
+
+
+def test_remove_package_not_existing(setup):
+    from papaye.views.api import remove_package
+    from papaye.models import Root
+    request = testing.DummyRequest()
+    root = Root()
+    request.context = root
+    request.root = root
+    request.matchdict = {'package_name': 'package1'}
+
+    result = remove_package(request)
+
+    assert isinstance(result, HTTPNotFound)
+
+
+def test_remove_release(setup):
+    from papaye.views.api import remove_release
+    from papaye.models import Package, Root, Release
+    request = testing.DummyRequest()
+    root = Root()
+    root['package1'] = Package(name='package1')
+    root['package1']['1.0'] = Release('1.0', '1.0', {
+        'summary': 'The package 1',
+        'description': 'A description',
+    })
+    request.context = root
+    request.root = root
+    request.matchdict = {'package_name': 'package1', 'release_name': '1.0'}
+
+    result = remove_release(request)
+
+    assert isinstance(result, dict)
+    assert 'success' in result
+    assert result['success']
+    assert 'package1' in root
+    assert '1.0' not in root['package1']
+
+
+def test_remove_release_not_existing_package(setup):
+    from papaye.views.api import remove_release
+    from papaye.models import Root
+    request = testing.DummyRequest()
+    root = Root()
+    request.context = root
+    request.root = root
+    request.matchdict = {'package_name': 'package1', 'version': '1.0'}
+
+    result = remove_release(request)
+
+    assert isinstance(result, HTTPNotFound)
+
+
+def test_remove_release_not_existing_release(setup):
+    from papaye.views.api import remove_release
+    from papaye.models import Root, Package
+    request = testing.DummyRequest()
+    root = Root()
+    root['package1'] = Package(name='package1')
+    request.context = root
+    request.root = root
+    request.matchdict = {'package_name': 'package1', 'version': '1.0'}
+
+    result = remove_release(request)
+
+    assert isinstance(result, HTTPNotFound)
