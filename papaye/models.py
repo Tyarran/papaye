@@ -109,8 +109,7 @@ class SubscriptableBaseModel(BaseModel):
     subobjects_attr = None
 
     def get_subobjects(self):
-        collection = getattr(self, self.subobjects_attr)
-        return collection
+        return getattr(self, self.subobjects_attr)
 
     def get(self, key, default=None):
         getitem_object = self.get_subobjects()
@@ -119,8 +118,15 @@ class SubscriptableBaseModel(BaseModel):
         else:
             return default
 
+    def __iter__(self):
+        return (self.get_subobjects()[item] for item in self.get_subobjects())
+
     def __len__(self):
         return len(list(getattr(self, self.subobjects_attr)))
+
+    def __delitem__(self, key):
+        key = format_key(key)
+        del(self.get_subobjects()[key])
 
 
 class Package(SubscriptableBaseModel):
@@ -132,9 +138,6 @@ class Package(SubscriptableBaseModel):
         self.name = name
         self.releases = OOBTree()
 
-    def __iter__(self):
-        return (self.releases[release] for release in self.releases)
-
     def __getitem__(self, release_name_or_index):
         if isinstance(release_name_or_index, int):
             return next(itertools.islice(self.__iter__(), release_name_or_index, release_name_or_index + 1))
@@ -144,10 +147,6 @@ class Package(SubscriptableBaseModel):
         key = format_key(key)
         self.releases[key] = value
         self.releases[key].__parent__ = self
-
-    def __delitem__(self, key):
-        key = format_key(key)
-        del(self.releases[key])
 
     @classmethod
     @cache_region('pypi', 'get_last_remote_filename')
@@ -216,9 +215,6 @@ class Release(SubscriptableBaseModel):
             self.metadata = schema.serialize(metadata)
             self.metadata = schema.deserialize(self.metadata)
 
-    def __iter__(self):
-        return (self.release_files[release_file] for release_file in self.release_files)
-
     def __getitem__(self, name_or_index):
         if isinstance(name_or_index, int):
             return next(itertools.islice(self.__iter__(), name_or_index, name_or_index + 1))
@@ -278,6 +274,15 @@ class ReleaseFile(BaseModel):
         clone.content_type = model_obj.content_type
         clone.status = model_obj.status
         return clone
+
+    @classmethod
+    def by_releasefilename(cls, package, release, releasefile, request):
+        if hasattr(request, 'root') and request.root is not None:
+            root = request.root
+        else:
+            root = repository_root_factory(request)
+        if package in root and root[package].get(release):
+            return root[package][release].get(releasefile, None)
 
 
 class User(BaseModel):

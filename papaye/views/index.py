@@ -3,6 +3,8 @@ from pyramid.security import remember
 from pyramid.view import forbidden_view_config
 from pyramid.view import view_config
 
+from papaye.models import User
+
 
 from papaye.models import User
 
@@ -14,7 +16,7 @@ def index_view(context, request):
     if username == '':
         result['admin'] = False
     else:
-        result['admin'] = True if 'group:admin' in User.by_username(username, request).groups else False
+        result['admin'] = True if 'group:admin' in User.by_username(username).groups else False
     return result
 
 
@@ -24,7 +26,7 @@ def forbidden_browse_view(request):
 
 
 @view_config(route_name='islogged', renderer='json', permission="test")
-def index_view2(request):
+def is_logged(request):
     username = request.session.get('username', None)
     if not username:
         return Response(status_code=401)

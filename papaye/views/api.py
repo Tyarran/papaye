@@ -3,7 +3,7 @@ from cornice import Service
 
 from papaye.serializers import PackageListSerializer, ReleaseAPISerializer
 from papaye.factories import repository_root_factory
-from papaye.models import Package, Release
+from papaye.models import Package, Release, ReleaseFile
 
 packages = Service(
     name="packages",
@@ -20,6 +20,12 @@ package = Service(
 package_version = Service(
     name="package_by_version",
     path="/api/package/{package_name}/{version}/json",
+    description="Package service",
+    factory=repository_root_factory
+)
+package_version_filename = Service(
+    name="filename_by_package_version",
+    path="/api/package/{package_name}/{version}/{filename}/json",
     description="Package service",
     factory=repository_root_factory
 )
@@ -47,14 +53,26 @@ def remove_package(request):
     return {'success': True}
 
 
-@package.delete()
+@package_version.delete()
 def remove_release(request):
     package_name = request.matchdict.get('package_name')
-    version = request.matchdict.get('release_name')
+    version = request.matchdict.get('version')
     release = Release.by_releasename(package_name, version, request)
     if release is None:
         return HTTPNotFound()
     del request.root[package_name][version]
+    return {'success': True}
+
+
+@package_version_filename.delete()
+def remove_releasefile(request):
+    package_name = request.matchdict.get('package_name')
+    version = request.matchdict.get('version')
+    filename = request.matchdict.get('filename')
+    release_file = ReleaseFile.by_releasefilename(package_name, version, filename, request)
+    if release_file is None:
+        return HTTPNotFound()
+    del request.root[package_name][version][filename]
     return {'success': True}
 
 
