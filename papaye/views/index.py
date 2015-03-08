@@ -16,7 +16,7 @@ def index_view(context, request):
     if username == '':
         result['admin'] = False
     else:
-        result['admin'] = True if 'group:admin' in User.by_username(username).groups else False
+        result['admin'] = True if 'group:admin' in User.by_username(username, request).groups else False
     return result
 
 
