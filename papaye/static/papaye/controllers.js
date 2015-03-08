@@ -45,6 +45,9 @@ papaye.controller('MainController', ['$scope', '$route', '$http', '$location', '
 
 .controller('HomeController', ['$scope', '$location', '$route', '$injector', 'Package', function($scope, $location, $route, $injector, Package) {
     $injector.invoke(BaseChildController, this, {$scope: $scope, title: 'Home', pageName: 'Home'});
+    var port = ($location.port() !== 80) ? ':' + $location.port(): '';
+
+    $scope.simpleUrl = $location.protocol() + '://' + $location.host() + port + '/simple/';
 }])
 
 .controller('ListPackageController', ['$scope', '$location', '$route', '$injector', '$filter', 'Package', function($scope, $location, $route, $injector, $filter, Package) {

@@ -6,7 +6,13 @@ from pyramid.view import view_config
 
 @view_config(route_name='home', renderer='index.jinja2')
 def index_view(context, request):
-    return {"username": request.session.get('username', '')}
+    username = request.session.get('username', '')
+    result = {'username': username}
+    if username == '':
+        result['admin'] = False
+    else:
+        result['admin'] = True if 'group:admin' in User.by_username(username, request).groups else False
+    return result
 
 
 @forbidden_view_config(route_name='home', renderer='json')

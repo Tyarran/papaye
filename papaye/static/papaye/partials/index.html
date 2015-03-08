@@ -4,11 +4,11 @@
 
 <h3>In one command line</h3>
 <p>You can use with repository temporarily on pass PIP command argument</p>
-<pre>pip install <package> -i http://papaye.rcommande.org/simple/</pre>
+<pre>pip install <package> -i {{ simpleUrl }}</pre>
 <h3>Per project configuration</h3>
 <p>If you want using this repository for only one specific project, you can add this line into the requirements.txt file:</p>
 <pre>
--i http://papaye.rcommande.org/simple/
+-i {{ simpleUrl }}
 .
 </pre>
 
@@ -18,10 +18,10 @@
 
 <pre>
 [install]
-index-url = http://papaye.rcommande.org/simple/
+index-url = {{ simpleUrl }}
 
 [search]
-index = http://papaye.rcommande.org/simple/
+index = {{ simpleUrl }}
 </pre>
 
 <h2>Uploading files</h2>
@@ -35,5 +35,5 @@ index-servers =
 [papaye]
 username: <papaye_username>
 password: <papaye_password>
-repository: http://papaye.rcommande.org/simple/
+repository: {{ simpleUrl }}
 </pre>
