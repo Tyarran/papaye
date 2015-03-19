@@ -1,8 +1,26 @@
+# import multiprocessing
+import itertools
 import logging
-import threading
 import pickle
+import queue
+import threading
+import time
 import traceback
 import zmq
+
+from termcolor import colored
+
+
+COLORS_GEN = itertools.cycle((
+    'green',
+    'yellow',
+    'blue',
+    'magenta',
+    'cyan',
+    'white',
+    'grey',
+    'red',
+))
 
 # from beaker.cache import CacheManager
 # from beaker.util import parse_cache_config_options
@@ -29,19 +47,95 @@ class Device(threading.Thread):
         raise NotImplemented()
 
 
+class IScheduler(object):
+    status = None
+    queue = None
+    results = None
+
+    def start(self):
+        raise NotImplemented()
+
+    def add_task(self):
+        raise NotImplemented()
+
+    def task_id(self, task_tuple):
+        raise NotImplemented()
+
+    def get_task(self):
+        raise NotImplemented()
+
+    def add_result(self, worker_id, result):
+        raise NotImplemented()
+
+    def status(self, task_id):
+        raise NotImplemented()
+
+
+class MultiThreadScheduler(IScheduler):
+
+    def __init__(self, workers=1):
+        self.workers = workers
+        self.queue = queue.Queue()
+        self.results = {}
+        self.counter = itertools.count(1)
+
+    def start(self):
+        logging.info('Start {} scheduler'.format(self.__class__.__name__))
+        for index in range(1, self.workers + 1):
+            worker = ThreadWorker(index, self)
+            worker.start()
+
+    def add_task(self, *args):
+        self.queue.put((self.task_id(args), args))
+
+    def task_id(self, task_tuple):
+        return next(self.counter)
+
+    def get_task(self):
+        if self.queue.qsize() == 0:
+            return None
+        return self.queue.get()
+
+    def add_result(self, task_id, worker_id, result):
+        self.results[task_id] = (worker_id, result)
+
+    def status(self, task_id):
+        return self.results[task_id]
+
+
+class ThreadWorker(threading.Thread):
+
+    def __init__(self, id, scheduler):
+        self.id = id
+        self.scheduler = scheduler
+        super().__init__()
+
+    def do(self):
+        if self.scheduler.queue.qsize() != 0:
+            task_id, item = self.scheduler.get_task()
+            result = item[0](*item[1:])
+            self.scheduler.add_result(task_id, self.id, result)
+
+    def run(self):
+        while True:
+            logger.info('loop')
+            self.do()
+            time.sleep(1)
+
+
 class Scheduler(object):
 
     def __init__(self, settings, config):
         self.config = config
         self.settings = settings
-        self.concurency = int(self.settings.get('papaye.worker.concurency', 1))
+        self.concurrency = int(self.settings.get('papaye.worker.concurrency', 1))
         self.devices = []
 
     def run(self):
         self.devices.append(QueueDevice(self.config))
         # self.devices.append(CollectorDevice(self.config))
-        for index in range(1, self.concurency + 1):
-            self.devices.append(ConsumerDevice(self.config, index))
+        for index in range(1, self.concurrency + 1):
+            self.devices.append(ConsumerDevice(self.config, index, next(COLORS_GEN)))
         for device in self.devices:
             device.daemon = True
             device.start()
@@ -63,9 +157,10 @@ class Producer(object):
 
 class ConsumerDevice(Device):
 
-    def __init__(self, config, worker_number):
+    def __init__(self, config, worker_number, color):
         super().__init__(config)
         self.worker_number = worker_number
+        self.color = color
         # Load tasks
         __import__("papaye.tasks.download")
 
@@ -78,7 +173,7 @@ class ConsumerDevice(Device):
         return socket, socket2
 
     def run(self):
-        logger.info('Starting worker {}'.format(self._name))
+        logger.info(colored('Starting worker #{}'.format(self.worker_number), self.color))
         self.worker_socket, self.collector_socket = self.get_sockets()
         worker_number = self.worker_number
         while self.go:
@@ -87,16 +182,20 @@ class ConsumerDevice(Device):
                 task_id, func_name, args, kwargs = pickle.loads(data)
                 func = TaskRegistry()._tasks[func_name]
                 func.task_id = task_id
-                logger.info('Worker {}: Starting task id: {}'.format(worker_number, func.task_id))
+                logger.info(colored('Worker {}: Starting task id: {}'.format(worker_number, func.task_id), self.color))
                 try:
-                    # result = func(self.settings, *args, **kwargs)
-                    # result = func(self.config, *args, **kwargs)
                     func(self.config, *args, **kwargs)
-                    # self.collector_socket.send(pickle.dumps((task_id, result)))
-                    logger.info('Worker {}: Task #{} finished'.format(worker_number, func.task_id))
+                    logger.info(colored('Worker {}: Task #{} finished'.format(
+                        worker_number,
+                        func.task_id
+                    ), self.color))
                 except Exception as exc:
                     formated_tb = traceback.format_tb(exc.__traceback__)
-                    logger.error('Worker {}: Task #{} Error\n{}'.format(worker_number, func.task_id, formated_tb))
+                    logger.error(colored('Worker {}: Task #{} Error\n{}'.format(
+                        worker_number,
+                        func.task_id,
+                        formated_tb
+                    ), self.color))
             except KeyboardInterrupt:
                 self.go = False
 

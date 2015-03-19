@@ -1,4 +1,5 @@
 import sys
+import logging
 
 from random import choice
 
@@ -14,7 +15,10 @@ from papaye.authentification import RouteNameAuthPolicy
 from papaye.bundles import papaye_js, papaye_css, papaye_fonts, external_css
 from papaye.factories import repository_root_factory, user_root_factory, index_root_factory
 from papaye.models import User
-from papaye.tasks.devices import Scheduler, Producer
+from papaye.tasks.devices import MultiThreadScheduler
+
+
+logger = logging.getLogger(__name__)
 
 
 def auth_check_func(username, password, request):
@@ -51,12 +55,23 @@ def add_directives(config):
 
 
 def start_scheduler(config):
-    registry = get_current_registry()
-    registry.producer = Producer(config)
-    exclude_list = ['pshell', 'pcreate', 'ptweens', 'pviews', 'prequests']
-    if not len([cmd for cmd in exclude_list if sys.argv[0].endswith(cmd)]):
-        scheduler = Scheduler(config.registry.settings, config)
-        scheduler.run()
+    def test_func():
+        for index in range(1, 11):
+            logger.info(index)
+            import time
+            time.sleep(1)
+    scheduler = MultiThreadScheduler(workers=2)
+    scheduler.start()
+    scheduler.add_task(test_func)
+    import time
+    time.sleep(3)
+    scheduler.add_task(test_func)
+    # registry = get_current_registry()
+    # registry.producer = Producer(config)
+    # exclude_list = ['pshell', 'pcreate', 'ptweens', 'pviews', 'prequests']
+    # if not len([cmd for cmd in exclude_list if sys.argv[0].endswith(cmd)]):
+    #     scheduler = Scheduler(config.registry.settings, config)
+    #     scheduler.run()
 
 
 def main(global_config, **settings):
@@ -91,5 +106,6 @@ def main(global_config, **settings):
     config.add_webasset('papaye_fonts', papaye_fonts)
     config.check_database_config()
     config.scan(ignore='papaye.tests')
-    config.start_scheduler()
+    if 'papaye.worker.combined' not in settings or bool(settings['papaye.worker.combined']):
+        config.start_scheduler()
     return config.make_wsgi_app()
