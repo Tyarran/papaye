@@ -4,6 +4,9 @@ from pyramid.view import forbidden_view_config
 from pyramid.view import view_config
 
 
+from papaye.models import User
+
+
 @view_config(route_name='home', renderer='index.jinja2')
 def index_view(context, request):
     username = request.session.get('username', '')
