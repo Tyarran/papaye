@@ -79,6 +79,12 @@ def get_db_connection(blob_dir):
     return conn
 
 
+def get_db(blob_dir):
+    storage = MappingStorage('test')
+    blob_storage = BlobStorage(blob_dir, storage)
+    return DB(blob_storage)
+
+
 def set_database_connection(request, blob_dir=None, config=None):
     if not blob_dir:
         blob_dir = tempfile.mkdtemp('blobs')

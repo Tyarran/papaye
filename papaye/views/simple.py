@@ -52,8 +52,9 @@ def not_found(request, stop=None):
         view = ListReleaseFileByReleaseView(context, request)
     elif traversed == 3:
         release_file = package[request.matchdict['traverse'][1]][request.matchdict['traverse'][2]]
+        filename = request.matchdict['traverse'][2]
         package_name, release_name, _ = request.matchdict['traverse']
-        download_release_from_pypi.delay(package_name, release_name)
+        download_release_from_pypi.delay(request.registry._zodb_databases[''], package_name, release_name, filename)
         return HTTPTemporaryRedirect(location=release_file.pypi_url)
     return view()
 

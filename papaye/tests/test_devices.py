@@ -1,65 +1,8 @@
+import datetime
 import mock
 import pytest
 import queue
 import time
-
-
-# def test_scheduler_instanciate():
-#     from papaye.tasks.devices import Scheduler
-#     result = Scheduler() #     assert result.concurency == 1
-#     assert result.combined
-#     assert hasattr(result, 'queue')
-#     assert isinstance(result.queue, queue.Queue)
-
-
-# def test_scheduler_instanciate_with_parameter():
-#     from papaye.tasks.devices import Scheduler
-
-#     result = Scheduler(concurency=2, combined=False)
-
-#     assert result.concurency == 2
-#     assert result.combined is False
-#     assert hasattr(result, 'queue')
-#     assert isinstance(result.queue, queue.Queue)
-
-
-# def test_scheduler_add_async_task():
-#     from papaye.tasks.devices import Scheduler
-#     scheduler = Scheduler()
-#     assert scheduler.queue.qsize() == 0
-
-#     scheduler.add_async_task(time.sleep, 0.1)
-
-#     assert scheduler.queue.qsize() == 1
-#     assert scheduler.queue.get() == (time.sleep, 0.1)
-
-
-# def test_scheduler_get_task():
-#     from papaye.tasks.devices import Scheduler
-#     scheduler = Scheduler()
-#     scheduler.add_async_task(time.sleep, 0.1)
-#     assert scheduler.queue.qsize() == 1
-
-#     result = scheduler.get_task()
-
-#     assert result == (time.sleep, 0.1)
-#     assert scheduler.queue.qsize() == 0
-
-
-# def test_scheduler_get_task_without_task_in_queue():
-#     from papaye.tasks.devices import Scheduler
-#     scheduler = Scheduler()
-#     assert scheduler.queue.qsize() == 0
-
-#     result = scheduler.get_task()
-
-#     assert result is None
-#     assert scheduler.queue.qsize() == 0
-
-# def test_scheduler_start_worker():
-#     from papaye.tasks.devices import Scheduler
-#     scheduler = Scheduler()
-#     scheduler.add_async_task(time.sleep, 0.1)
 
 
 def test_scheduler_instanciate():
@@ -73,6 +16,8 @@ def test_scheduler_instanciate():
     assert isinstance(result.queue, queue.Queue)
     assert result.queue.qsize() == 0
     assert result.results == {}
+    assert result.status_history == {}
+    assert result.worker_list == []
 
 
 def test_scheduler_instanciate_without_workers_parameter():
@@ -86,24 +31,47 @@ def test_scheduler_instanciate_without_workers_parameter():
     assert isinstance(result.queue, queue.Queue)
     assert result.queue.qsize() == 0
     assert result.results == {}
+    assert result.status_history == {}
+    assert result.worker_list == []
 
 
 def test_scheduler_add_task():
     from papaye.tasks.devices import MultiThreadScheduler
     scheduler = MultiThreadScheduler()
     assert scheduler.queue.qsize() == 0
+    assert scheduler.status_history == {}
 
     scheduler.add_task(time.sleep, 1)
+
     assert scheduler.queue.qsize() == 1
+    assert len(scheduler.results) == 1
+    assert isinstance(scheduler.results, dict)
+    assert scheduler.results[1] == {"status": 0, "result": None}
+    assert len(scheduler.status_history) == 1
+    assert list(scheduler.status_history.keys()) == [1, ]
+    assert isinstance(scheduler.status_history[1], list)
+    assert isinstance(scheduler.status_history[1][0], tuple)
+    assert len(scheduler.status_history[1][0]) == 2
+    assert scheduler.status_history[1][0][0] == 0
+    assert isinstance(scheduler.status_history[1][0][1], datetime.datetime)
 
 
 def test_scheduler_add_result():
     from papaye.tasks.devices import MultiThreadScheduler
     scheduler = MultiThreadScheduler()
+    now = datetime.datetime.now()
+    scheduler.status_history = {1: [(0, now)]}
 
     scheduler.add_result(1, 1, 'A result')
 
     assert scheduler.results == {1: (1, 'A result')}
+    assert isinstance(scheduler.status_history[1], list)
+    assert isinstance(scheduler.status_history[1][0], tuple)
+    assert scheduler.status_history[1][0][0] == 0
+    assert scheduler.status_history[1][0][1] == now
+    assert isinstance(scheduler.status_history[1][1], tuple)
+    assert scheduler.status_history[1][1][0] == 2
+    assert isinstance(scheduler.status_history[1][1][1], datetime.datetime)
 
 
 @mock.patch('threading.Thread.start')
@@ -114,6 +82,7 @@ def test_scheduler_start(mock):
     scheduler.start()
 
     assert mock.call_count == 2
+    assert len(scheduler.worker_list) == 2
 
 
 def test_scheduler_status():
@@ -147,6 +116,7 @@ def test_threadworker_instanciate():
 @mock.patch('time.sleep')
 def test_threadworker_do(mock):
     from papaye.tasks.devices import ThreadWorker, MultiThreadScheduler
+    mock.return_value = None
     scheduler = MultiThreadScheduler()
     scheduler.add_task(time.sleep, 1)
     worker = ThreadWorker(id=1, scheduler=scheduler)
@@ -174,18 +144,55 @@ def test_threadworker_do_with_own_function():
     assert scheduler.queue.qsize() == 0
 
 
-def test_threadworker_do_with_result():
+def test_threadworker_do_with_args_and_kwargs():
     from papaye.tasks.devices import ThreadWorker, MultiThreadScheduler
 
-    def test_func(value):
-        return value
+    def test_func(*args, **kwargs):
+        return args, kwargs
 
     scheduler = MultiThreadScheduler()
-    scheduler.add_task(test_func, 42)
+    scheduler.add_task(test_func, 'one', two='two')
     worker = ThreadWorker(id=1, scheduler=scheduler)
     assert scheduler.queue.qsize() == 1
 
     worker.do()
 
     assert scheduler.queue.qsize() == 0
+    assert scheduler.results[1] == (1, (('one', ), {'two': 'two'}))
+
+
+def test_threadworker_do_with_result():
+    from papaye.tasks.devices import ThreadWorker, MultiThreadScheduler
+    scheduler = MultiThreadScheduler()
+    worker = ThreadWorker(id=1, scheduler=scheduler)
+
+    def test_func(value):
+        return value
+
+    scheduler.add_task(test_func, 42)
+    assert scheduler.queue.qsize() == 1
+
+    worker.do()
+
+    assert scheduler.queue.qsize() == 0
     assert scheduler.results == {1: (1, 42)}
+
+
+def test_threadworker_do_with_exception():
+    from papaye.tasks.devices import ThreadWorker, MultiThreadScheduler
+    scheduler = MultiThreadScheduler()
+    worker = ThreadWorker(id=1, scheduler=scheduler)
+
+    def test_func(value):
+        raise Exception()
+
+    scheduler.add_task(test_func, 42)
+    assert scheduler.queue.qsize() == 1
+
+    worker.do()
+
+    assert scheduler.queue.qsize() == 0
+    assert 1 in scheduler.results
+    assert isinstance(scheduler.results[1], tuple)
+    assert scheduler.results[1][0] == 1
+    assert isinstance(scheduler.results[1][1], Exception)

@@ -7,15 +7,17 @@ from pyramid.authentication import BasicAuthAuthenticationPolicy, AuthTktAuthent
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator, ConfigurationError
 from pyramid.httpexceptions import HTTPNotFound
+from pyramid.path import DottedNameResolver
+from pyramid.session import SignedCookieSessionFactory
 from pyramid.threadlocal import get_current_registry
 from pyramid_beaker import set_cache_regions_from_settings
-from pyramid.session import SignedCookieSessionFactory
 
 from papaye.authentification import RouteNameAuthPolicy
 from papaye.bundles import papaye_js, papaye_css, papaye_fonts, external_css
 from papaye.factories import repository_root_factory, user_root_factory, index_root_factory
 from papaye.models import User
-from papaye.tasks.devices import MultiThreadScheduler
+from papaye.tasks.devices import DummyScheduler
+from papaye.tasks import TaskRegistry
 
 
 logger = logging.getLogger(__name__)
@@ -55,23 +57,22 @@ def add_directives(config):
 
 
 def start_scheduler(config):
-    def test_func():
-        for index in range(1, 11):
-            logger.info(index)
-            import time
-            time.sleep(1)
-    scheduler = MultiThreadScheduler(workers=2)
+    settings = config.registry.settings
+    if settings.get('papaye.cache').lower() != 'true' or settings.get('papaye.scheduler') is None:
+        scheduler = DummyScheduler()
+    else:
+        resolver = DottedNameResolver()
+        scheduler_kwargs = {key[17:]: value for key, value in config.registry.settings.items()
+                            if key.startswith('papaye.scheduler.')}
+        scheduler = resolver.maybe_resolve(config.registry.settings.get('papaye.scheduler'))(**scheduler_kwargs)
     scheduler.start()
-    scheduler.add_task(test_func)
-    import time
-    time.sleep(3)
-    scheduler.add_task(test_func)
-    # registry = get_current_registry()
-    # registry.producer = Producer(config)
-    # exclude_list = ['pshell', 'pcreate', 'ptweens', 'pviews', 'prequests']
-    # if not len([cmd for cmd in exclude_list if sys.argv[0].endswith(cmd)]):
-    #     scheduler = Scheduler(config.registry.settings, config)
-    #     scheduler.run()
+    TaskRegistry().register_scheduler(scheduler)
+
+    def get_scheduler(request):
+
+        return scheduler
+
+    config.add_request_method(get_scheduler, 'scheduler', property=True, reify=True)
 
 
 def main(global_config, **settings):

@@ -1,4 +1,6 @@
+import hashlib
 import json
+import logging
 import requests
 
 from BTrees.OOBTree import OOBTree
@@ -6,6 +8,9 @@ from beaker.cache import cache_region
 from requests.exceptions import ConnectionError
 
 from papaye.models import Package, Release, ReleaseFile, Root
+
+
+logger = logging.getLogger(__name__)
 
 
 def clone(package):
@@ -46,6 +51,17 @@ def smart_merge(repository_package, remote_package, root=None):
                         existing_release[release_file.__name__] = release_file
     root[merged_package.__name__] = merged_package
     return merged_package
+
+
+@cache_region('pypi', 'download_file')
+def download_file(filename, url, md5_digest):
+    logger.info('Download file "{}"'.format(filename))
+    result = requests.get(url)
+    if result.status_code != 200:
+        return None
+    if md5_digest is not None and md5_digest != hashlib.md5(result.content).hexdigest():
+        return None
+    return result.content
 
 
 class PyPiProxy:
