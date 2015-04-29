@@ -27,6 +27,7 @@ requires = [
     'pyzmq',
     'repoze.evolution',
     'requests',
+    'termcolor',
     'transaction',
     'waitress',
 ]
