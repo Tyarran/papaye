@@ -158,8 +158,6 @@ def test_get_package_by_version_with_unknown_release(setup):
 
     assert isinstance(result, HTTPNotFound) is True
 
-#   ##### Delete #####
-
 
 def test_remove_package(setup):
     from papaye.views.api import remove_package
@@ -213,8 +211,8 @@ def test_remove_release(setup):
     assert isinstance(result, dict)
     assert 'success' in result
     assert result['success']
-    assert 'package1' in root
-    assert '1.0' not in root['package1']
+    assert 'package1' in [pkg.__name__ for pkg in root]
+    assert '1.0' not in [rel.__name__ for rel in root['package1']]
 
 
 def test_remove_release_not_existing_package(setup):
@@ -266,7 +264,7 @@ def test_remove_releasefile(setup):
     assert isinstance(result, dict)
     assert 'success' in result
     assert result['success']
-    assert 'package1' in root
+    assert 'package1' in [pkg.__name__ for pkg in root]
     assert len(list(root['package1'])) == 1
     assert len(list(root['package1']['1.0'])) == 0
 

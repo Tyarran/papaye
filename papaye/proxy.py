@@ -1,9 +1,10 @@
 import hashlib
 import json
 import logging
+import pickle
 import requests
 
-from BTrees.OOBTree import OOBTree
+from ZODB.blob import Blob
 from beaker.cache import cache_region
 from requests.exceptions import ConnectionError
 
@@ -15,24 +16,17 @@ logger = logging.getLogger(__name__)
 
 def clone(package):
     """Clone a package and his subobjects"""
-    clone = Package.clone(package)
-    clone.releases = OOBTree()
-    clone.__parent__ = Root()
-
-    for release in package:
-        release_clone = Release.clone(release)
-        release_clone.release_files = OOBTree()
-        clone[release.__name__] = release_clone
-        for release_file in release:
-            rf_clone = ReleaseFile.clone(release_file)
-            assert hasattr(rf_clone, 'md5_digest')
-            clone[release.__name__][release_file.__name__] = rf_clone
+    clone = pickle.loads(pickle.dumps(package))
+    for release in clone:
+        for rfile in release:
+            rfile.content = Blob(package[release.__name__][rfile.__name__].content.open().read())
+            assert hasattr(release, 'metadata')
     return clone
 
 
 def smart_merge(repository_package, remote_package, root=None):
     """Merge package content into the given root if not exists"""
-    merged_package = clone(repository_package)
+    merged_package = repository_package
     root = root if root is not None else Root()
     merged_package.__parent__ = root
 
@@ -90,7 +84,7 @@ class PyPiProxy:
             pass
         return result
 
-    def build_remote_repository(self, package_name, release_name=None, metadata=False):
+    def build_remote_repository(self, package_name, release_name=None, metadata=False, content=False):
         package_name = self.get_remote_package_name(package_name)
         info = self.get_remote_informations(self.pypi_url.format(package_name))
         if info:
@@ -112,7 +106,15 @@ class PyPiProxy:
                 for remote_release_file in info['releases'][remote_release]:
                     filename = remote_release_file['filename']
                     md5_digest = remote_release_file['md5_digest']
-                    release_file = ReleaseFile(filename, b'', md5_digest)
+                    if not content:
+                        release_file = ReleaseFile(filename, b'', md5_digest)
+                    else:
+                        content_file = download_file(filename, remote_release_file['url'], md5_digest)
+                        if content_file is not None:
+                            release_file = ReleaseFile(filename, content_file, md5_digest)
+                        else:
+                            continue
+
                     setattr(release_file, 'pypi_url', remote_release_file['url'])
                     release[filename] = release_file
             return package_root

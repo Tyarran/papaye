@@ -6,9 +6,6 @@ from pyramid.view import view_config
 from papaye.models import User
 
 
-from papaye.models import User
-
-
 @view_config(route_name='home', renderer='index.jinja2')
 def index_view(context, request):
     username = request.session.get('username', '')
@@ -42,7 +39,7 @@ def forbidden_view(request):
 def login_view(request):
     login = request.POST.get('login')
     password = request.POST.get('password')
-    if login in request.root and request.root[login].password_verify(password):
+    if login in [user.username for user in list(request.root)] and request.root[login].password_verify(password):
         headers = remember(request, 'test')
         request.session['username'] = login
         return Response(login, headers=headers)

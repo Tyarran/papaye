@@ -1,8 +1,11 @@
+import mock
 import shutil
 import unittest
 
 from mock import patch
 from pyramid import testing
+from pyramid.config import Configurator
+from pyramid.threadlocal import get_current_request
 from repoze.evolution import ZODBEvolutionManager
 
 from papaye.tests.tools import set_database_connection
@@ -79,3 +82,78 @@ class ConfigTest(unittest.TestCase):
 
         from pyramid.config import ConfigurationError
         self.assertRaises(ConfigurationError, check_database_config, self.config)
+
+
+class TestScheduler(object):
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def start(self):
+        pass
+
+    def add_task(self, *args):
+        pass
+
+    def task_id(self, task_tuple):
+        pass
+
+    def get_task(self):
+        pass
+
+    def add_result(self, worker_id, result):
+        pass
+
+    def status(self, task_id):
+        pass
+
+    def shutdown(self):
+        pass
+
+
+@mock.patch('papaye.tasks.TaskRegistry.register_scheduler')
+def test_start_scheduler(mock):
+    from papaye import start_scheduler
+    config = Configurator()
+    config.registry.settings = {
+        'papaye.cache': 'true',
+        'papaye.scheduler': 'papaye.tests.test_config:TestScheduler',
+    }
+
+    start_scheduler(config)
+
+    get_current_request()
+
+    assert isinstance(mock.call_args[0][0], TestScheduler)
+
+
+@mock.patch('papaye.tasks.TaskRegistry.register_scheduler')
+def test_start_scheduler_without_scheduler_in_configuration(mock):
+    from papaye import start_scheduler
+    from papaye.tasks.devices import DummyScheduler
+    config = Configurator()
+    config.registry.settings = {
+        'papaye.cache': 'true',
+    }
+
+    start_scheduler(config)
+
+    get_current_request()
+
+    assert isinstance(mock.call_args[0][0], DummyScheduler)
+
+
+@mock.patch('papaye.tasks.TaskRegistry.register_scheduler')
+def test_start_scheduler_without_cache_in_configuration(mock):
+    from papaye import start_scheduler
+    from papaye.tasks.devices import DummyScheduler
+    config = Configurator()
+    config.registry.settings = {
+        'papaye.cache': 'true',
+    }
+
+    start_scheduler(config)
+
+    get_current_request()
+
+    assert isinstance(mock.call_args[0][0], DummyScheduler)

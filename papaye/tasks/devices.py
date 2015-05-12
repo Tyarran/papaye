@@ -142,8 +142,10 @@ class ThreadWorker(threading.Thread):
         if self.scheduler.queue.qsize() != 0:
             task_id, func, args, kwargs = self.scheduler.get_task()
             try:
+                LOGGER.debug('Start task #{}'.format(task_id))
                 result = func(*args, **kwargs)
                 self.scheduler.add_result(task_id, self.id, result)
+                LOGGER.debug('Task #{} done'.format(task_id))
             except Exception as ex:
                 print(colored(ex, 'red'))
                 LOGGER.error('Error during tasks #{} with worker #{}'.format(task_id, self.id))

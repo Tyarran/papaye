@@ -79,7 +79,7 @@ def remove_releasefile(request):
 @packages.get()
 def list_packages(request):
     serializer = PackageListSerializer()
-    packages = [serializer.serialize(package) for package in request.context.values()]
+    packages = [serializer.serialize(package) for package in list(request.context)]
     return {
         'count': len(packages),
         'result': packages,
@@ -90,7 +90,8 @@ def list_packages(request):
 def get_package_by_version(request):
     package_name = request.matchdict.get('package_name')
     version = request.matchdict.get('version')
-    if package_name in request.context and version in request.context[package_name].releases.keys():
+    if package_name in [package.__name__ for package
+                        in request.context] and version in request.context[package_name].releases.keys():
         serializer = ReleaseAPISerializer(request=request)
         return serializer.serialize(request.context[package_name][version])
     else:

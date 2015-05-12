@@ -55,7 +55,7 @@ class ListPackageViewTest(unittest.TestCase):
 
     def test_list_packages_without_package(self):
         from papaye.views.simple import ListPackagesView
-        from papaye.models import Root # Test packages
+        from papaye.models import Root  # Test packages
         root = Root()
 
         view = ListPackagesView(root, self.request)
@@ -337,42 +337,6 @@ class DownloadReleaseViewTest(unittest.TestCase):
         self.assertEqual(result.content_type, 'text/plain')
         self.assertEqual(result.content_disposition, 'attachment; filename="releasefile-1.0.tar.gz"')
 
-    @patch('requests.get')
-    def test_download_release_with_old_release(self, mock_requests):
-        from papaye.views.simple import DownloadReleaseView
-        from papaye.models import ReleaseFile, Release, Package
-
-        pypi_response = {
-            'info': {
-                'name': 'package',
-                'version': '2.0',
-            },
-            'releases': {
-                '2.0': [{
-                    'filename': 'releasefile1.tar.gz',
-                    'url': 'http://example.com/',
-                    'md5_digest': 'fake md5',
-                }]
-            }
-        }
-        # mock_last_version.return_value = '2.0'
-        mock_requests.return_value = FakeGRequestResponse(200, bytes(json.dumps(pypi_response), 'utf-8'))
-
-        package = Package(name='package')
-        release = Release(name='1.0', version='1.0', metadata={})
-        release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
-        package['1.0'] = release
-        package['1.0']['releasefile-1.0.tar.gz'] = release_file
-
-        self.request.matchdict['traverse'] = (package.__name__, release.__name__, release_file.__name__)
-        self.request.traversed = (package.__name__, release.__name__)
-
-        view = DownloadReleaseView(release_file, self.request)
-        view.proxy = True
-        result = view()
-
-        self.assertIsInstance(result, HTTPNotFound)
-
 
 class UploadReleaseViewTest(unittest.TestCase):
 
@@ -591,7 +555,7 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
 
 
 def test_login_view():
-    from papaye.models import User
+    from papaye.models import User, Root
     from papaye.views.index import login_view
     config = testing.setUp()
     authn_policy = AuthTktAuthenticationPolicy('seekrit', hashalg='sha512')
@@ -600,7 +564,8 @@ def test_login_view():
     config.set_authentication_policy(authn_policy)
     request = testing.DummyRequest()
     request.POST = {'login': 'user', 'password': 'seekrit'}
-    request.root = {'user': User('user', 'seekrit')}
+    request.root = Root()
+    request.root['user'] = User('user', 'seekrit')
 
     result = login_view(request)
 
@@ -611,7 +576,7 @@ def test_login_view():
 
 
 def test_login_view_bad_password():
-    from papaye.models import User
+    from papaye.models import User, Root
     from papaye.views.index import login_view
     config = testing.setUp()
     authn_policy = AuthTktAuthenticationPolicy('seekrit', hashalg='sha512')
@@ -620,7 +585,8 @@ def test_login_view_bad_password():
     config.set_authentication_policy(authn_policy)
     request = testing.DummyRequest()
     request.POST = {'login': 'user', 'password': 'seekrit'}
-    request.root = {'user': User('user', 'bad password')}
+    request.root = Root()
+    request.root['user'] = User('user', 'bad password')
 
     result = login_view(request)
 

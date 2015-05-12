@@ -228,7 +228,7 @@ class ProxyTest(unittest.TestCase):
         result = proxy.build_remote_repository('pyramid')
 
         assert isinstance(result, Root)
-        assert 'pyramid' in list(result.keys())
+        assert 'pyramid' in [e.__name__ for e in result]
         assert len(list(result['pyramid'])) == 81
         assert not hasattr(list(result['pyramid'])[0], 'metadata')
 

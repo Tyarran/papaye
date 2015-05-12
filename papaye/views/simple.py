@@ -1,5 +1,6 @@
 import logging
 import pkg_resources
+import transaction
 
 from pyramid.httpexceptions import (
     HTTPBadRequest,
@@ -71,7 +72,7 @@ class ListPackagesView(BaseView):
     def __call__(self):
         return {
             'objects': ((self.request.resource_url(package, route_name=self.request.matched_route.name), package)
-                        for package in self.context.values()),
+                        for package in list(self.context)),
         }
 
 
@@ -94,6 +95,7 @@ class ListReleaseFileView(BaseView):
             rfile,
             route_name='simple'
         )[:-1] + "#md5={}".format(rfile.md5_digest), rfile) for rfile in rfiles)}
+        transaction.abort()
         if len(rfiles):
             return context
         elif stop:
@@ -123,12 +125,6 @@ class ListReleaseFileByReleaseView(BaseView):
 class DownloadReleaseView(BaseView):
 
     def __call__(self):
-        check_update = True if self.request.GET.get('check_update', 'true') == 'true' else False
-        package = self.context.__parent__.__parent__
-        last_remote_version = Package.get_last_remote_version(self.proxy, package.name)
-        if check_update:
-            if not package.repository_is_up_to_date(last_remote_version):
-                return not_found(self.request)
         response = Response()
         response.content_disposition = 'attachment; filename="{}"'.format(self.context.filename)
         response.charset = 'utf-8'

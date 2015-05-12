@@ -18,9 +18,9 @@ from pkg_resources import parse_version
 from pyramid.security import Allow, ALL_PERMISSIONS, Everyone
 from pyramid.threadlocal import get_current_registry
 from pyramid_zodbconn import db_from_uri
+from pytz import utc
 from repoze.evolution import ZODBEvolutionManager
 from requests.exceptions import ConnectionError
-from pytz import utc
 
 from papaye.factories import user_root_factory, repository_root_factory, APP_ROOT_NAME
 from papaye.schemas import Metadata
@@ -54,36 +54,30 @@ def get_connection(settings):
     return db.open()
 
 
-class Root(OOBTree):
-    __name__ = __parent__ = None
+def chunk(iterable, step):
+    for i in range(0, len(iterable), step):
+        yield iterable[i:i+step]
 
-    def __acl__(self):
-        acl = [
-            (Allow, 'group:installer', 'install'),
-            (Allow, 'group:admin', ALL_PERMISSIONS)
-        ]
-        registry = get_current_registry()
-        anonymous_install = registry.settings.get('papaye.anonymous_install')
-        anonymous_install = True if anonymous_install and anonymous_install == 'true' else False
-        if anonymous_install:
-            acl.append((Allow, Everyone, 'install'))
-        return acl
 
-    def __iter__(self):
-        return (package for package in self.values())
+class MyOOBTree(OOBTree):
 
-    def __getitem__(self, name_or_index):
-        if isinstance(name_or_index, int):
-            return next(itertools.islice(self.__iter__(), name_or_index, name_or_index + 1))
-        keys = [key for key in self.keys()
-                if format_key(key) == format_key(name_or_index)]
-        if len(keys) == 1:
-            return self.get(keys[0])
+    def _p_resolveConflict(self, old_state, stored_state, new_state):
+        merged_state = {}
+        if old_state is None:
+            old_state = (((tuple(), ), ), )
+        pr_name_old = list(itertools.islice(old_state[0][0], 0, None, 2)) if old_state is not None else []
+        try:
+            for pr in stored_state[0][0]:
+                if pr[0] not in pr_name_old:
+                    merged_state.update(dict(chunk(pr, 2)))
 
-    def __setitem__(self, key, package):
-        if isinstance(package, Package):
-            package.__parent__ = self
-        super().__setitem__(key, package)
+            for pr in new_state[0][0]:
+                if pr[0] not in pr_name_old:
+                    merged_state.update(dict(chunk(pr, 2)))
+            new_old_state = ((((tuple(itertools.chain(*list(merged_state.items())))), ), ), )  # OOBtree state. Beurk!
+            return super()._p_resolveConflict(new_old_state, stored_state, new_state)
+        except:
+            return old_state
 
 
 class BaseModel(Persistent):
@@ -118,6 +112,14 @@ class SubscriptableBaseModel(BaseModel):
         else:
             return default
 
+    def __contains__(self, obj_or_name):
+        if isinstance(obj_or_name, str):
+            elements = list(self.get_subobjects())
+        else:
+            subobjects = self.get_subobjects()
+            elements = [subobjects[element] for element in subobjects]
+        return obj_or_name in elements
+
     def __iter__(self):
         return (self.get_subobjects()[item] for item in self.get_subobjects())
 
@@ -128,6 +130,48 @@ class SubscriptableBaseModel(BaseModel):
         key = format_key(key)
         del(self.get_subobjects()[key])
 
+    def keys(self):
+        return (elem for elem in self.get_subobjects())
+
+
+class Root(SubscriptableBaseModel):
+    __name__ = __parent__ = None
+    subobjects_attr = 'packages'
+
+    def __init__(self):
+        self.packages = MyOOBTree()
+
+    def __acl__(self):
+        acl = [
+            (Allow, 'group:installer', 'install'),
+            (Allow, 'group:admin', ALL_PERMISSIONS)
+        ]
+        registry = get_current_registry()
+        anonymous_install = registry.settings.get('papaye.anonymous_install')
+        anonymous_install = True if anonymous_install and anonymous_install == 'true' else False
+        if anonymous_install:
+            acl.append((Allow, Everyone, 'install'))
+        return acl
+
+    def __iter__(self):
+        return (package for package in self.get_subobjects().values())
+
+    def __getitem__(self, name_or_index):
+        if isinstance(name_or_index, int):
+            return next(itertools.islice(self.__iter__(), name_or_index, name_or_index + 1))
+        keys = [key for key in self.get_subobjects().keys()
+                if format_key(key) == format_key(name_or_index)]
+        if len(keys) == 1:
+            return self.get_subobjects()[keys[0]]
+
+    def __setitem__(self, key, package):
+        if not hasattr(self, '_p_updated_keys'):
+            self._p_updated_keys = []
+        self._p_updated_keys.append(key)
+        if isinstance(package, Package):
+            package.__parent__ = self
+        self.get_subobjects()[key] = package
+
 
 class Package(SubscriptableBaseModel):
     pypi_url = 'http://pypi.python.org/pypi/{}/json'
@@ -136,7 +180,7 @@ class Package(SubscriptableBaseModel):
     def __init__(self, name):
         self.__name__ = name
         self.name = name
-        self.releases = OOBTree()
+        self.releases = MyOOBTree()
 
     def __getitem__(self, release_name_or_index):
         if isinstance(release_name_or_index, int):
@@ -181,7 +225,7 @@ class Package(SubscriptableBaseModel):
             root = request.root
         else:
             root = repository_root_factory(request)
-        return root[name] if name in root else None
+        return root[name] if name in [package.__name__ for package in root] else None
 
     def get_last_release(self):
         if not len(self):
@@ -207,7 +251,7 @@ class Release(SubscriptableBaseModel):
 
     def __init__(self, name, version, metadata, deserialize_metadata=True):
         self.__name__ = name
-        self.release_files = OOBTree()
+        self.release_files = MyOOBTree()
         self.version = version
         self.original_metadata = metadata
         if deserialize_metadata:
@@ -226,20 +270,20 @@ class Release(SubscriptableBaseModel):
         self.release_files[key].__parent__ = self
 
     @classmethod
-    def by_packagename(cls, package, request):
+    def by_packagename(cls, package_name, request):
         root = repository_root_factory(request)
-        if package not in root:
+        if package_name not in [pkg.__name__ for pkg in root]:
             return None
-        return list(root[package].releases.values())
+        return list(root[package_name].releases.values())
 
     @classmethod
-    def by_releasename(cls, package, release, request):
+    def by_releasename(cls, package_name, release, request):
         if hasattr(request, 'root') and request.root is not None:
             root = request.root
         else:
             root = repository_root_factory(request)
-        if package in root:
-            return root[package].get(release, None)
+        if package_name in [pkg.__name__ for pkg in root]:
+            return root[package_name].get(release, None)
 
 
 class ReleaseFile(BaseModel):
@@ -281,7 +325,7 @@ class ReleaseFile(BaseModel):
             root = request.root
         else:
             root = repository_root_factory(request)
-        if package in root and root[package].get(release):
+        if package in [pkg.__name__ for pkg in root] and root[package].get(release):
             return root[package][release].get(releasefile, None)
 
 
@@ -298,14 +342,16 @@ class User(BaseModel):
     def password_verify(self, clear_password):
         return self.hash_password(clear_password) == self.password
 
+    def __repr__(self):
+        return '<{}.{} "{}" at {}>'.format(self.__module__, self.__class__.__name__, self.username, id(self))
+
     @classmethod
     def by_username(cls, username, request):
         """Return user instance by username"""
         root = user_root_factory(request)
-        if username not in root:
-            return None
-        else:
+        if username in [user.username for user in root]:
             return root[username]
+        return None
 
 
 class RestrictedContext(object):

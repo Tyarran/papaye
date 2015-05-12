@@ -1,4 +1,3 @@
-import sys
 import logging
 
 from random import choice
@@ -9,7 +8,6 @@ from pyramid.config import Configurator, ConfigurationError
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.path import DottedNameResolver
 from pyramid.session import SignedCookieSessionFactory
-from pyramid.threadlocal import get_current_registry
 from pyramid_beaker import set_cache_regions_from_settings
 
 from papaye.authentification import RouteNameAuthPolicy
@@ -86,8 +84,8 @@ def main(global_config, **settings):
         simple=BasicAuthAuthenticationPolicy(check=auth_check_func),
     )
     authz_policy = ACLAuthorizationPolicy()
-    # config.set_authentication_policy(authn_policy)
-    # config.set_authorization_policy(authz_policy)
+    config.set_authentication_policy(authn_policy)
+    config.set_authorization_policy(authz_policy)
     config.set_session_factory(my_session_factory)
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('islogged', '/islogged', factory=index_root_factory)
