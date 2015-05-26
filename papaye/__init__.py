@@ -36,8 +36,8 @@ def check_database_config(config):
     from papaye.models import get_manager
     manager = get_manager(config)
     if manager.get_db_version() < manager.get_sw_version():
-        raise ConfigurationError('Your database need to be updated! Run '
-                                 '"papaye_evolve path_to_your_config_file.ini" command first')
+       raise ConfigurationError('Your database need to be updated! Run '
+                                '"papaye_evolve path_to_your_config_file.ini" command first')
     conn = config.registry._zodb_databases[''].open()
     if user_root_factory(conn) is None or repository_root_factory(conn) is None:
         raise ConfigurationError('Database does not exist! Run "papaye_init '

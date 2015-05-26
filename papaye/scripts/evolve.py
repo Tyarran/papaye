@@ -1,4 +1,5 @@
 import sys
+import logging
 
 from pyramid.paster import get_appsettings
 from pyramid.config import Configurator
@@ -8,6 +9,8 @@ from papaye.models import get_manager
 
 
 def main(*argv, **kwargs):
+    logger = logging.getLogger()
+    #logger.disabled = True
     config_file = sys.argv[-1]
     settings = get_appsettings(config_file)
     config = Configurator(settings=settings)
@@ -17,4 +20,6 @@ def main(*argv, **kwargs):
     else:
         sys.stdout.write('Your database need to be updated... ')
         evolve_to_latest(manager)
+        manager.evolve_to_current()
     sys.stdout.write('Done!\n')
+    #logger.disabled = False

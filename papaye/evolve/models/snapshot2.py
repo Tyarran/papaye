@@ -135,7 +135,6 @@ class SubscriptableBaseModel(BaseModel):
 class Root(SubscriptableBaseModel):
     __name__ = __parent__ = None
     subobjects_attr = 'packages'
-    blabla = 'blibli'
 
     def __init__(self):
         self.packages = MyOOBTree()
@@ -158,10 +157,13 @@ class Root(SubscriptableBaseModel):
     def __getitem__(self, name_or_index):
         if isinstance(name_or_index, int):
             return next(itertools.islice(self.__iter__(), name_or_index, name_or_index + 1))
-        keys = [key for key in self.get_subobjects().keys()
-                if format_key(key) == format_key(name_or_index)]
-        if len(keys) == 1:
-            return self.get_subobjects()[keys[0]]
+        try:
+            keys = [key for key in self.get_subobjects().keys()
+                    if format_key(key) == format_key(name_or_index)]
+            if len(keys) == 1:
+                return self.get_subobjects()[keys[0]]
+        except Exception as ex:
+            import pdb; pdb.set_trace()
 
     def __setitem__(self, key, package):
         if not hasattr(self, '_p_updated_keys'):
