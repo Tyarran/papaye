@@ -29,29 +29,28 @@ Configuration
 Papaye variables
 ################
 
-papaye.proxy (true / false)
-...........................
-Enable proxy from Pypi server
+.. list-table:: Papaye variables
+   :header-rows: 1
+   :stub-columns: 1
 
-papaye.anonymous_install (true / false)
-.......................................
-Allow anonymous user to install packages
-
-papaye.proxy.broker (ZMQ URI)
-.............................
-ZMQ URI used by queue and producer devices
-
-papaye.proxy.collector (zmq uri)
-................................
-zmq uri used by collector device
-
-papaye.proxy.worker (zmq uri)
-.............................
-zmq uri used by worker devices
-
-papaye.worker.concurency (integer)
-..................................
-Number of workers
+   * - Parameter
+     - Type
+     - Description
+   * - papaye.proxy
+     - true / false
+     - Enable proxy from PyPI server functionality
+   * - papaye.anonymous_install
+     - true / false
+     - Allow anonymous user to install packages
+   * - papaye.cache
+     - true / false
+     - Enable Papaye cache functionality
+   * - papaye.scheduler
+     - Python module
+     - Set the Papaye scheduler
+   * - papaye.scheduler.workers
+     - Integer
+     - Set worker concurency value
 
 
 .. _ZODB: https://pypi.python.org/pypi/ZODB
