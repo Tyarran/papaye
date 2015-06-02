@@ -1,9 +1,9 @@
 .. image:: https://travis-ci.org/rcommande/papaye.png?branch=master
     :target: https://travis-ci.org/rcommande/papaye
 
-papaye
+Papaye
 ======
-A basic PyPi server clone written in `Pyramid Web Framework`_, using `ZODB`_ and `Beaker Cache`_.
+Yet another Python Package Repository (local PyPI) written with the `Pyramid Web Framework`_, using `ZODB`_ and `Beaker Cache`_.
 
 Getting Started
 ---------------

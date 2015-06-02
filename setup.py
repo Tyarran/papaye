@@ -34,7 +34,7 @@ requires = [
 
 setup(name='papaye',
       version=VERSION,
-      description='A basic PyPi server clone written in Pyramid Web Framework, using ZODB and Beaker Cache.',
+      description='Yet another Python Package repository (local PyPI)',
       long_description=README + '\n\n' + CHANGES,
       classifiers="""
           Programming Language :: Python
