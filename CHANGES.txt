@@ -1,13 +1,15 @@
 Changelist
 ----------
 
-0.2.0-dev
-#########
+0.2.0
+#####
 
 - Package browse UI
 - Fix relative path on zodbconn.uri (#3)
 - Fix package name with spaces
 - Fix multiple bugs with the database tree
+- New task scheduler
+- Add database migration system based on repoze.evolution
 
 0.1.2
 #####

@@ -8,11 +8,20 @@ A basic PyPi server clone written in `Pyramid Web Framework`_, using `ZODB`_ and
 Getting Started
 ---------------
 
-- cd <directory containing this file>
-- $venv/bin/pip install -e .
-- $venv/bin/papaye_init development.ini  # Use production.ini in production
-- $venv/bin/pserve development.ini  # Use production.ini in production
+::
 
+    cd <directory containing this file>
+    $venv/bin/pip install -e .
+    $venv/bin/papaye_init development.ini  # Use production.ini in production
+    $venv/bin/pserve development.ini  # Use production.ini in production
+
+
+Migrate the application from an older version
+---------------------------------------------
+
+::
+
+    papaye_evolve you_configuration_file.ini
 
 Configuration
 -------------
