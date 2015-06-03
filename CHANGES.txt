@@ -1,6 +1,11 @@
 Changelist
 ----------
 
+0.2.2
+#####
+
+- Fix webassets for production installation
+
 0.2.1
 #####
 
