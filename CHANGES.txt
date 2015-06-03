@@ -1,6 +1,11 @@
 Changelist
 ----------
 
+0.2.1
+#####
+
+- Fix database initialization
+
 0.2.0
 #####
 
