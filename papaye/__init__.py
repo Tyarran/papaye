@@ -1,4 +1,5 @@
 import logging
+import os
 
 from random import choice
 
@@ -19,6 +20,14 @@ from papaye.tasks import TaskRegistry
 
 
 logger = logging.getLogger(__name__)
+WEBASSETS_DEFAULT_CONFIG = {
+    "debug": False,
+    "updater": 'timestamp',
+    "cache": True,
+    "url_expire": False,
+    "static_view": True,
+    "cache_max_age": 3600,
+}
 
 
 def auth_check_func(username, password, request):
@@ -36,8 +45,8 @@ def check_database_config(config):
     from papaye.models import get_manager
     manager = get_manager(config)
     if manager.get_db_version() < manager.get_sw_version():
-       raise ConfigurationError('Your database need to be updated! Run '
-                                '"papaye_evolve path_to_your_config_file.ini" command first')
+        raise ConfigurationError('Your database need to be updated! Run '
+                                 '"papaye_evolve path_to_your_config_file.ini" command first')
     conn = config.registry._zodb_databases[''].open()
     if user_root_factory(conn) is None or repository_root_factory(conn) is None:
         raise ConfigurationError('Database does not exist! Run "papaye_init '
@@ -77,6 +86,9 @@ def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
     set_cache_regions_from_settings(settings)
+    static_dir = os.path.join(os.path.dirname(__file__), 'static')
+    settings.setdefault('webassets.base_dir', static_dir)
+    settings.setdefault('webassets.base_url', 'static')
     config = Configurator(settings=settings)
     add_directives(config)
     authn_policy = RouteNameAuthPolicy(
@@ -94,15 +106,21 @@ def main(global_config, **settings):
     config.add_route('home', '/', factory=index_root_factory)
     config.add_route('simple', '/simple*traverse', factory=repository_root_factory)
     config.add_notfound_view(notfound, append_slash=True)
-    config.add_jinja2_extension('webassets.ext.jinja2.AssetsExtension')
-    assets_env = config.get_webassets_env()
     config.commit()
+
+    # Web assets
+    config.add_jinja2_extension('webassets.ext.jinja2.AssetsExtension')
+    config.include('pyramid_webassets')
+    assets_env = config.get_webassets_env()
+    for item in WEBASSETS_DEFAULT_CONFIG.items():
+        assets_env.config.setdefault(*item)
     jinja2_env = config.get_jinja2_environment()
     jinja2_env.assets_environment = assets_env
     config.add_webasset('papaye_js', papaye_js)
     config.add_webasset('papaye_css', papaye_css)
     config.add_webasset('external_css', external_css)
     config.add_webasset('papaye_fonts', papaye_fonts)
+
     config.check_database_config()
     config.scan(ignore='papaye.tests')
     if 'papaye.worker.combined' not in settings or bool(settings['papaye.worker.combined']):
