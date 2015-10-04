@@ -1,0 +1,7 @@
+{
+  "name": "papaye",
+  "version": "0.3",
+  "dependencies": {
+    "backbone": "1.2.1"
+  }
+}

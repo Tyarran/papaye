@@ -45,7 +45,9 @@
     </body>
 {% endraw %}
     {# Scripts #}
-    {% assets "papaye_js" %}
-     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-    {% endassets %}
+    {% for asset in ["papaye_js", "backbone_js"] %}
+        {% assets asset %}
+        <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+        {% endassets %}
+    {% endfor %}
 </html>

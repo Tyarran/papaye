@@ -15,6 +15,11 @@ papaye_fonts = Bundle(
     'includes/OpenSans/OpenSans-Regular-webfont.woff',
 )
 
+backbone_js = Bundle(
+    'includes/underscore/underscore.js',
+    'includes/backbone/backbone.js',
+)
+
 papaye_js = Bundle(
     'includes/angular/angular.min.js',
     'includes/angular/angular-route.min.js',

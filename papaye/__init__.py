@@ -12,7 +12,7 @@ from pyramid.session import SignedCookieSessionFactory
 from pyramid_beaker import set_cache_regions_from_settings
 
 from papaye.authentification import RouteNameAuthPolicy
-from papaye.bundles import papaye_js, papaye_css, papaye_fonts, external_css
+from papaye.bundles import papaye_js, papaye_css, papaye_fonts, external_css, backbone_js
 from papaye.factories import repository_root_factory, user_root_factory, index_root_factory
 from papaye.models import User
 from papaye.tasks.devices import DummyScheduler
@@ -120,6 +120,7 @@ def main(global_config, **settings):
     config.add_webasset('papaye_css', papaye_css)
     config.add_webasset('external_css', external_css)
     config.add_webasset('papaye_fonts', papaye_fonts)
+    config.add_webasset('backbone_js', backbone_js)
 
     config.check_database_config()
     config.scan(ignore='papaye.tests')
