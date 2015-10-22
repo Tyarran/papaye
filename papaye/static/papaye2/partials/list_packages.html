@@ -1,0 +1,23 @@
+<table class="table table-striped table-hover" id="list_packages" >
+    <form>
+        <span class="input-group">
+            <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+            <input type="text" class="form-control" ng-model="search" placeholder="Search a package" />
+            <span class="btn input-group-addon"><i class="glyphicon glyphicon-remove" ng-click="emptySearch()"></i></span>
+        </span>
+    </form>
+    <div class="spacer"></div>
+    <thead class="spacer">
+        <tr>
+            <th>Package</th>
+            <th>Summary</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="package in filterPackageList()" ng-click="selectPackage(package.name)">
+            <td>{{ package.name }}</td>
+            <td>{{ package.summary }}</td>
+        </tr>
+    </tbody>
+</table>
+<p>{{ filterPackageList().length }} packages</p>

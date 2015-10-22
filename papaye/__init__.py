@@ -12,7 +12,7 @@ from pyramid.session import SignedCookieSessionFactory
 from pyramid_beaker import set_cache_regions_from_settings
 
 from papaye.authentification import RouteNameAuthPolicy
-from papaye.bundles import papaye_js, papaye_css, papaye_fonts, external_css, backbone_js
+from papaye.bundles import papaye_css_assets,  papaye_js_assets
 from papaye.factories import repository_root_factory, user_root_factory, index_root_factory
 from papaye.models import User
 from papaye.tasks.devices import DummyScheduler
@@ -105,6 +105,7 @@ def main(global_config, **settings):
     config.add_route('logout', '/logout')
     config.add_route('home', '/', factory=index_root_factory)
     config.add_route('simple', '/simple*traverse', factory=repository_root_factory)
+    config.add_route('vars', '/vars')
     config.add_notfound_view(notfound, append_slash=True)
     config.commit()
 
@@ -116,11 +117,8 @@ def main(global_config, **settings):
         assets_env.config.setdefault(*item)
     jinja2_env = config.get_jinja2_environment()
     jinja2_env.assets_environment = assets_env
-    config.add_webasset('papaye_js', papaye_js)
-    config.add_webasset('papaye_css', papaye_css)
-    config.add_webasset('external_css', external_css)
-    config.add_webasset('papaye_fonts', papaye_fonts)
-    config.add_webasset('backbone_js', backbone_js)
+    config.add_webasset('papaye_js_assets', papaye_js_assets)
+    config.add_webasset('papaye_css_assets', papaye_css_assets)
 
     config.check_database_config()
     config.scan(ignore='papaye.tests')

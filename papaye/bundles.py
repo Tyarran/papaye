@@ -6,30 +6,57 @@ papaye_css = Bundle(
     filters='cssmin',
 )
 
-external_css = Bundle(
-    'includes/bootstrap/css/bootstrap.min.css',
-    'includes/font-awesome/css/font-awesome.min.css',
+font_awesome_css = Bundle(
+    'includes/font-awesome/css/font-awesome.css',
 )
 
-papaye_fonts = Bundle(
-    'includes/OpenSans/OpenSans-Regular-webfont.woff',
+opensans_css = Bundle(
+    'includes/WebFont-OpenSans/css/stylesheet.css',
 )
 
 backbone_js = Bundle(
     'includes/underscore/underscore.js',
     'includes/backbone/backbone.js',
 )
-
-papaye_js = Bundle(
-    'includes/angular/angular.min.js',
-    'includes/angular/angular-route.min.js',
-    'includes/angular/angular-resource.min.js',
-    'includes/jquery/jquery-2.1.1.min.js',
-    'includes/bootstrap/js/bootstrap.min.js',
-    'includes/noty/packaged/jquery.noty.packaged.min.js',
+jquery_js = Bundle(
+    'includes/jquery/dist/jquery.js',
+)
+bootstrap_js = Bundle(
+    'includes/bootstrap/dist/js/bootstrap.js',
+    'includes/bootstrap/dist/css/bootstrap.css',
+)
+bootstrap_css = Bundle(
+    'includes/bootstrap/dist/css/bootstrap.css',
+)
+noty_js = Bundle(
+    'includes/noty/js/noty/packaged/jquery.noty.packaged.js',
+)
+bower_js_resources = Bundle(
+    jquery_js,
+    backbone_js,
+    bootstrap_js,
+    noty_js,
+)
+bower_css_resources = Bundle(
+    font_awesome_css,
+    bootstrap_css,
+    opensans_css,
+)
+papaye_js_assets = Bundle(
+    bower_js_resources,
+    'papaye/views.js',
+    'papaye/models.js',
+    'papaye/collections.js',
+    'papaye/routers.js',
     'papaye/app.js',
-    'papaye/services.js',
-    'papaye/controllers.js',
+    #'papaye/services.js',
+    #'papaye/controllers.js',
     output='gen/js/papaye.js',
     filters='jsmin',
+)
+papaye_css_assets = Bundle(
+    bower_css_resources,
+    papaye_css,
+    output='gen/js/papaye.css',
+    filters='cssmin',
 )

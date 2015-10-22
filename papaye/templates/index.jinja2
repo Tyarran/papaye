@@ -1,53 +1,85 @@
 <!DOCTYPE html>
-{% raw %}
-<html lang="en" ng-app="papaye" ng-controller="MainController">
-    <head>
-        <title ng-model="main.title">Papaye Index - {{ main.title }}</title>
-{% endraw %}
+<html lang="en">
+    <head id="head">
+        <title>Papaye Index</title>
         {# Styles  #}
-        {% assets "external_css" %}
+        {% assets "papaye_css_assets" %}
         <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
-        {% endassets %}
-        {% assets "papaye_css" %}
-        <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
-        {% endassets %}
-        {% assets "papaye_fonts" %}
-        <link type="application/x-font-woff" href="{{ ASSET_URL }}" />
         {% endassets %}
 {% raw %}
     </head>
     <body>
 
-        <nav class="navbar navbar-default">
+        <nav class="navbar navbar-default" id="navbar">
             <div class="container-fluid">
                 <div class="navbar-header">
                     <a class="navbar-brand" href="#">Papaye</a>
                 </div>
 
                  <ul class="nav navbar-nav" role='tablist'>
-                     <li ng-repeat="page in pages" ng-class="{ active: activePage == page[0] }"><a href="{{ page[1] }}">{{ page[0] }}</a></li>
+                 </ul>
 
-                </ul>
-
-                <ul class="nav navbar-nav pull-right" ng-show="login.username">
-                    <li class="dropdown">
-                        <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-user"></i> {{ login.username }}<span class="caret"></span></a>
-                        <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                            <li><a ng-click="logout()">Logout</a></li>
-                        </ul>
-                    </li>
-                </ul>
+                 <ul class="nav navbar-nav pull-right" ng-show="login.username">
+                     <li class="dropdown">
+                         <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-user"></i> {{ login.username }}<span class="caret"></span></a>
+                         <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                             <li><a ng-click="logout()">Logout</a></li>
+                         </ul>
+                     </li>
+                 </ul>
             </div>
         </nav>
-
-        <div class="container" ng-view>
+        <div class="container" id="content">
         </div>
     </body>
 {% endraw %}
     {# Scripts #}
-    {% for asset in ["papaye_js", "backbone_js"] %}
-        {% assets asset %}
-        <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-        {% endassets %}
-    {% endfor %}
+    {% assets "papaye_js_assets" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+    <script type="javascript/template" id="test_tmpl" >
+<li class="<%= active %>"><a href="<%= url %>" data-name="<%= name %>"><%= name %></a></li>
+    </script>
+
+    <script type="javascript/template" id="index_tmpl" >
+        <h1>Papaye index repository</h1>
+
+        <h2>How to use this repository</h2>
+
+        <h3>In one command line</h3>
+        <p>You can use with repository temporarily on pass PIP command argument</p>
+        <pre>pip install <package> -i <%= simpleUrl %></pre>
+        <h3>Per project configuration</h3>
+        <p>If you want using this repository for only one specific project, you can add this line into the requirements.txt file:</p>
+        <pre>
+-i <%= simpleUrl %>
+.
+        </pre>
+
+
+        <h3>Permanent configuration</h3>
+        <p>Edit the ~/.pip/pip.conf file like:</p>
+
+        <pre>
+[install]
+index-url = <%= simpleUrl %>
+
+[search]
+index = <%= simpleUrl %>
+        </pre>
+
+        <h2>Uploading files</h2>
+
+        <p>Edit your ~/.pypirc file like:</p>
+        <pre>
+[distutils]
+index-servers =
+	papaye
+
+[papaye]
+username: <papaye_username>
+password: <papaye_password>
+repository: <%= simpleUrl %>
+        </pre>
+    </script>
 </html>

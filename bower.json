@@ -2,6 +2,11 @@
   "name": "papaye",
   "version": "0.3",
   "dependencies": {
-    "backbone": "1.2.1"
+    "jquery": "~2.1.4",
+    "backbone": "~1.2.3",
+    "bootstrap": "~3.3.5",
+    "noty": "~2.3.7",
+    "font-awesome": "~4.4.0",
+    "WebFont-OpenSans": "webfont-opensans#~0.0.2"
   }
 }
