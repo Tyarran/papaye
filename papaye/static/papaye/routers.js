@@ -12,8 +12,12 @@ var app = app || {};
             "browse": "browse", // url:event that fires
         },
 
+        notifyActivePageChange: function(page) {
+            app.navView.changeActivePage(page);
+        },
+
         home: function() {
-            console.log("home");
+            this.notifyActivePageChange('home');
             var template = _.template($("#index_tmpl").html());
             var content_node = $("#content");
 
@@ -21,7 +25,7 @@ var app = app || {};
         },
 
         browse: function() {
-            console.log("browse");
+            this.notifyActivePageChange('browse');
             var content_node = $("#content");
 
             content_node.html("");

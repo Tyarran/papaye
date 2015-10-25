@@ -40,19 +40,28 @@ var app = app || {};
             this.li = this.pageUI.find('li');
         },
 
-        changeActivePage: function(event) {
-            var link = $(event.target);
+        tablistClick: function(event) {
+            var pageName = $(event.target).data('name');
+            
+            this.changeActivePage(pageName);
+        },
+
+        changeActivePage: function(pageName) {
+            var activePage = undefined;
+
             _.each(this.li, function(li) {
-                $(li).removeClass('active');
-            });
-            link.parent().addClass('active');
-            this.activePage = link.data('name');
-            this.pages.each(function(page) {
-                if (page.get('name') === link.data('name')) {
-                    this.activePage = page;
+                var $li = $(li);
+                var $a = $li.find('a');
+
+                if ($a.data('name') !== pageName) {
+                    $li.removeClass('active');
+                }
+                else {
+                    $li.addClass('active');
+                    activePage = pageName;
                 }
             });
-            console.log(this.activePage);
+            this.activePage = activePage;
         },
 
         render: function() {

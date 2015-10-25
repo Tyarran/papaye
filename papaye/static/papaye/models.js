@@ -5,6 +5,6 @@ var app = app || {};
 
     app.Page = Backbone.Model.extend({
         name: 'Page name',
-        url: 'Page URL'
+        //url: 'Page URL'
     });
 })();
