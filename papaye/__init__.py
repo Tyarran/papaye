@@ -105,7 +105,6 @@ def main(global_config, **settings):
     config.add_route('logout', '/logout')
     config.add_route('home', '/', factory=index_root_factory)
     config.add_route('simple', '/simple*traverse', factory=repository_root_factory)
-    config.add_route('vars', '/vars')
     config.add_notfound_view(notfound, append_slash=True)
     config.commit()
 

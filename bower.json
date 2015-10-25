@@ -7,6 +7,7 @@
     "bootstrap": "~3.3.5",
     "noty": "~2.3.7",
     "font-awesome": "~4.4.0",
-    "WebFont-OpenSans": "webfont-opensans#~0.0.2"
+    "WebFont-OpenSans": "webfont-opensans#~0.0.2",
+    "highlightjs": "~8.8.0"
   }
 }

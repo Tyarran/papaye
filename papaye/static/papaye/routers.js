@@ -21,7 +21,7 @@ var app = app || {};
             var template = _.template($("#index_tmpl").html());
             var content_node = $("#content");
 
-            content_node.html(template({simpleUrl: 'http://localhost:6543/simple'}));
+            content_node.html(template({simpleUrl: app.server_vars.simple_route_url}));
         },
 
         browse: function() {
@@ -30,11 +30,5 @@ var app = app || {};
 
             content_node.html("");
         },
-
-        toto: function() {
-            alert('toto!!!!');
-            console.log("toto");
-        }
-
     });
 })();

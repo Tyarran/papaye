@@ -29,6 +29,11 @@ package_version_filename = Service(
     description="Package service",
     factory=repository_root_factory
 )
+vars = Service(
+    name="vars",
+    path="/api/vars/json",
+    description="Server variables",
+)
 
 
 @package.get()
@@ -96,3 +101,10 @@ def get_package_by_version(request):
         return serializer.serialize(request.context[package_name][version])
     else:
         return HTTPNotFound()
+
+
+@vars.get()
+def get_variables(request):
+    return {
+        'simple_route_url': request.route_url('simple', traverse=''),
+    }
