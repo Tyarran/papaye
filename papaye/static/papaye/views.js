@@ -77,15 +77,18 @@ var app = app || {};
         }
     });
 
-    app.contentView = Backbone.View.extend({
-        el: '#content',
+    app.ContentView = Backbone.View.extend({
 
-        initialize: function() {
-            this.truc = app.navView.activePage;
+        initialize: function(options) {
+            this.template = _.template($(options.template).html());
+        },
 
-            this.listenTo(this.truc, 'change', function() {
-                alert('Change !!!!');
-            });
+        render: function() {
+            var content = this.template(app.server_vars);
+            $(this.el).html(content);
+            hljs.initHighlighting();
+
+            return this;
         }
     });
 })(jQuery);

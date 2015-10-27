@@ -41,18 +41,21 @@
 <li class="<%= active %>"><a href="<%= url %>" data-name="<%= name %>"><%= name %></a></li>
     </script>
 
+    <script type="javascript/template" id="browse_tmpl" >
+    </script>
+
     <script type="javascript/template" id="index_tmpl" >
         <h1>Papaye index repository</h1>
 
         <h2>How to use this repository</h2>
         <h3>In one command line</h3>
         <p>You can use with repository temporarily on pass PIP command argument</p>
-        <pre><code class="bash">pip install <package> -i <%= simpleUrl %></code></pre>
+        <pre><code class="bash">pip install <package> -i <%= simple_route_url %></code></pre>
         <h3>Per project configuration</h3>
         <p>If you want using this repository for only one specific project, you can add this line into the requirements.txt file:</p>
         <pre>
         <code>
--i <%= simpleUrl %>
+-i <%= simple_route_url %>
 .
         </code>
         </pre>
@@ -64,10 +67,10 @@
         <pre>
         <code class="ini">
 [install]
-index-url = <%= simpleUrl %>
+index-url = <%= simple_route_url %>
 
 [search]
-index = <%= simpleUrl %>
+index = <%= simple_route_url %>
         </code>
         </pre>
 
@@ -83,7 +86,7 @@ index-servers =
 [papaye]
 username: <papaye_username>
 password: <papaye_password>
-repository: <%= simpleUrl %>
+repository: <%= simple_route_url %>
         </code>
         </pre>
 
