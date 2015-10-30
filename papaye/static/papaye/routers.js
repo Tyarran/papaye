@@ -7,15 +7,13 @@ var app = app || {};
 
         routes: {
             "": "home", // url:event that fires
-            "/": "home", // url:event that fires
-            "home": "home", // url:event that fires
             "browse": "browse", // url:event that fires
         },
 
         initialize: function(el) {
             this.el = el;
             this.homeView = new app.ContentView({template: '#index_tmpl'});
-            this.BrowseView = new app.ContentView({template: '#browse_tmpl'});
+            this.ListPackageView = new app.ListPackageView({template: '#list_packages_tmpl'});
         },
 
         notifyActivePageChange: function(page) {
@@ -29,7 +27,6 @@ var app = app || {};
             }
 
             // Move the view element into the DOM (replacing the old content)
-            debugger;
             this.el.html(view.el);
 
             // Render view after it is in the DOM (styles are applied)
@@ -38,6 +35,9 @@ var app = app || {};
             this.currentView = view;
         },
 
+        redirectToHome: function() {
+            this.navigate("//");
+        },
 
         home: function() {
             this.notifyActivePageChange('home');
@@ -49,7 +49,7 @@ var app = app || {};
 
         browse: function() {
             this.notifyActivePageChange('browse');
-            this.switchView(this.BrowseView);
+            this.switchView(this.ListPackageView);
         },
     });
 })();

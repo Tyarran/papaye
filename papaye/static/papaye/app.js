@@ -5,11 +5,9 @@ var app = app || {};
 
     $('document').ready(function() {
         $.get('api/vars/json', function(data) {
-            console.log(data);
             app.server_vars = data;
             new app.appView();
             app.navView = new app.NavView();
-            //app.content = new app.contentView();
             app.router = new app.appRouter($("#content"));
             B.history.start();
         });

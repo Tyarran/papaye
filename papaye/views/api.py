@@ -1,5 +1,5 @@
-from pyramid.httpexceptions import HTTPNotFound
 from cornice import Service
+from pyramid.httpexceptions import HTTPNotFound
 
 from papaye.serializers import PackageListSerializer, ReleaseAPISerializer
 from papaye.factories import repository_root_factory

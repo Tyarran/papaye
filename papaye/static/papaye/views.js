@@ -30,8 +30,8 @@ var app = app || {};
             this.pages = ["home", "browse"];
             this.li = this.pageUI.find('li');
             this.pages = new app.PageCollection([
-                {name: 'home', url: '#home'},
-                {name: 'browse', url: '#browse'}
+                {name: 'home', url: '#/'},
+                {name: 'browse', url: '#/browse'}
             ]);
             this.test_tmpl = _.template($('#test_tmpl').html());
             this.activePage = this.pages.at(0);
@@ -85,9 +85,34 @@ var app = app || {};
 
         render: function() {
             var content = this.template(app.server_vars);
-            $(this.el).html(content);
-            hljs.initHighlighting();
 
+            $(this.el).html(content);
+            return this;
+        }
+    });
+
+    app.ListPackageView = app.ContentView.extend({
+
+        initialize: function(options) {
+            this.template = _.template($(options.template).html());
+            this.packageSummaries = new app.PackageSummaryCollection();
+            this.row_tmpl = _.template($('#list_package_row').html());
+
+            this.packageSummaries.on('sync', function(event) {this.view.render()}, {view: this});
+            this.packageSummaries.fetch();
+        },
+
+        render: function(event) {
+            var context = app.server_vars; 
+            var content = undefined;
+
+            context.packageCount = this.packageSummaries.length;
+            content = this.template(context);
+
+            $(this.el).html(content);
+            this.packageSummaries.each(function(packageSummary) {
+               $('#package_list').append(this.view.row_tmpl({package: packageSummary}));
+            }, {"view": this});
             return this;
         }
     });

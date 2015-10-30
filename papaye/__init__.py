@@ -95,9 +95,9 @@ def main(global_config, **settings):
         default=AuthTktAuthenticationPolicy(random_passphrase(), hashalg='sha512'),
         simple=BasicAuthAuthenticationPolicy(check=auth_check_func),
     )
-    authz_policy = ACLAuthorizationPolicy()
-    config.set_authentication_policy(authn_policy)
-    config.set_authorization_policy(authz_policy)
+    #authz_policy = ACLAuthorizationPolicy(),
+    #config.set_authentication_policy(authn_policy)
+    #config.set_authorization_policy(authz_policy)
     config.set_session_factory(my_session_factory)
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('islogged', '/islogged', factory=index_root_factory)

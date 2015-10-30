@@ -13,7 +13,7 @@
         <nav class="navbar navbar-default" id="navbar">
             <div class="container-fluid">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="#">Papaye</a>
+                    <a class="navbar-brand" href="#/">Papaye</a>
                 </div>
 
                  <ul class="nav navbar-nav" role='tablist'>
@@ -91,4 +91,33 @@ repository: <%= simple_route_url %>
         </pre>
 
     </script>
+    {% raw %}
+    <script type="javascript/template" id="list_packages_tmpl">
+    <table class="table table-striped table-hover" id="list_packages" >
+        <form>
+            <span class="input-group">
+                <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+                <input type="text" class="form-control" ng-model="search" placeholder="Search a package" />
+                <span class="btn input-group-addon"><i class="glyphicon glyphicon-remove" ng-click="emptySearch()"></i></span>
+            </span>
+        </form>
+        <div class="spacer"></div>
+        <thead class="spacer">
+            <tr>
+                <th>Package</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody id="package_list">
+        </tbody>
+    </table>
+    <p><%= packageCount %> packages</p>
+    </script>
+    <script type="javascript/template" id='list_package_row'>
+        <tr>
+            <td><%= package.get('name') %></td>
+            <td><%= package.get('summary') %></td>
+        </tr>
+    </script>
+    {% endraw %}
 </html>
