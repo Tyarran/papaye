@@ -6,18 +6,33 @@
         {% assets "papaye_css_assets" %}
         <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
         {% endassets %}
-{% raw %}
     </head>
     <body>
 
         <nav class="navbar navbar-default" id="navbar">
+        </nav>
+        <div class="container" id="content">
+        </div>
+    </body>
+    {# Scripts #}
+    {% assets "papaye_js_assets" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+
+
+<!--templates -->
+{% raw %}
+    <script type="text/x-handlebars-template" id="test_tmpl" >
             <div class="container-fluid">
                 <div class="navbar-header">
                     <a class="navbar-brand" href="#/">Papaye</a>
                 </div>
 
-                 <ul class="nav navbar-nav" role='tablist'>
-                 </ul>
+                <ul class="nav navbar-nav" role='tablist'>
+                    {{#each pages}}
+                    <li class="{{active}}"><a href="{{url}}" data-name="{{name}}">{{name}}</a></li>
+                    {{/each}}
+                </ul>
 
                  <ul class="nav navbar-nav pull-right" ng-show="login.username">
                      <li class="dropdown">
@@ -28,57 +43,36 @@
                      </li>
                  </ul>
             </div>
-        </nav>
-        <div class="container" id="content">
-        </div>
-    </body>
-{% endraw %}
-    {# Scripts #}
-    {% assets "papaye_js_assets" %}
-    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-    {% endassets %}
-    <script type="javascript/template" id="test_tmpl" >
-<li class="<%= active %>"><a href="<%= url %>" data-name="<%= name %>"><%= name %></a></li>
     </script>
 
-    <script type="javascript/template" id="browse_tmpl" >
-    </script>
-
-    <script type="javascript/template" id="index_tmpl" >
+    <script type="text/x-handlebars-template" id="index_tmpl" >
         <h1>Papaye index repository</h1>
 
         <h2>How to use this repository</h2>
         <h3>In one command line</h3>
         <p>You can use with repository temporarily on pass PIP command argument</p>
-        <pre><code class="bash">pip install <package> -i <%= simple_route_url %></code></pre>
+        <pre class="bash">pip install <package> -i {{simple_route_url}}</pre>
         <h3>Per project configuration</h3>
         <p>If you want using this repository for only one specific project, you can add this line into the requirements.txt file:</p>
         <pre>
-        <code>
--i <%= simple_route_url %>
-.
-        </code>
-        </pre>
+-i {{simple_route_url}}
+.</pre>
 
 
         <h3>Permanent configuration</h3>
         <p>Edit the ~/.pip/pip.conf file like:</p>
 
-        <pre>
-        <code class="ini">
+        <pre class="ini">
 [install]
-index-url = <%= simple_route_url %>
+index-url = {{simple_route_url}}
 
 [search]
-index = <%= simple_route_url %>
-        </code>
-        </pre>
+index = {{simple_route_url}}</pre>
 
         <h2>Uploading files</h2>
 
         <p>Edit your ~/.pypirc file like:</p>
-        <pre>
-        <code class="ini">
+        <pre class="ini">
 [distutils]
 index-servers =
 	papaye
@@ -86,19 +80,16 @@ index-servers =
 [papaye]
 username: <papaye_username>
 password: <papaye_password>
-repository: <%= simple_route_url %>
-        </code>
-        </pre>
-
+repository: {{simple_route_url}}</pre>
     </script>
-    {% raw %}
-    <script type="javascript/template" id="list_packages_tmpl">
+
+    <script type="text/x-handlebars-template" id="list_packages_tmpl">
     <table class="table table-striped table-hover" id="list_packages" >
         <form>
             <span class="input-group">
                 <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
-                <input type="text" class="form-control" ng-model="search" placeholder="Search a package" />
-                <span class="btn input-group-addon"><i class="glyphicon glyphicon-remove" ng-click="emptySearch()"></i></span>
+                <input type="text" class="form-control" ng-model="search" placeholder="Search a package" id="search_input" />
+                <span class="btn input-group-addon" id="remove_filter" ><i class="glyphicon glyphicon-remove" ng-click="emptySearch()"></i></span>
             </span>
         </form>
         <div class="spacer"></div>
@@ -109,15 +100,169 @@ repository: <%= simple_route_url %>
             </tr>
         </thead>
         <tbody id="package_list">
-        </tbody>
     </table>
-    <p><%= packageCount %> packages</p>
+    <p id="package_count">{{packageCount}} packages</p>
     </script>
-    <script type="javascript/template" id='list_package_row'>
-        <tr>
-            <td><%= package.get('name') %></td>
-            <td><%= package.get('summary') %></td>
+
+    <script type="text/x-handlebars-template" id='list_package_row'>
+<tr data-index="{{inde}}>">
+            <td><a href="{{url}}">{{package.name}}</a></td>
+            <td>{{package.summary}}</td>
         </tr>
     </script>
-    {% endraw %}
+
+    <script type="text/x-handlebars-template" id="package_detail_loading_tmpl">
+    <div>
+        <div class="jumbotron">
+            <h1>Loading ...<small></small></h1>
+            <p>Please wait</p>
+        </div>
+    </div>
+    </script>
+
+    <script type="text/x-handlebars-template" id="package_detail_error_tmpl">
+    <div>
+        <div class="jumbotron">
+            <h1>Error !</small></h1>
+            <p>Page not found</p>
+        </div>
+    </div>
+    </script>
+
+    <script type="text/x-handlebars-template" id="package_detail_tmpl">
+<div id="nav-btn">
+    <a class="btn btn-default" href="#/browse"><i class="glyphicon glyphicon-arrow-left"></i> Browse packages</a>
+</div>
+    <div ng-switch-when="200">
+        <div class="jumbotron">
+        <h1>{{release.name}}<small> {{release.version}}</small></h1>
+        <p>{{release.metadata.summary}}</p>
+        <p><a class="btn btn-primary btn-lg" role="button" href="{{release.download_url}}">Download {{release.name}} v{{release.version}}</a></p> </div>
+        <div class="row">
+            <div class="col-md-9">
+                <p>{{{release.metadata.description.content}}}</p>
+            </div>
+            <div class="col-md-3" ng-switch="release.metadata">
+                <header><h1>Metadata</h1></header>
+                {{#if release.metadata}}
+                <div>
+                    <div>
+                        <header>Author</header>
+                        <p>
+                            {{release.metadata.author}}<br>{{release.metadata.author_email}}
+                        </p>
+                    </div>
+                    <div>
+                        <header>Licence</header>
+                        <p>
+                            {{release.metadata.licence}}
+                        </p>
+                    </div>
+                    <div>
+                        <header>Platform</header>
+                        <p>
+                            {{release.metadata.platform}}
+                        </p>
+                    </div>
+                    <div>
+                        <header>Classifiers</header>
+                        <ul id="classifiers">
+                            {{#each release.metadata.classifiers}}
+                            <li>{{ this }}</li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                    <div>
+                        <header>Keywords</header>
+                        <p>
+                            <ul id='tags'>
+                                {{#each release.metadata.keywords}}
+                                <li><span class="label label-default">{{this}}</span></li>
+                                {{/each}}
+                            </ul>
+                        </p>
+                    </div>
+                    <div>
+                        <header>Maintainer</header>
+                        <p>
+                            <img src="http://www.gravatar.com/avatar/{{release.gravatar_hash}}.jpeg" alt="maintainer avatar">
+                        </p>
+                    </div>
+                    <div>
+                    <a class="btn btn-info" href="{{release.metadata.home_page}}" target="blank" class="glyphicon glyphicon-home"></i> Project home page</a>
+                    </div>
+                </div>
+                {{else}}
+                <div>
+                    No informations
+                </div>
+                {{/if}}
+            </div>
+        </div>
+        <section id="download_link">
+                <ul id="download-tab" class="nav nav-tabs" role="tablist">
+                    <li class="active">
+                        <a href="" role="tab" data-toggle="tab">Files</a>
+                    </li>
+                    <li>
+                        <a href="" role="tab" data-toggle="tab">Other releases</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="tab_files">
+                    <div class="tab-pane spacer active">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>File</th>
+                                    <th>Version</th>
+                                    <th>Upload date</th>
+                                    <th>Size</th>
+                                </tr>
+                            </thead>
+                            {{#each release.release_files}}
+                            <tr>
+                                <td><a href="{{ url }}">{{ filename }}</a></td>
+                                <td>{{ version }}</td>
+                                <td>{{ upload_date }}</td>
+                                <td>{{ size }}</td>
+                            </tr>
+                            {{/each}}
+                        </table>
+                    </div>
+                    <div class="tab-pane spacer active" id="tab_other_release">
+                        <div ng-switch="release.other_releases.length">
+                            {{#ifIsZero release.other_releases.length}}
+                            <div class="alert alert-info" ng-switch-when="0">
+                                <p>
+                                    There are no other release in the repository
+                                </p>
+                            </div>
+                            {{else}}
+                            <table class="table table-striped" ng-switch-default>
+                                <thead>
+                                    <tr>
+                                        <th>Version</th>
+                                        <th>Url</th>
+                                    </tr>
+                                </thead>
+                                {{#each release.other_releases}}
+                                <tr>
+                                    <td>{{ version }}</td>
+                                    <td><a href="{{ url }}">{{ url }}</a></td>
+                                </tr>
+                                {{/each}}
+                            </table>
+                            {{/ifIsZero}}
+                        </div>
+                    </div>
+                </div>
+        </section>
+    </div>
+</div>
+    </script>
+    <script type="javascript/template" id="release_metadata_tmpl">
+
+    </script>
+{% endraw %}
 </html>

@@ -15,15 +15,27 @@ body {
     font-family: 'open_sansregular';
 }
 
-#tags {
+#tags, #classifiers {
     margin: 0px;
     padding: 0px;
 }
 
-#tags .label {
+#tags .label, #classifiers .label {
     display: inline-block;
     margin-left: 1px;
     margin-right: 1px;
+}
+
+#tags li, #classifiers li {
+    display: inline-block;
+}
+
+#tags ul, #classifiers li {
+    padding-left: 0px;
+}
+
+#classifiers .label {
+    display: inline;
 }
 
 header {
@@ -38,12 +50,16 @@ header {
     color: #FFFFFF;
 }
 
+.table-hover tr:hover a {
+    color: #FFFFFF;
+}
+
 .spacer {
     margin-top: 10px;
 }
 
 table#list_packages tbody > tr:hover {
-    cursor: pointer;
+    /*cursor: pointer;*/
 }
 
 #nav-btn {

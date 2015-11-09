@@ -8,13 +8,13 @@ var app = app || {};
         routes: {
             "": "home", // url:event that fires
             "browse": "browse", // url:event that fires
+            "browse/:packageName": "releaseDetail",
         },
 
         initialize: function(el) {
             this.el = el;
-            this.homeView = new app.ContentView({template: '#index_tmpl'});
-            this.ListPackageView = new app.ListPackageView({template: '#list_packages_tmpl'});
         },
+
 
         notifyActivePageChange: function(page) {
             app.navView.changeActivePage(page);
@@ -41,15 +41,23 @@ var app = app || {};
 
         home: function() {
             this.notifyActivePageChange('home');
-            this.switchView(this.homeView);
-            $('pre code').each(function(i, block) {
+            this.switchView(new app.ContentView({template: '#index_tmpl'}));
+            $('pre').each(function(i, block) {
                 hljs.highlightBlock(block);
             });
         },
 
         browse: function() {
             this.notifyActivePageChange('browse');
-            this.switchView(this.ListPackageView);
+            this.switchView(new app.ListPackageView({template: '#list_packages_tmpl'}));
         },
+
+        releaseDetail: function(packageName) {
+            this.notifyActivePageChange('browse');
+            this.switchView(new app.ReleaseDetailView({
+                template: '#package_detail_tmpl',
+                packageName: packageName,
+            }));
+        }, 
     });
 })();

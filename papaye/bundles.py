@@ -44,12 +44,17 @@ highlightjs_css = Bundle(
     'includes/highlightjs/styles/monokai_sublime.css',
 )
 
+handlebars_js = Bundle(
+    'includes/handlebars/handlebars.js',
+)
+
 bower_js_resources = Bundle(
     jquery_js,
     backbone_js,
     bootstrap_js,
     noty_js,
     highlightjs_js,
+    handlebars_js,
 )
 
 bower_css_resources = Bundle(
@@ -61,6 +66,7 @@ bower_css_resources = Bundle(
 
 papaye_js_assets = Bundle(
     bower_js_resources,
+    'papaye/helpers.js',
     'papaye/views.js',
     'papaye/models.js',
     'papaye/collections.js',

@@ -22,65 +22,53 @@ var app = app || {};
         el: '#navbar',
 
         events: {
-            'click ul[role=tablist] a': 'changeActivePage',
+            'click ul[role=tablist] li': 'tablistClick',
         },
 
         initialize: function() {
             this.pageUI = $('ul[role=tablist]');
             this.pages = ["home", "browse"];
             this.li = this.pageUI.find('li');
-            this.pages = new app.PageCollection([
+            this.pagesCollection = new app.PageCollection([
                 {name: 'home', url: '#/'},
                 {name: 'browse', url: '#/browse'}
-            ]);
-            this.test_tmpl = _.template($('#test_tmpl').html());
-            this.activePage = this.pages.at(0);
-
+            ])
+            this.test_tmpl = Handlebars.compile($('#test_tmpl').html());
+            this.activePage = this.pagesCollection.at(0);
             this.render();
-            this.li = this.pageUI.find('li');
         },
 
         tablistClick: function(event) {
             var pageName = $(event.target).data('name');
-            
+
             this.changeActivePage(pageName);
         },
 
         changeActivePage: function(pageName) {
-            var activePage = undefined;
-
-            _.each(this.li, function(li) {
-                var $li = $(li);
-                var $a = $li.find('a');
-
-                if ($a.data('name') !== pageName) {
-                    $li.removeClass('active');
-                }
-                else {
-                    $li.addClass('active');
-                    activePage = pageName;
-                }
-            });
-            this.activePage = activePage;
+            this.activePage = this.pagesCollection.findWhere({name: pageName})
+            this.render();
         },
 
         render: function() {
-            this.pageUI.empty();
-            this.pages.each(function(page) {
-                var context = {
+            var context = {pages: []};
+
+            this.pagesCollection.each(function(page) {
+                var page = {
                     name: page.get('name'),
                     url: page.get('url'),
                     active: (page.get('name') === this.view.activePage.get('name'))? 'active': '',
                 }
-                this.view.pageUI.append(this.view.test_tmpl(context))
+                context.pages.push(page);
             }, {view: this});
+            this.$el.html(this.test_tmpl(context));
+            this.li = this.pageUI.find('li');
         }
     });
 
     app.ContentView = Backbone.View.extend({
 
         initialize: function(options) {
-            this.template = _.template($(options.template).html());
+            this.template = Handlebars.compile($(options.template).html())
         },
 
         render: function() {
@@ -93,27 +81,128 @@ var app = app || {};
 
     app.ListPackageView = app.ContentView.extend({
 
-        initialize: function(options) {
-            this.template = _.template($(options.template).html());
-            this.packageSummaries = new app.PackageSummaryCollection();
-            this.row_tmpl = _.template($('#list_package_row').html());
+        events: {
+            "keyup #search_input": "filterList",
+            "click #remove_filter": "resetFilter",
+        },
 
-            this.packageSummaries.on('sync', function(event) {this.view.render()}, {view: this});
+        initialize: function(options) {
+            this.template = Handlebars.compile($(options.template).html());
+            this.packageSummaries = new app.PackageSummaryCollection();
+            this.row_tmpl = Handlebars.compile($('#list_package_row').html());
+
+            this.packageSummaries.on('sync', this.filterList, this);
             this.packageSummaries.fetch();
         },
 
-        render: function(event) {
-            var context = app.server_vars; 
-            var content = undefined;
+        filterList: function(event) {
+            var filterInput = $(event.target);
+            var filterValue = filterInput.val();
+            var filteredResult = undefined;
+                
+            if (filterValue !== '' && filterValue !== undefined) {
+                filteredResult = this.packageSummaries.filter(function(packageSummary) {
+                    return packageSummary.get('name').startsWith(filterValue) }
+                );
+            }
+            else {
+                filteredResult = this.packageSummaries.filter(function(packageSummary) {
+                    return true === true }
+                );
+            }
 
-            context.packageCount = this.packageSummaries.length;
-            content = this.template(context);
+            this.fillPackageSummaryList(filteredResult);
+        },
 
-            $(this.el).html(content);
-            this.packageSummaries.each(function(packageSummary) {
-               $('#package_list').append(this.view.row_tmpl({package: packageSummary}));
+        resetFilter: function(event) {
+            var $searchInput = $("#search_input");
+
+            $searchInput.val('');
+            this.fillPackageSummaryList(this.packageSummaries.filter(function(packageSummary) { return 1 === 1 }));
+        },
+
+        viewPackageDetails: function(event) {
+            var $element = $(event.target).parent();
+            var index = $element.data('index');
+            var packageSummary = this.packageSummaries.at(index);
+
+            app.router.navigate("//browse/" + packageSummary.get('name'));
+        },
+
+        fillPackageSummaryList: function(filteredPackageSummaries) {
+            var packageCount = filteredPackageSummaries.length;
+            var $packageList = $('#package_list');
+
+            $packageList.empty();
+
+            _.each(filteredPackageSummaries, function(packageSummary, index) {
+                var url = "#/browse/" + packageSummary.get('name');
+
+                $packageList.append(this.view.row_tmpl({
+                    package: packageSummary.toJSON(),
+                    index: index,
+                    url: url,
+                }));
             }, {"view": this});
+            $("#package_count").text(packageCount + " packages");
+        },
+
+        render: function() {
+            var context = {packageCount: this.packageSummaries.length}
+
+            console.log(context.packageCount);
+            $(this.el).html(this.template(context));
             return this;
         }
+    });
+
+    app.ReleaseDetailView = app.ContentView.extend({
+
+        events: {
+            "click a[role=tab]": 'tab',
+        },
+
+        initialize: function(options) {
+            this.template = Handlebars.compile($(options.template).html());
+            this.loadingTemplate = Handlebars.compile($('#package_detail_loading_tmpl').html());
+            this.packageName = options.packageName;
+            this.release = new app.Release(this.packageName);
+            this.release.on('sync', function(event) {this.view.render(true)}, {view: this});
+            this.release.fetch();
+        },
+
+        tab: function(event) {
+            var $TabLiNodes = $("#download-tab>li");
+            var $currentTabNode = $(event.target);
+
+            event.preventDefault(); // Remove defaults actions
+
+            _.each($TabLiNodes, function(element) {
+                var element = $(element);
+
+                element.removeClass('active');
+            });
+
+            $currentTabNode.addClass('active');
+        },
+
+        render: function(sync) {
+            var $el = $(this.el);
+            if (sync) {
+                console.log(this.release.attributes);
+                var content = this.template({release: this.release.toJSON()});
+
+                $el.html(content);
+                $el.find('pre.literal-block').each(function(i, block) {
+                   hljs.highlightBlock(block);
+                });
+            }
+            else {
+                var content = this.loadingTemplate();
+                $el.html(content);
+            }
+            return this;
+
+        },
     });
 })(jQuery);
