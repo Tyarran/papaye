@@ -165,8 +165,8 @@ var app = app || {};
         initialize: function(options) {
             this.template = Handlebars.compile($(options.template).html());
             this.loadingTemplate = Handlebars.compile($('#package_detail_loading_tmpl').html());
-            this.packageName = options.packageName;
-            this.release = new app.Release(this.packageName);
+            //this.release = new app.Release(options.packageName, options.version);
+            this.release = new app.Release(options);
             this.release.on('sync', function(event) {this.view.render(true)}, {view: this});
             this.release.fetch();
         },

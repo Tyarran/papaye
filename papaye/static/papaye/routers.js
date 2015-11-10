@@ -9,6 +9,7 @@ var app = app || {};
             "": "home", // url:event that fires
             "browse": "browse", // url:event that fires
             "browse/:packageName": "releaseDetail",
+            "browse/:packageName/:version": "releaseDetail",
         },
 
         initialize: function(el) {
@@ -52,12 +53,15 @@ var app = app || {};
             this.switchView(new app.ListPackageView({template: '#list_packages_tmpl'}));
         },
 
-        releaseDetail: function(packageName) {
-            this.notifyActivePageChange('browse');
-            this.switchView(new app.ReleaseDetailView({
+        releaseDetail: function(packageName, version) {
+            var context = {
                 template: '#package_detail_tmpl',
                 packageName: packageName,
-            }));
+                version: version,
+            }
+
+            this.notifyActivePageChange('browse');
+            this.switchView(new app.ReleaseDetailView(context));
         }, 
     });
 })();

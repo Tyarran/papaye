@@ -14,14 +14,20 @@ var app = app || {};
     });
 
     app.Release = Backbone.Model.extend({
-        //name: 'object name'
         
-        initialize: function(packageName) {
-            this.name = packageName;
+        initialize: function(options) {
+            this.name = options.packageName;
+            this.version = options.version;
         },
 
         url: function() {
-            return '/api/package/' + this.name + '/json';
+            var url = '/api/package/' + this.name + '/json';
+
+            console.log(this.version);
+            if (this.version !== undefined && this.version !== null) {
+                url = '/api/package/' + this.name + '/' + this.version + '/json'
+            }
+            return url;
         },
     });
 })();
