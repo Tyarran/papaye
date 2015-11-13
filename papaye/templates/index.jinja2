@@ -202,15 +202,15 @@ repository: {{simple_route_url}}</pre>
         <section id="download_link">
                 <ul id="download-tab" class="nav nav-tabs" role="tablist">
                     <li class="active">
-                        <a href="" role="tab" data-toggle="tab">Files</a>
+                        <a href="" role="tab" data-toggle="#tab_files">Files</a>
                     </li>
                     <li>
-                        <a href="" role="tab" data-toggle="tab">Other releases</a>
+                        <a href="" role="tab" data-toggle="#tab_other_releases">Other releases</a>
                     </li>
                 </ul>
 
-                <div class="tab-content" id="tab_files">
-                    <div class="tab-pane spacer active">
+                <div class="tab-content">
+                    <div class="tab-pane spacer active" id="tab_files" >
                         <table class="table table-striped">
                             <thead>
                                 <tr>
@@ -230,7 +230,7 @@ repository: {{simple_route_url}}</pre>
                             {{/each}}
                         </table>
                     </div>
-                    <div class="tab-pane spacer active" id="tab_other_release">
+                    <div class="tab-pane spacer" style="display: none;" id="tab_other_releases">
                         <div ng-switch="release.other_releases.length">
                             {{#ifIsZero release.other_releases.length}}
                             <div class="alert alert-info" ng-switch-when="0">

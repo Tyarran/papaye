@@ -173,17 +173,18 @@ var app = app || {};
 
         tab: function(event) {
             var $TabLiNodes = $("#download-tab>li");
-            var $currentTabNode = $(event.target);
+            var $currentTabNode = $(event.target).parent();
+            var $tabpane = $($currentTabNode.find('a').data('toggle'));
 
+            console.log($currentTabNode);
             event.preventDefault(); // Remove defaults actions
 
-            _.each($TabLiNodes, function(element) {
-                var element = $(element);
-
-                element.removeClass('active');
-            });
+            // Reset all tab pane
+            $("#download_link .tab-pane").hide();
+            $TabLiNodes.removeClass('active');
 
             $currentTabNode.addClass('active');
+            $tabpane.show();
         },
 
         render: function(sync) {
