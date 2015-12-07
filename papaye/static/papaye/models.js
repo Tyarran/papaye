@@ -23,11 +23,14 @@ var app = app || {};
         url: function() {
             var url = '/api/package/' + this.name + '/json';
 
-            console.log(this.version);
             if (this.version !== undefined && this.version !== null) {
                 url = '/api/package/' + this.name + '/' + this.version + '/json'
             }
             return url;
         },
+    });
+
+    app.ActivePage = Backbone.Model.extend({
+        name: 'Active page name',
     });
 })();

@@ -21,10 +21,6 @@ var app = app || {};
     app.NavView = Backbone.View.extend({
         el: '#navbar',
 
-        events: {
-            'click ul[role=tablist] li': 'tablistClick',
-        },
-
         initialize: function() {
             this.pageUI = $('ul[role=tablist]');
             this.pages = ["home", "browse"];
@@ -34,19 +30,12 @@ var app = app || {};
                 {name: 'browse', url: '#/browse'}
             ])
             this.test_tmpl = Handlebars.compile($('#test_tmpl').html());
-            this.activePage = this.pagesCollection.at(0);
-            this.render();
+
+            app.activePage.on('change:name', this.changeActivePage, {view: this});
         },
 
-        tablistClick: function(event) {
-            var pageName = $(event.target).data('name');
-
-            this.changeActivePage(pageName);
-        },
-
-        changeActivePage: function(pageName) {
-            this.activePage = this.pagesCollection.findWhere({name: pageName})
-            this.render();
+        changeActivePage: function(page) {
+            this.view.render();
         },
 
         render: function() {
@@ -56,7 +45,7 @@ var app = app || {};
                 var page = {
                     name: page.get('name'),
                     url: page.get('url'),
-                    active: (page.get('name') === this.view.activePage.get('name'))? 'active': '',
+                    active: (page.get('name') === app.activePage.get('name'))? 'active': '',
                 }
                 context.pages.push(page);
             }, {view: this});
@@ -69,6 +58,7 @@ var app = app || {};
 
         initialize: function(options) {
             this.template = Handlebars.compile($(options.template).html())
+            this.name = options.name;
         },
 
         render: function() {
@@ -88,6 +78,7 @@ var app = app || {};
 
         initialize: function(options) {
             this.template = Handlebars.compile($(options.template).html());
+            this.name = options.name;
             this.packageSummaries = new app.PackageSummaryCollection();
             this.row_tmpl = Handlebars.compile($('#list_package_row').html());
 
@@ -99,17 +90,13 @@ var app = app || {};
             var filterInput = $(event.target);
             var filterValue = filterInput.val();
             var filteredResult = undefined;
-                
+
             if (filterValue !== '' && filterValue !== undefined) {
                 filteredResult = this.packageSummaries.filter(function(packageSummary) {
                     return packageSummary.get('name').startsWith(filterValue) }
                 );
             }
-            else {
-                filteredResult = this.packageSummaries.filter(function(packageSummary) {
-                    return true === true }
-                );
-            }
+            else {filteredResult = this.packageSummaries.filter(function(packageSummary) { return 1 === 1 });}
 
             this.fillPackageSummaryList(filteredResult);
         },
@@ -138,12 +125,12 @@ var app = app || {};
             _.each(filteredPackageSummaries, function(packageSummary, index) {
                 var url = "#/browse/" + packageSummary.get('name');
 
-                $packageList.append(this.view.row_tmpl({
+                $packageList.append(this.template({
                     package: packageSummary.toJSON(),
                     index: index,
                     url: url,
                 }));
-            }, {"view": this});
+            }, {"template": this.row_tmpl});
             $("#package_count").text(packageCount + " packages");
         },
 
@@ -164,6 +151,7 @@ var app = app || {};
 
         initialize: function(options) {
             this.template = Handlebars.compile($(options.template).html());
+            this.name = options.name;
             this.loadingTemplate = Handlebars.compile($('#package_detail_loading_tmpl').html());
             //this.release = new app.Release(options.packageName, options.version);
             this.release = new app.Release(options);
@@ -205,5 +193,39 @@ var app = app || {};
             return this;
 
         },
+    });
+
+    app.LoginView = app.ContentView.extend({
+
+         events: {
+             'click button[type=submit]': 'formSubmit',
+         },
+
+        initialize: function(options) {
+            this.template = Handlebars.compile($(options.template).html());
+            this.name = options.name;
+            this.path = options.path;
+        },
+
+        formSubmit: function(event) {
+            event.preventDefault();
+
+            console.log(app.server_vars['login_route_url']);
+            $.ajax({
+                url: app.server_vars['login_route_url'],
+                method: 'post',
+                data: {username: 'admin', password: 'admin'},
+                dataType: 'json',
+                context: this.path,
+            })
+            .done(function(response) {
+                app.router.navigate('//' + this);
+            })
+            .error(function(error) {
+                console.log(error.status)
+                console.log('Pas logué', error);
+            });
+        },
+
     });
 })(jQuery);

@@ -24,4 +24,6 @@ var app = app || {};
         }
 
     }); 
+
+    app.activePage = new app.ActivePage();
 })(jQuery, Backbone);

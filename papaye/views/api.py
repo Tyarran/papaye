@@ -2,37 +2,43 @@ from cornice import Service
 from pyramid.httpexceptions import HTTPNotFound
 
 from papaye.serializers import PackageListSerializer, ReleaseAPISerializer
-from papaye.factories import repository_root_factory
+from papaye.factories import repository_root_factory, index_root_factory
 from papaye.models import Package, Release, ReleaseFile
 
 packages = Service(
     name="packages",
     path="/api/package/json",
     description="List package service",
-    factory=repository_root_factory
+    factory=repository_root_factory,
+    #permission="api",
 )
 package = Service(
     name="package",
     path="/api/package/{package_name}/json",
     description="Package service",
-    factory=repository_root_factory
+    factory=repository_root_factory,
+    permission="api",
 )
 package_version = Service(
     name="package_by_version",
     path="/api/package/{package_name}/{version}/json",
     description="Package service",
-    factory=repository_root_factory
+    factory=repository_root_factory,
+    permission="api",
 )
 package_version_filename = Service(
     name="filename_by_package_version",
     path="/api/package/{package_name}/{version}/{filename}/json",
     description="Package service",
-    factory=repository_root_factory
+    factory=repository_root_factory,
+    permission="api",
 )
 vars = Service(
     name="vars",
     path="/api/vars/json",
     description="Server variables",
+    factory=index_root_factory,
+    #permission="api",
 )
 
 
@@ -107,4 +113,6 @@ def get_package_by_version(request):
 def get_variables(request):
     return {
         'simple_route_url': request.route_url('simple', traverse=''),
+        'is_logged_url': request.route_url('islogged'),
+        'login_route_url': request.route_url('login'),
     }

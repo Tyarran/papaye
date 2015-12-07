@@ -28,6 +28,8 @@ WEBASSETS_DEFAULT_CONFIG = {
     "static_view": True,
     "cache_max_age": 3600,
 }
+random_passphrase = lambda: ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
+my_session_factory = SignedCookieSessionFactory(random_passphrase())
 
 
 def auth_check_func(username, password, request):
@@ -35,10 +37,6 @@ def auth_check_func(username, password, request):
     if user and user.password_verify(password):
         return user.groups
     return None
-
-random_passphrase = lambda: ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
-
-my_session_factory = SignedCookieSessionFactory(random_passphrase())
 
 
 def check_database_config(config):
@@ -82,6 +80,29 @@ def start_scheduler(config):
     config.add_request_method(get_scheduler, 'scheduler', property=True, reify=True)
 
 
+def configure_routes(config):
+    config.add_route('islogged', '/islogged', factory=index_root_factory)
+    config.add_route('login', '/login', factory=user_root_factory)
+    config.add_route('logout', '/logout')
+    config.add_route('home', '/', factory=index_root_factory)
+    config.add_route('simple', '/simple*traverse', factory=repository_root_factory)
+
+
+def configure_views(config):
+    config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_notfound_view(notfound, append_slash=True)
+
+
+def configure_authn_and_authz(config):
+    authn_policy = RouteNameAuthPolicy(
+        default=AuthTktAuthenticationPolicy(random_passphrase(), hashalg='sha512'),
+        simple=BasicAuthAuthenticationPolicy(check=auth_check_func),
+    )
+    authz_policy = ACLAuthorizationPolicy()
+    config.set_authentication_policy(authn_policy)
+    config.set_authorization_policy(authz_policy)
+
+
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
@@ -91,21 +112,11 @@ def main(global_config, **settings):
     settings.setdefault('webassets.base_url', 'static')
     config = Configurator(settings=settings)
     add_directives(config)
-    authn_policy = RouteNameAuthPolicy(
-        default=AuthTktAuthenticationPolicy(random_passphrase(), hashalg='sha512'),
-        simple=BasicAuthAuthenticationPolicy(check=auth_check_func),
-    )
-    #authz_policy = ACLAuthorizationPolicy(),
-    #config.set_authentication_policy(authn_policy)
-    #config.set_authorization_policy(authz_policy)
+    configure_authn_and_authz(config)
     config.set_session_factory(my_session_factory)
-    config.add_static_view('static', 'static', cache_max_age=3600)
-    config.add_route('islogged', '/islogged', factory=index_root_factory)
-    config.add_route('login', '/login', factory=user_root_factory)
-    config.add_route('logout', '/logout')
-    config.add_route('home', '/', factory=index_root_factory)
-    config.add_route('simple', '/simple*traverse', factory=repository_root_factory)
-    config.add_notfound_view(notfound, append_slash=True)
+
+    configure_views(config)  # Views
+    configure_routes(config)  # Routes
     config.commit()
 
     # Web assets

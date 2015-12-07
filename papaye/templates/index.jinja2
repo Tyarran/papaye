@@ -105,7 +105,7 @@ repository: {{simple_route_url}}</pre>
     </script>
 
     <script type="text/x-handlebars-template" id='list_package_row'>
-<tr data-index="{{inde}}>">
+<tr data-index="{{index}}>">
             <td><a href="{{url}}">{{package.name}}</a></td>
             <td>{{package.summary}}</td>
         </tr>
@@ -263,6 +263,19 @@ repository: {{simple_route_url}}</pre>
     </script>
     <script type="javascript/template" id="release_metadata_tmpl">
 
+    </script>
+    <script type="text/x-handlebars-template" id="login_tmpl">
+        <div class="">
+            <form class="form-signin" role="form" name="loginForm" ng-submit="sendForm(loginForm)">
+                <h2 class="form-signin-heading">Please sign in</h2>
+                <label for="inputEmail" class="sr-only">Identifiant</label>
+                <input type="text" class="form-control" placeholder="Identifiant" novalidate ng-required="true"  ng-model="identifiant.username">
+                <label for="inputPassword" class="sr-only">Password</label>
+                <input type="password" class="form-control" placeholder="Password" novalidate ng-required="true" ng-model="identifiant.password">
+                <div class="spacer"></div>
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+            </form>
+        </div>
     </script>
 {% endraw %}
 </html>

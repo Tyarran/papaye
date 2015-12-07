@@ -2,10 +2,6 @@ from pyramid.interfaces import IAuthenticationPolicy
 from zope.interface import implementer
 
 
-def routename(self, request):
-    return self.request.matched_route.name
-
-
 @implementer(IAuthenticationPolicy)
 class RouteNameAuthPolicy(object):
 

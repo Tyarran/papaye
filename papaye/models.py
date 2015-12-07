@@ -135,7 +135,6 @@ class SubscriptableBaseModel(BaseModel):
 class Root(SubscriptableBaseModel):
     __name__ = __parent__ = None
     subobjects_attr = 'packages'
-    blabla = 'blibli'
 
     def __init__(self):
         self.packages = MyOOBTree()
@@ -147,9 +146,7 @@ class Root(SubscriptableBaseModel):
         ]
         registry = get_current_registry()
         anonymous_install = registry.settings.get('papaye.anonymous_install')
-        anonymous_install = True if anonymous_install and anonymous_install == 'true' else False
-        if anonymous_install:
-            acl.append((Allow, Everyone, 'install'))
+        acl.append((Allow, Everyone, 'install')) if anonymous_install and anonymous_install == 'true' else False
         return acl
 
     def __iter__(self):
