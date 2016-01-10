@@ -9,6 +9,9 @@
     "font-awesome": "~4.4.0",
     "WebFont-OpenSans": "webfont-opensans#~0.0.2",
     "highlightjs": "~8.8.0",
-    "handlebars": "~4.0.4"
+    "handlebars": "~4.0.4",
+    "backbone.marionette": "~2.4.4",
+    "requirejs": "~2.1.22",
+    "text": "requirejs-text#~2.0.14"
   }
 }

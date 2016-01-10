@@ -563,7 +563,7 @@ def test_login_view():
     config.set_authorization_policy(authz_policy)
     config.set_authentication_policy(authn_policy)
     request = testing.DummyRequest()
-    request.POST = {'login': 'user', 'password': 'seekrit'}
+    request.POST = {'username': 'user', 'password': 'seekrit'}
     request.root = Root()
     request.root['user'] = User('user', 'seekrit')
 
@@ -584,7 +584,7 @@ def test_login_view_bad_password():
     config.set_authorization_policy(authz_policy)
     config.set_authentication_policy(authn_policy)
     request = testing.DummyRequest()
-    request.POST = {'login': 'user', 'password': 'seekrit'}
+    request.POST = {'username': 'user', 'password': 'seekrit'}
     request.root = Root()
     request.root['user'] = User('user', 'bad password')
 

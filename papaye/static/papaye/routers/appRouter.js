@@ -1,9 +1,15 @@
-var app = app || {};
+var dependencies = [
+    'common',
+    'views/ContentView',
+    'views/ListPackageView',
+    'views/LoginView',
+    'views/ReleaseDetailView'
+];
 
-(function() {
+define('routers/appRouter', dependencies, function(common, ContentView, ListPackageView, LoginView, ReleaseDetailView) {
     'use strict';
 
-    app.appRouter = Backbone.Router.extend({
+    return Backbone.Router.extend({
 
         routes: {
             "": "home", // url:event that fires
@@ -59,7 +65,7 @@ var app = app || {};
 
         home: function() {
             app.activePage.set({name: 'home'});
-            this.switchView(new app.ContentView({template: '#index_tmpl', name: 'homeView'}));
+            this.switchView(new ContentView({template: '#index_tmpl', name: 'homeView'}));
             $('pre').each(function(i, block) {
                 hljs.highlightBlock(block);
             });
@@ -67,7 +73,7 @@ var app = app || {};
 
         browse: function() {
             app.activePage.set({name: 'browse'});
-            this.switchView(new app.ListPackageView({template: '#list_packages_tmpl', name: 'listPackagesView'}));
+            this.switchView(new ListPackageView({template: '#list_packages_tmpl', name: 'listPackagesView'}));
         },
 
         releaseDetail: function(packageName, version) {
@@ -79,11 +85,11 @@ var app = app || {};
             }
 
             app.activePage.set({name: 'browse'});
-            this.switchView(new app.ReleaseDetailView(context));
+            this.switchView(new ReleaseDetailView(context));
         }, 
 
         login: function(path) {
-            this.switchView(new app.LoginView({template: '#login_tmpl', name: 'loginView', path: path}));
+            this.switchView(new LoginView({template: '#login_tmpl', name: 'loginView', path: path}));
         }
     });
-})();
+});

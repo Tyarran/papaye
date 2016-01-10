@@ -48,6 +48,10 @@ handlebars_js = Bundle(
     'includes/handlebars/handlebars.js',
 )
 
+requirejs_js = Bundle(
+    'includes/requirejs/require.js',
+)
+
 bower_js_resources = Bundle(
     jquery_js,
     backbone_js,
@@ -55,6 +59,10 @@ bower_js_resources = Bundle(
     noty_js,
     highlightjs_js,
     handlebars_js,
+)
+
+require_js_resources = Bundle(
+    requirejs_js,
 )
 
 bower_css_resources = Bundle(
@@ -70,10 +78,9 @@ papaye_js_assets = Bundle(
     'papaye/views.js',
     'papaye/models.js',
     'papaye/collections.js',
-    'papaye/routers.js',
+    'papaye/routers/appRouters.js',
+    #'papaye/routers.js',
     'papaye/app.js',
-    #'papaye/services.js',
-    #'papaye/controllers.js',
     output='gen/js/papaye.js',
     filters='jsmin',
 )

@@ -10,7 +10,7 @@ packages = Service(
     path="/api/package/json",
     description="List package service",
     factory=repository_root_factory,
-    #permission="api",
+    permission="api",
 )
 package = Service(
     name="package",
@@ -38,7 +38,6 @@ vars = Service(
     path="/api/vars/json",
     description="Server variables",
     factory=index_root_factory,
-    #permission="api",
 )
 
 

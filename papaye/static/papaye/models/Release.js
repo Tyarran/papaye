@@ -1,19 +1,6 @@
-var app = app || {};
+define('models/Release', ['common', ], function() {
 
-(function(){
-    'use strict';
-
-    app.Page = Backbone.Model.extend({
-        name: 'Page name',
-        url: 'Page URL',
-    });
-
-    app.PackageSummary = Backbone.Model.extend({
-        name: "The package name",
-        summary: "The package summary",
-    });
-
-    app.Release = Backbone.Model.extend({
+    return Backbone.Model.extend({
         
         initialize: function(options) {
             this.name = options.packageName;
@@ -30,7 +17,4 @@ var app = app || {};
         },
     });
 
-    app.ActivePage = Backbone.Model.extend({
-        name: 'Active page name',
-    });
-})();
+});

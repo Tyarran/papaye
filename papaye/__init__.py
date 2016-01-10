@@ -12,7 +12,7 @@ from pyramid.session import SignedCookieSessionFactory
 from pyramid_beaker import set_cache_regions_from_settings
 
 from papaye.authentification import RouteNameAuthPolicy
-from papaye.bundles import papaye_css_assets,  papaye_js_assets
+from papaye.bundles import papaye_css_assets,  papaye_js_assets, require_js_resources
 from papaye.factories import repository_root_factory, user_root_factory, index_root_factory
 from papaye.models import User
 from papaye.tasks.devices import DummyScheduler
@@ -129,6 +129,7 @@ def main(global_config, **settings):
     jinja2_env.assets_environment = assets_env
     config.add_webasset('papaye_js_assets', papaye_js_assets)
     config.add_webasset('papaye_css_assets', papaye_css_assets)
+    config.add_webasset('requirejs', require_js_resources)
 
     config.check_database_config()
     config.scan(ignore='papaye.tests')

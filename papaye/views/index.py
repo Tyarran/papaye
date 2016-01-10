@@ -25,24 +25,12 @@ def index_view(context, request):
     return result
 
 
-#@forbidden_view_config(route_name='home', renderer='json')
-#def forbidden_browse_view(request):
-#    keturn Response(status_code=401)
-
-
-@view_config(route_name='islogged', renderer='json', permission="test")
+@view_config(route_name='islogged', renderer='json')
 def is_logged(request):
-    print(request.session)
     username = request.session.get('username', None)
     if not username:
         return Response(status_code=401)
     return username
-
-
-#@forbidden_view_config(route_name='islogged', renderer='json')
-#def forbidden_view(request):
-    #return HTTPForbidden()
-    #return Response(status_code=401)
 
 
 @view_config(route_name="login")
@@ -50,11 +38,11 @@ def login_view(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
     if username in [user.username for user in list(request.root)] and request.root[username].password_verify(password):
-        headers = remember(request, 'test')
+        headers = remember(request, 'group:admin')
         request.session['username'] = username
+        csrf_token = request.session.get_csrf_token()
+        headers.append(('X-CSRF-Token', csrf_token))
         headers.append(('Content-Type', 'application/json; charset=UTF-8'))
-        import pprint
-        pprint.pprint(headers)
         return Response(json.dumps(username), headers=headers)
     else:
         return Response(json.dumps(None), status_code=401, content_type='application/json', charset='utf-8')
