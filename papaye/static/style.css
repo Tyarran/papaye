@@ -4,12 +4,10 @@
     min-height: 100px;
 }
 
-/*
 @font-face {
     font-family: "open_sansregular";
-    src: url('/static/OpenSans-Regular-webfont.woff');
+    src: url('includes/WebFont-OpenSans/fonts/opensans-regular-webfont.woff');
 }
-*/
 
 body {
     font-family: 'open_sansregular';
