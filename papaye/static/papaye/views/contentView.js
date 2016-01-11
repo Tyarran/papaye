@@ -1,5 +1,4 @@
 define('views/ContentView', ['handlebars'], function(Handlebars) {
-    console.log(Handlebars);
     return Backbone.View.extend({
 
         initialize: function(options) {
@@ -9,7 +8,6 @@ define('views/ContentView', ['handlebars'], function(Handlebars) {
 
         render: function() {
             var content = this.template(app.server_vars);
-            console.log('render !');
 
             $(this.el).html(content);
             return this;

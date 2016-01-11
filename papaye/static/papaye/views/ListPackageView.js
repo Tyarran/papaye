@@ -24,6 +24,14 @@ define('views/ListPackageView', dependencies, function(common, Handlebars, Packa
             
             this.packageSummaries.on('sync', function() {this.filterList()}, this);
             this.packageSummaries.fetch();
+            options.breadcrumbs.add([{
+                href: '#/',
+                name: '<i class="glyphicon glyphicon-home"></i>',
+            }, {
+                href: '#/browse',
+                name: 'browse',
+                active: true,
+            }]);
 
             this.attrEvent = {};
             _.extend(this.attrEvent, Backbone.Events);

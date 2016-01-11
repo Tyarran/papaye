@@ -4,11 +4,15 @@ define('views/ContentView', ['common', 'handlebars', 'text!partials/index.html' 
         initialize: function(options) {
             this.template = Handlebars.compile(template)
             this.name = options.name;
+            options.breadcrumbs.add({
+                href: '#/',
+                name: '<i class="glyphicon glyphicon-home"></i>',
+                active: true,
+            });
         },
 
         render: function() {
             var content = this.template(app.server_vars);
-            console.log('render !');
 
             $(this.el).html(content);
             return this;

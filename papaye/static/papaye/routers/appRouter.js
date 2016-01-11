@@ -3,11 +3,28 @@ var dependencies = [
     'views/ContentView',
     'views/ListPackageView',
     'views/LoginView',
-    'views/ReleaseDetailView'
+    'views/ReleaseDetailView',
+    'views/BreadcrumsView',
+    'collections/Breadcrumb'
 ];
 
-define('routers/appRouter', dependencies, function(common, ContentView, ListPackageView, LoginView, ReleaseDetailView) {
+define('routers/appRouter', dependencies, function(common, ContentView, ListPackageView, LoginView, ReleaseDetailView, BreadcrumsView, Breadcrumb) {
     'use strict';
+
+    var breadcrumbs = {
+       home: {
+           href: '#/',
+           name: 'home',
+       },
+       browse: {
+           href: '#/browse',
+           name: 'browse',
+       },
+       releaseDetail: {
+           href: '#/browse',
+           name: 'browse',
+       }
+    };
 
     return Backbone.Router.extend({
 
@@ -22,6 +39,7 @@ define('routers/appRouter', dependencies, function(common, ContentView, ListPack
         initialize: function(el) {
             this.el = el;
             this.openViews = ['homeView', 'loginView'];
+            this.currentBreadcrums = [];
         },
 
 
@@ -64,8 +82,17 @@ define('routers/appRouter', dependencies, function(common, ContentView, ListPack
         },
 
         home: function() {
+            var homeBreadcrumb = {};
+
+            _.extend(homeBreadcrumb, breadcrumbs.home);
             app.activePage.set({name: 'home'});
-            this.switchView(new ContentView({template: '#index_tmpl', name: 'homeView'}));
+            BreadcrumsView.items.reset();
+            this.switchView(new ContentView({
+                template: '#index_tmpl',
+                name: 'homeView',
+                breadcrumbs: BreadcrumsView.items,
+            }));
+            this.currentBreadcrums = [homeBreadcrumb];
             $('pre').each(function(i, block) {
                 hljs.highlightBlock(block);
             });
@@ -73,7 +100,12 @@ define('routers/appRouter', dependencies, function(common, ContentView, ListPack
 
         browse: function() {
             app.activePage.set({name: 'browse'});
-            this.switchView(new ListPackageView({template: '#list_packages_tmpl', name: 'listPackagesView'}));
+            BreadcrumsView.items.reset();
+            this.switchView(new ListPackageView({
+                template: '#list_packages_tmpl',
+                name: 'listPackagesView',
+                breadcrumbs: BreadcrumsView.items,
+            }));
         },
 
         releaseDetail: function(packageName, version) {
@@ -82,10 +114,12 @@ define('routers/appRouter', dependencies, function(common, ContentView, ListPack
                 packageName: packageName,
                 version: version,
                 name: 'releaseDetailView',
+                breadcrumbs: BreadcrumsView.items,
             }
 
             app.activePage.set({name: 'browse'});
-            this.switchView(new ReleaseDetailView(context));
+            BreadcrumsView.items.reset();
+            this.switchView(new ReleaseDetailView( context));
         }, 
 
         login: function(path) {

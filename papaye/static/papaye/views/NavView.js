@@ -1,5 +1,11 @@
-define('views/NavView', ['common', 'handlebars', 'collections/PageCollection'], function (common, Handlebars, PageCollection) {
+var dependencies = [
+    'common',
+    'handlebars',
+    'collections/PageCollection',
+    'text!partials/navview.html',
+];
 
+define('views/NavView', dependencies, function (common, Handlebars, PageCollection, template) {
     return Backbone.View.extend({
         el: '#navbar',
 
@@ -11,7 +17,7 @@ define('views/NavView', ['common', 'handlebars', 'collections/PageCollection'], 
                 {name: 'home', url: '#/'},
                 {name: 'browse', url: '#/browse'}
             ])
-            this.test_tmpl = Handlebars.compile($('#test_tmpl').html());
+            this.test_tmpl = Handlebars.compile(template);
 
             app.activePage.on('change:name', this.changeActivePage, this);
         },

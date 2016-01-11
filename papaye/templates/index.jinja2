@@ -8,73 +8,16 @@
         {% endassets %}
     </head>
     <body>
-
         <nav class="navbar navbar-default" id="navbar">
         </nav>
-        <div class="container" id="content">
+        <div class="container">
+            <div id="breadcrumb"></div>
+            <div id="content"></div>
         </div>
     </body>
 
 
 <!--templates -->
-{% raw %}
-    <script type="text/x-handlebars-template" id="test_tmpl" >
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <a class="navbar-brand" href="#/">Papaye</a>
-                </div>
-
-                <ul class="nav navbar-nav" role="tablist">
-                    {{#each pages}}
-                    <li class="{{active}}"><a href="{{url}}" data-name="{{name}}">{{name}}</a></li>
-                    {{/each}}
-                </ul>
-
-                 <ul class="nav navbar-nav pull-right" ng-show="login.username">
-                     <li class="dropdown">
-                         <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-user"></i> {{ login.username }}<span class="caret"></span></a>
-                         <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                             <li><a ng-click="logout()">Logout</a></li>
-                         </ul>
-                     </li>
-                 </ul>
-            </div>
-    </script>
-
-    <script type="text/x-handlebars-template" id='list_package_row'>
-<tr data-index="{{index}}>">
-            <td><a href="{{url}}">{{package.name}}</a></td>
-            <td>{{package.summary}}</td>
-        </tr>
-    </script>
-
-    <script type="text/x-handlebars-template" id="package_detail_loading_tmpl">
-    <div>
-        <div class="jumbotron">
-            <h1>Loading ...<small></small></h1>
-            <p>Please wait</p>
-        </div>
-    </div>
-    </script>
-
-    <script type="text/x-handlebars-template" id="package_detail_error_tmpl">
-    <div>
-        <div class="jumbotron">
-            <h1>Error !</small></h1>
-            <p>Page not found</p>
-        </div>
-    </div>
-    </script>
-
-    <script type="text/x-handlebars-template" id="package_detail_tmpl">
-    </script>
-    <script type="javascript/template" id="release_metadata_tmpl">
-
-    </script>
-    <script type="text/x-handlebars-template" src="static/papaye/partials/login.html" id="login_tmpl">
-    </script>
-{% endraw %}
-
     {# Scripts #}
     {% assets "requirejs" %}
     <script type="text/javascript" data-main="static/papaye/app"  src="{{ ASSET_URL }}"></script>
