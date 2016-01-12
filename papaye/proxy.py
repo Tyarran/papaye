@@ -86,8 +86,8 @@ class PyPiProxy:
 
     def build_remote_repository(self, package_name, release_name=None, metadata=False, content=False):
         package_name = self.get_remote_package_name(package_name)
-        info = self.get_remote_informations(self.pypi_url.format(package_name))
-        if info:
+        if package_name:
+            info = self.get_remote_informations(self.pypi_url.format(package_name))
             package_root = Root()
             package = Package(info['info']['name'])
             package.__parent__ = package_root
@@ -121,8 +121,13 @@ class PyPiProxy:
         return None
 
     def merged_repository(self, local_package, release_name=None, metadata=False, root=None):
-        package_name = local_package.__name__
-        remote_repository = self.build_remote_repository(package_name, release_name=release_name, metadata=metadata)
-        remote_package = remote_repository[package_name] if remote_repository else None
-        merged_package = smart_merge(local_package, remote_package, root=root)
-        return merged_package.__parent__
+        if getattr(local_package, 'fake', False):
+            return None
+        else:
+            package_name = local_package.__name__
+            remote_repository = self.build_remote_repository(package_name,
+                                                             release_name=release_name,
+                                                             metadata=metadata)
+            remote_package = remote_repository[package_name] if remote_repository else None
+            merged_package = smart_merge(local_package, remote_package, root=root)
+            return merged_package.__parent__

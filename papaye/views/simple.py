@@ -40,7 +40,12 @@ def not_found(request, stop=None):
         return HTTPNotFound()
     proxy = PyPiProxy()
     package_name = request.matchdict['traverse'][0]
-    local_package = request.root[package_name] if package_name in request.root else Package(package_name)
+    if package_name in request.root:
+        local_package = request.root[package_name]
+    else:
+        local_package = Package(package_name)
+        local_package.fake = True
+
     merged_repository = proxy.merged_repository(local_package)
 
     package = merged_repository[package_name]

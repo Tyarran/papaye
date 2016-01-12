@@ -188,6 +188,34 @@ class PackageTest(unittest.TestCase):
 
         assert result == release
 
+    def test_get_index_bad(self):
+        from papaye.models import Package, Release
+        package = Package(name='package1')
+        release = Release('1.0', '1.0', metadata={})
+        package['release'] = release
+
+        result = package[1]
+
+        assert result is None
+
+    def test_get_item(self):
+        from papaye.models import Package, Release
+        package = Package(name='package1')
+        release = Release('1.0', '1.0', metadata={})
+        package['1.0'] = release
+        result = package['1.0']
+
+        assert result == release
+
+    def test_get_item_with_bad_release_name(self):
+        from papaye.models import Package, Release
+        package = Package(name='package1')
+        release = Release('1.0', '1.0', metadata={})
+        package['1.0'] = release
+        result = package['Bad release name']
+
+        assert result is None
+
 
 class ReleaseTest(unittest.TestCase):
 
@@ -274,6 +302,26 @@ class ReleaseTest(unittest.TestCase):
         assert result.metadata == release.metadata
         assert hasattr(result, 'release_files')
         assert len(list(result)) == len(list(release))
+
+    def test_get_item(self):
+        from papaye.models import Release, ReleaseFile
+        release = Release('1.0', '1.0', metadata={})
+        release_file = ReleaseFile('filename.tar.gz', b'')
+        release['filename.tar.gz'] = release_file
+
+        result = release['filename.tar.gz']
+
+        assert result == release_file
+
+    def test_get_item_with_bad_releasefile_name(self):
+        from papaye.models import Release, ReleaseFile
+        release = Release('1.0', '1.0', metadata={})
+        release_file = ReleaseFile('filename.tar.gz', b'')
+        release['filename.tar.gz'] = release_file
+
+        result = release['bad releasefile name']
+
+        assert result is None
 
 
 class ReleaseFileTest(unittest.TestCase):

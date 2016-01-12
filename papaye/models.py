@@ -182,9 +182,12 @@ class Package(SubscriptableBaseModel):
         self.releases = MyOOBTree()
 
     def __getitem__(self, release_name_or_index):
-        if isinstance(release_name_or_index, int):
-            return next(itertools.islice(self.__iter__(), release_name_or_index, release_name_or_index + 1))
-        return self.releases[release_name_or_index]
+        try:
+            if isinstance(release_name_or_index, int):
+                return next(itertools.islice(self.__iter__(), release_name_or_index, release_name_or_index + 1))
+            return self.releases[release_name_or_index]
+        except (KeyError, IndexError, StopIteration):
+            return None
 
     def __setitem__(self, key, value):
         key = format_key(key)
@@ -259,9 +262,12 @@ class Release(SubscriptableBaseModel):
             self.metadata = schema.deserialize(self.metadata)
 
     def __getitem__(self, name_or_index):
-        if isinstance(name_or_index, int):
-            return next(itertools.islice(self.__iter__(), name_or_index, name_or_index + 1))
-        return self.release_files[format_key(name_or_index)]
+        try:
+            if isinstance(name_or_index, int):
+                return next(itertools.islice(self.__iter__(), name_or_index, name_or_index + 1))
+            return self.release_files[format_key(name_or_index)]
+        except (KeyError, IndexError, StopIteration):
+            return None
 
     def __setitem__(self, key, value):
         key = format_key(key)
