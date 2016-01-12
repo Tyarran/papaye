@@ -123,6 +123,8 @@ define('routers/appRouter', dependencies, function(common, ContentView, ListPack
         }, 
 
         login: function(path) {
+            BreadcrumsView.items.reset();
+
             this.switchView(new LoginView({template: '#login_tmpl', name: 'loginView', path: path}));
         }
     });

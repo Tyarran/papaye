@@ -9,6 +9,7 @@ define("views/BreadcrumsView", ['common', 'handlebars', 'text!partials/breadcrum
             this.items = new Breadcrumb();
 
             this.listenTo(this.items, 'update', this.updateBreadcrumb);
+            this.listenTo(this.items, 'reset', this.updateBreadcrumb);
 
             this.render();
         },
@@ -16,11 +17,17 @@ define("views/BreadcrumsView", ['common', 'handlebars', 'text!partials/breadcrum
         updateBreadcrumb: function(event) {
             this.$breadcrumb.empty();
 
-            this.items.each(function(item) {
-                var content = this.elementTemplate(item.toJSON());
+            if (this.items.length === 0) {
+                this.$breadcrumb.hide();
+            }
+            else {
+                this.items.each(function(item) {
+                    var content = this.elementTemplate(item.toJSON());
 
-                this.$breadcrumb.append(content)
-            }, this);
+                    this.$breadcrumb.append(content)
+                }, this);
+                this.$breadcrumb.show();
+            }
         },
 
         render: function() {
