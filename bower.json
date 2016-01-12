@@ -13,6 +13,6 @@
     "backbone.marionette": "~2.4.4",
     "requirejs": "~2.1.22",
     "text": "requirejs-text#~2.0.14",
-    "source-code-pro": "git://github.com/adobe-fonts/source-code-pro.git#release"
+    "inconsolata-webfont": "~1.0.3"
   }
 }

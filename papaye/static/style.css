@@ -14,13 +14,18 @@
     src: url('includes/source-code-pro/WOFF2/TTF/SourceCodePro-Regular.ttf.woff2');
 }
 
+@font-face {
+    font-family: "Inconsolata";
+    src: url('includes/inconsolata-webfont/fonts/inconsolata-regular.woff2');
+}
+
 body {
     font-family: 'open_sansregular';
 }
 
 pre.hljs {
-    font-family: 'Source Code Pro';
-    font-size: 15px;
+    font-family: 'Inconsolata';
+    font-size: 17px;
 }
 
 #tags, #classifiers {
