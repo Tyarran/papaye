@@ -4,26 +4,11 @@
     min-height: 100px;
 }
 
-@font-face {
-    font-family: "open_sansregular";
-    src: url('includes/WebFont-OpenSans/fonts/opensans-regular-webfont.woff');
-}
-
-@font-face {
-    font-family: "Source Code Pro";
-    src: url('includes/source-code-pro/WOFF2/TTF/SourceCodePro-Regular.ttf.woff2');
-}
-
-@font-face {
-    font-family: "Inconsolata";
-    src: url('includes/inconsolata-webfont/fonts/inconsolata-regular.woff2');
-}
-
 body {
-    font-family: 'open_sansregular';
+    font-family: 'OpenSansRegular';
 }
 
-pre.hljs {
+pre {
     font-family: 'Inconsolata';
     font-size: 17px;
 }
