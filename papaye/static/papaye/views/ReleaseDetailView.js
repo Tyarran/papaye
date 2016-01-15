@@ -25,34 +25,8 @@ define('views/ReleaseDetailView', dependencies, function(common, Handlebars, Con
                 href: '#/',
                 name: '<i class="glyphicon glyphicon-home"></i>',
             }];
-            if (this.release.get('version')) {
-                this.breadcrumbs.push({
-                    href: '#/browse',
-                    name: 'browse',
-                });
-                this.breadcrumbs.push({
-                    href: '#/browse/' + this.release.get('packageName'),
-                    name: this.release.get('packageName'),
-                });
-                this.breadcrumbs.push({
-                    href: '#/browse/' + this.release.get('packageName') + '/' + this.release.get('version'),
-                    name: this.release.get('version'),
-                    active: true,
-                });
-            }
-            else {
-                this.breadcrumbs.push({
-                    href: '#/browse',
-                    name: 'browse',
-                });
-                this.breadcrumbs.push({
-                    href: '#/browse/' + this.release.get('packageName'),
-                    name: this.release.get('packageName'),
-                    active: true,
-                });
-            }
-            options.breadcrumbs.add(this.breadcrumbs);
 
+            // Events
             this.release.on('sync', this.renderRelease, this);
         },
 

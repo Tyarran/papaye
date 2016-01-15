@@ -1,12 +1,20 @@
-define("views/BreadcrumsView", ['common', 'handlebars', 'text!partials/breadcrums.html', 'collections/Breadcrumb'], function(common, Handlebars, elementTemplate, Breadcrumb) {
-    var instance = null;
-    var BreadcrumbView = Backbone.View.extend({
+var dependencies = [
+    'common',
+    'handlebars',
+    'text!partials/breadcrums.html',
+    'collections/Breadcrumb',
+    'models/Registry',
+];
+
+define("views/BreadcrumsView", dependencies, function(common, Handlebars, elementTemplate, Breadcrumb, registry) {
+    return Backbone.View.extend({
         el: '#breadcrumb',
 
         initialize: function(options) {
             this.elementTemplate = Handlebars.compile(elementTemplate);
             this.template = Handlebars.compile('<ol class="breadcrumb"></ol>');
-            this.items = new Breadcrumb();
+
+            this.items = registry.get('breadcrumbs');
 
             this.listenTo(this.items, 'update', this.updateBreadcrumb);
             this.listenTo(this.items, 'reset', this.updateBreadcrumb);
@@ -38,10 +46,4 @@ define("views/BreadcrumsView", ['common', 'handlebars', 'text!partials/breadcrum
             return this;
         }
     });
-
-    if (instance === null){
-        console.log(BreadcrumbView);
-        instance = new BreadcrumbView();
-    }
-    return instance;
 });

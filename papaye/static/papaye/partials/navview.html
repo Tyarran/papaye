@@ -9,12 +9,16 @@
         {{/each}}
     </ul>
 
-        <ul class="nav navbar-nav pull-right" ng-show="login.username">
-            <li class="dropdown">
-                <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-user"></i> {{ login.username }}<span class="caret"></span></a>
-                <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                    <li><a ng-click="logout()">Logout</a></li>
-                </ul>
-            </li>
-        </ul>
+    <ul id='login_menu' class="nav navbar-nav pull-right">
+    {{#if username }}
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-user"></i> {{ username }}<span class="caret"></span></a>
+            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                <li><a id="logout">Logout</a></li>
+            </ul>
+        </li>
+    {{else}}
+        <li><a href="" id='login-btn'>login</a></li>
+    {{/if}}
+    </ul>
 </div>

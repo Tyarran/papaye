@@ -114,4 +114,5 @@ def get_variables(request):
         'simple_route_url': request.route_url('simple', traverse=''),
         'is_logged_url': request.route_url('islogged'),
         'login_route_url': request.route_url('login'),
+        'logout_route_url': request.route_url('logout'),
     }

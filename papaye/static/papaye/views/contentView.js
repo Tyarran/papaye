@@ -1,4 +1,4 @@
-define('views/ContentView', ['handlebars'], function(Handlebars) {
+define('views/ContentView', ['handlebars', 'models/Registry'], function(Handlebars, registry) {
     return Backbone.View.extend({
 
         initialize: function(options) {
@@ -7,7 +7,7 @@ define('views/ContentView', ['handlebars'], function(Handlebars) {
         },
 
         render: function() {
-            var content = this.template(app.server_vars);
+            var content = this.template(registry.get('server_vars'));
 
             $(this.el).html(content);
             return this;

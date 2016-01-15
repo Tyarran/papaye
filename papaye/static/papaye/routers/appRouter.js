@@ -5,26 +5,12 @@ var dependencies = [
     'views/LoginView',
     'views/ReleaseDetailView',
     'views/BreadcrumsView',
-    'collections/Breadcrumb'
+    'collections/Breadcrumb',
+    'models/Registry',
 ];
 
-define('routers/appRouter', dependencies, function(common, ContentView, ListPackageView, LoginView, ReleaseDetailView, BreadcrumsView, Breadcrumb) {
+define('routers/appRouter', dependencies, function(common, ContentView, ListPackageView, LoginView, ReleaseDetailView, BreadcrumsView, Breadcrumb, registry) {
     'use strict';
-
-    var breadcrumbs = {
-       home: {
-           href: '#/',
-           name: 'home',
-       },
-       browse: {
-           href: '#/browse',
-           name: 'browse',
-       },
-       releaseDetail: {
-           href: '#/browse',
-           name: 'browse',
-       }
-    };
 
     return Backbone.Router.extend({
 
@@ -36,10 +22,15 @@ define('routers/appRouter', dependencies, function(common, ContentView, ListPack
             "login/*path": "login",
         },
 
+        routeWithoutBreadcrumbs: [
+            'login',
+        ],
+
         initialize: function(el) {
             this.el = el;
             this.openViews = ['homeView', 'loginView'];
-            this.currentBreadcrums = [];
+
+            this.on('route', this.buildBreadcrumb, this);
         },
 
 
@@ -61,14 +52,15 @@ define('routers/appRouter', dependencies, function(common, ContentView, ListPack
             var self = this;
 
             if (_.indexOf(this.openViews, view.name) === -1) {
-                $.get(app.server_vars['is_logged_url'])
+                $.get(registry.get('server_vars')['is_logged_url'])
                 .done(function(response) {
+                    registry.set('username', response)
                     doSwitch.apply(self);
                 })
                 .fail(function(error) {
-                    console.log(error);
                     if (error.status === 401) {
-                        app.router.navigate('//login/browse');
+                        registry.get('router').navigate('//login/browse');
+                        registry.set('username', null)
                     }
                 });
             }
@@ -81,30 +73,52 @@ define('routers/appRouter', dependencies, function(common, ContentView, ListPack
             this.navigate("//");
         },
 
-        home: function() {
-            var homeBreadcrumb = {};
+        buildBreadcrumb: function(route) {
+            var fragment = Backbone.history.getFragment();
+            var breadcrumbs = registry.get('breadcrumbs');
+            var items = [{
+                href: '#/',
+                name: '<i class="glyphicon glyphicon-home"></i>',
+            }];
+            var lastItem = null;
 
-            _.extend(homeBreadcrumb, breadcrumbs.home);
-            app.activePage.set({name: 'home'});
-            BreadcrumsView.items.reset();
+            _.each(fragment.split('/'), function(fragmentPart) {
+                if (fragmentPart !== '') {
+                    items.push({
+                        href: '#/' + fragment.split(fragmentPart)[0] + fragmentPart,
+                        name: fragmentPart,
+                    });
+                }
+            });
+
+            lastItem = _.last(items);
+            lastItem.active = true;
+            items[items.length - 1] = lastItem;
+
+             
+            breadcrumbs.reset();
+            if (_.contains(this.routeWithoutBreadcrumbs, route) == false) {
+                breadcrumbs.add(items);
+            }
+        },
+
+        home: function() {
+            registry.get('activePage').set({name: 'home'});
+
             this.switchView(new ContentView({
                 template: '#index_tmpl',
                 name: 'homeView',
-                breadcrumbs: BreadcrumsView.items,
             }));
-            this.currentBreadcrums = [homeBreadcrumb];
             $('pre').each(function(i, block) {
                 hljs.highlightBlock(block);
             });
         },
 
         browse: function() {
-            app.activePage.set({name: 'browse'});
-            BreadcrumsView.items.reset();
+            registry.get('activePage').set({name: 'browse'});
             this.switchView(new ListPackageView({
                 template: '#list_packages_tmpl',
                 name: 'listPackagesView',
-                breadcrumbs: BreadcrumsView.items,
             }));
         },
 
@@ -117,14 +131,12 @@ define('routers/appRouter', dependencies, function(common, ContentView, ListPack
                 breadcrumbs: BreadcrumsView.items,
             }
 
-            app.activePage.set({name: 'browse'});
-            BreadcrumsView.items.reset();
+            registry.get('activePage').set({name: 'browse'});
+            //BreadcrumsView.items.reset();
             this.switchView(new ReleaseDetailView( context));
         }, 
 
         login: function(path) {
-            BreadcrumsView.items.reset();
-
             this.switchView(new LoginView({template: '#login_tmpl', name: 'loginView', path: path}));
         }
     });

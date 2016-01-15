@@ -39,26 +39,42 @@ require.config({
 define('common', ['backbone', 'bootstrap', 'text', 'highlightjs', 'helpers', 'noty']);
 
 
-requirejs(['common', 'routers/appRouter', 'models/Page', 'views/NavView'], function(common, appRouter, Page, NavView) {
+var dependencies = [
+    'common',
+    'routers/appRouter',
+    'models/Page',
+    'views/NavView',
+    'models/Registry',
+    'views/BreadcrumsView',
+    'collections/Breadcrumb',
+];
+
+
+requirejs(dependencies, function(common, appRouter, Page, NavView, registry, BreadcrumsView, Breadcrumb) {
+
+    registry.set('activePage', new Page());
+    registry.set('breadcrumbs', new Breadcrumb);
+
+    new BreadcrumsView();
 
     $.get('api/vars/json', function(data) {
-        app.server_vars = data;
-        app.router = new appRouter($("#content"));
-        new NavView();
-        Backbone.history.start();
+       registry.set('server_vars',  data);
+       registry.set('router', new appRouter($("#content")));
+       new NavView();
+       Backbone.history.start();
     });
 
     // Override View.remove()'s default behavior
     Backbone.View = Backbone.View.extend({
 
-       remove: function() {
-           // Empty the element and remove it from the DOM while preserving events
-           $(this.el).empty().detach();
+      remove: function() {
+          // Empty the element and remove it from the DOM while preserving events
+          $(this.el).empty().detach();
 
-           return this;
-       }
+          return this;
+      }
 
     }); 
 
-    app.activePage = new Page();
+    window.registry = registry;
 });

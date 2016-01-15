@@ -1,4 +1,4 @@
-define('views/LoginView', ['common', 'handlebars', 'views/ContentView', 'text!partials/login.html'], function(common, Handlebars, ContentView, template){
+define('views/LoginView', ['common', 'handlebars', 'views/ContentView', 'text!partials/login.html', 'models/Registry'], function(common, Handlebars, ContentView, template, registry){
 
     return ContentView.extend({
 
@@ -16,13 +16,14 @@ define('views/LoginView', ['common', 'handlebars', 'views/ContentView', 'text!pa
             event.preventDefault();
 
             $.ajax({
-                url: app.server_vars['login_route_url'],
+                url: registry.get('server_vars')['login_route_url'],
                 method: 'post',
                 data: {username: 'admin', password: 'admin'},
                 dataType: 'json',
                 context: this.path,
             })
             .done(function(response) {
+                registry.get('router').navigate('//' + this);
                 noty({text: 'You are now connected', type: "success", layout: "bottom", timeout: 5000});
             })
             .error(function(error) {
