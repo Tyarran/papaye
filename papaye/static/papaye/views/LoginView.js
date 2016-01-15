@@ -15,7 +15,6 @@ define('views/LoginView', ['common', 'handlebars', 'views/ContentView', 'text!pa
         formSubmit: function(event) {
             event.preventDefault();
 
-            console.log(app.server_vars['login_route_url']);
             $.ajax({
                 url: app.server_vars['login_route_url'],
                 method: 'post',
@@ -24,11 +23,10 @@ define('views/LoginView', ['common', 'handlebars', 'views/ContentView', 'text!pa
                 context: this.path,
             })
             .done(function(response) {
-                app.router.navigate('//' + this);
+                noty({text: 'You are now connected', type: "success", layout: "bottom", timeout: 5000});
             })
             .error(function(error) {
-                console.log(error.status)
-                console.log('Pas logué', error);
+                noty({text: 'Identification failed', type: "error", layout: "bottom", timeout: 5000});
             });
         },
 

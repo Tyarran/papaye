@@ -1,16 +1,15 @@
-var app = app || {};
-
 require.config({
    baseUrl: 'static/papaye',
    paths: {
-       //bower dependencies
-       jquery: '../includes/jquery/dist/jquery',
-       backbone: '../includes/backbone/backbone',
-       underscore: '../includes/underscore/underscore',
-       bootstrap: '../includes/bootstrap/dist/js/bootstrap',
-       handlebars: '../includes/handlebars/handlebars',
-       text: '../includes/text/text',
-       highlightjs: '../includes/highlightjs/highlight.pack',
+        //bower dependencies
+        jquery: '../includes/jquery/dist/jquery',
+        backbone: '../includes/backbone/backbone',
+        underscore: '../includes/underscore/underscore',
+        bootstrap: '../includes/bootstrap/dist/js/bootstrap',
+        handlebars: '../includes/handlebars/handlebars',
+        text: '../includes/text/text',
+        highlightjs: '../includes/highlightjs/highlight.pack',
+        noty: '../includes/noty/js/noty/packaged/jquery.noty.packaged',
    },
    shim: {
         'backbone': {
@@ -29,11 +28,15 @@ require.config({
         'highlightjs': {
             exports: 'hljs',
         },
+        'noty': {
+            deps: ['jquery', ],
+            exports: 'noty',
+        },
    }
 });
 
 
-define('common', ['backbone', 'bootstrap', 'text', 'highlightjs', 'helpers']);
+define('common', ['backbone', 'bootstrap', 'text', 'highlightjs', 'helpers', 'noty']);
 
 
 requirejs(['common', 'routers/appRouter', 'models/Page', 'views/NavView'], function(common, appRouter, Page, NavView) {
