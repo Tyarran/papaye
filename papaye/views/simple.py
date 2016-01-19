@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 @forbidden_view_config()
 def basic_challenge(request):
     response = HTTPUnauthorized()
-    response.headers.update(forget(request))
+    response.headers.extend(forget(request))
     return response
 
 
