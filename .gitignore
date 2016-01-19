@@ -57,3 +57,9 @@ TODO
 
 # Fuse files
 .fuse*
+
+# bower packages
+papaye/static/includes
+
+# Sphinx readme result
+readme.*

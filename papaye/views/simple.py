@@ -48,21 +48,23 @@ def not_found(request, stop=None):
 
     merged_repository = proxy.merged_repository(local_package)
 
-    package = merged_repository[package_name]
-    traversed = len(request.matchdict['traverse'])
-    if traversed == 1:
-        view = ListReleaseFileView(package, request)
-        view.stop = True
-    elif traversed == 2:
-        context = package[request.matchdict['traverse'][1]]
-        view = ListReleaseFileByReleaseView(context, request)
-    elif traversed == 3:
-        release_file = package[request.matchdict['traverse'][1]][request.matchdict['traverse'][2]]
-        filename = request.matchdict['traverse'][2]
-        package_name, release_name, _ = request.matchdict['traverse']
-        download_release_from_pypi.delay(request.registry._zodb_databases[''], package_name, release_name, filename)
-        return HTTPTemporaryRedirect(location=release_file.pypi_url)
-    return view()
+    if merged_repository:
+        package = merged_repository[package_name]
+        traversed = len(request.matchdict['traverse'])
+        if traversed == 1:
+            view = ListReleaseFileView(package, request)
+            view.stop = True
+        elif traversed == 2:
+            context = package[request.matchdict['traverse'][1]]
+            view = ListReleaseFileByReleaseView(context, request)
+        elif traversed == 3:
+            release_file = package[request.matchdict['traverse'][1]][request.matchdict['traverse'][2]]
+            filename = request.matchdict['traverse'][2]
+            package_name, release_name, _ = request.matchdict['traverse']
+            download_release_from_pypi.delay(request.registry._zodb_databases[''], package_name, release_name, filename)
+            return HTTPTemporaryRedirect(location=release_file.pypi_url)
+        return view()
+    return HTTPNotFound()
 
 
 @view_config(

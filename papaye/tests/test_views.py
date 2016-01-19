@@ -623,4 +623,4 @@ def test_not_found_view_package_not_found(mock):
     result = not_found(request)
 
     assert isinstance(result, HTTPNotFound)
-    assert mock.call_count == 2
+    assert mock.call_count == 1
