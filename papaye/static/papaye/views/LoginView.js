@@ -3,7 +3,7 @@ define('views/LoginView', ['common', 'handlebars', 'views/ContentView', 'text!pa
     return ContentView.extend({
 
          events: {
-             'click button[type=submit]': 'formSubmit',
+             'submit form[name=loginForm]': 'formSubmit',
          },
 
         initialize: function(options) {
@@ -13,12 +13,19 @@ define('views/LoginView', ['common', 'handlebars', 'views/ContentView', 'text!pa
         },
 
         formSubmit: function(event) {
+            var formArray = $(event.target).serializeArray();
+            var data = {};
+
             event.preventDefault();
+
+            _.each(formArray, function(item) {
+                data[item.name] = item.value;
+            });
 
             $.ajax({
                 url: registry.get('server_vars')['login_route_url'],
                 method: 'post',
-                data: {username: 'admin', password: 'admin'},
+                data: data,
                 dataType: 'json',
                 context: this.path,
             })

@@ -50,6 +50,7 @@ define('routers/appRouter', dependencies, function(common, ContentView, ListPack
                 this.currentView = view;
             };
             var self = this;
+            var fragment = Backbone.history.getFragment();
 
             if (_.indexOf(this.openViews, view.name) === -1) {
                 $.get(registry.get('server_vars')['is_logged_url'])
@@ -59,7 +60,7 @@ define('routers/appRouter', dependencies, function(common, ContentView, ListPack
                 })
                 .fail(function(error) {
                     if (error.status === 401) {
-                        registry.get('router').navigate('//login/browse');
+                        registry.get('router').navigate('//login/' + fragment);
                         registry.set('username', null)
                     }
                 });
