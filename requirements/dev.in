@@ -1,7 +1,8 @@
--e .
+-r ./base.in
 
 pytest
 pytest-cov
 pyquery
 tox
 webtest
+pip-tools

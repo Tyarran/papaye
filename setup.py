@@ -1,36 +1,26 @@
 # -*- coding:utf-8 -*-
 import os
+import pip
 
+from os.path import join
 from setuptools import setup, find_packages
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
-README = open(os.path.join(HERE, 'README.rst')).read()
-CHANGES = open(os.path.join(HERE, 'CHANGES.txt')).read()
+README = open(join(HERE, 'README.rst')).read()
+CHANGES = open(join(HERE, 'CHANGES.txt')).read()
+REQUIREMENTS_DIR = join(HERE, 'requirements')
+REQUIREMENTS_BASE = join(REQUIREMENTS_DIR, 'base.txt')
+REQUIREMENTS_DEV = join(REQUIREMENTS_DIR, 'dev.txt')
 VERSION = '0.2.2'
 
-requires = [
-    'colander==1.0b1',
-    'cornice==1.0.0',
-    'cssmin==0.2.0',
-    'docutils==0.12',
-    'filemagic==1.6',
-    'jsmin==2.1.1',
-    'pyramid==1.5.7',
-    'pyramid_beaker==0.8',
-    'pyramid_debugtoolbar==2.3',
-    'pyramid_jinja2==2.5',
-    'pyramid_tm==0.11',
-    'pyramid_webassets==0.9',
-    'pyramid_zodbconn==0.7',
-    'pytz==2015.2',
-    'pyzmq==14.6.0',
-    'repoze.evolution==0.6',
-    'requests==2.7.0',
-    'termcolor==1.1.0',
-    'transaction==1.4.4',
-    'waitress==0.8.9',
-]
+
+dependency_gen = pip.req.parse_requirements(REQUIREMENTS_BASE, session=False)
+INSTALL_REQUIRES = [str(ir.req) for ir in dependency_gen]
+
+dependency_gen = pip.req.parse_requirements(REQUIREMENTS_DEV, session=False)
+DEV_REQUIRES = [str(ir.req) for ir in dependency_gen]
+
 
 setup(name='papaye',
       version=VERSION,
@@ -52,7 +42,10 @@ setup(name='papaye',
       include_package_data=True,
       zip_safe=False,
       test_suite='papaye',
-      install_requires=requires,
+      install_requires=INSTALL_REQUIRES,
+      extras_require={
+          'dev': DEV_REQUIRES,
+      },
       entry_points="""\
       [paste.app_factory]
       main = papaye:main

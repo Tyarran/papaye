@@ -1,0 +1,20 @@
+colander
+cornice
+cssmin
+docutils
+filemagic
+jsmin
+pyramid >=1.6, <=1.7
+pyramid_beaker
+pyramid_debugtoolbar
+pyramid_jinja2
+pyramid_tm
+pyramid_webassets
+pyramid_zodbconn
+pytz
+pyzmq
+repoze.evolution
+requests
+termcolor
+transaction
+waitress
