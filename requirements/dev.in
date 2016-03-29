@@ -2,6 +2,7 @@
 
 pytest
 pytest-cov
+pytest-sugar
 pyquery
 tox
 webtest
