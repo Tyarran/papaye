@@ -2,6 +2,8 @@ from pyramid_zodbconn import get_connection
 from pyramid.request import Request
 from pyramid.testing import DummyRequest
 
+from pyramid.security import Allow, Everyone
+
 
 APP_NAME = __import__(__name__).__name__
 APP_ROOT_NAME = '{}_root'.format(APP_NAME)
@@ -47,6 +49,6 @@ def default_root_factory(request_or_connection):
     return zodb_root
 
 
-def index_root_factory(request):
-    from papaye.models import RestrictedContext
-    return RestrictedContext()
+def application_factory(request):
+    from papaye.models import Application
+    return Application()

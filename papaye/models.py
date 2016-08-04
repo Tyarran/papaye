@@ -15,7 +15,7 @@ from ZODB.blob import Blob
 from beaker.cache import cache_region
 from persistent import Persistent
 from pkg_resources import parse_version
-from pyramid.security import Allow, ALL_PERMISSIONS, Everyone
+from pyramid.security import Allow, ALL_PERMISSIONS, Everyone, Authenticated
 from pyramid.threadlocal import get_current_registry
 from pyramid_zodbconn import db_from_uri
 from pytz import utc
@@ -359,11 +359,14 @@ class User(BaseModel):
 class RestrictedContext(object):
 
     def __acl__(self):
-        # from pyramid.security import Everyone
         return [
-            (Allow, 'test', ALL_PERMISSIONS)
-            # (Allow, Everyone, ALL_PERMISSIONS)
+            (Allow, 'user', 'view'),
         ]
 
-    def __init__(self):
-        pass
+
+class Application(object):
+
+    def __acl__(self):
+        return [
+            (Allow, Authenticated, 'view'),
+        ]

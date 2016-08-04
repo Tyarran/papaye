@@ -1,6 +1,7 @@
 import colander
 
 from docutils.core import publish_parts
+from deform.widget import PasswordWidget
 
 
 class String(colander.String):
@@ -137,3 +138,20 @@ class APIMetadata(colander.MappingSchema):
     platform = colander.SchemaNode(String(), missing=None)
     classifiers = colander.SchemaNode(Classifiers(), default=[])
     name = colander.SchemaNode(String(), missing=None)
+
+
+def username_validator(node, value):
+    request = node.bindings['request']
+    usernames = [user.username for user in list(request.root)]
+    if value not in usernames:
+        raise colander.Invalid(node, 'Invalid username or password')
+    node.bindings['user'] = request.root[value]
+    node.data = value
+
+
+class LoginSchema(colander.MappingSchema):
+    username = colander.SchemaNode(String(), missing=None,
+                                   validator=username_validator)
+    password = colander.SchemaNode(
+        String(), missing=None, widget=PasswordWidget()
+    )

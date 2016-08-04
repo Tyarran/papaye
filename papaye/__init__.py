@@ -13,7 +13,11 @@ from pyramid_beaker import set_cache_regions_from_settings
 
 from papaye.authentification import RouteNameAuthPolicy
 from papaye.bundles import papaye_css_assets,  papaye_js_assets, require_js_resources
-from papaye.factories import repository_root_factory, user_root_factory, index_root_factory
+from papaye.factories import (
+    repository_root_factory,
+    user_root_factory,
+    application_factory,
+)
 from papaye.models import User
 from papaye.tasks.devices import DummyScheduler
 from papaye.tasks import TaskRegistry
@@ -81,10 +85,10 @@ def start_scheduler(config):
 
 
 def configure_routes(config):
-    config.add_route('islogged', '/islogged', factory=index_root_factory)
-    config.add_route('login', '/login', factory=user_root_factory)
+    # config.add_route('islogged', '/islogged', factory=index_root_factory)
+    config.add_route('login', '/login/', factory=user_root_factory)
     config.add_route('logout', '/logout')
-    config.add_route('home', '/', factory=index_root_factory)
+    config.add_route('home', '/', factory=application_factory)
     config.add_route('simple', '/simple*traverse', factory=repository_root_factory)
 
 
@@ -101,6 +105,9 @@ def configure_authn_and_authz(config):
     authz_policy = ACLAuthorizationPolicy()
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
+    settings = config.registry.settings
+    if settings.get('papaye.open_repository', 'False') == 'False':
+        config.set_default_permission('view')
 
 
 def main(global_config, **settings):
@@ -135,4 +142,6 @@ def main(global_config, **settings):
     config.scan(ignore='papaye.tests')
     if 'papaye.worker.combined' not in settings or bool(settings['papaye.worker.combined']):
         config.start_scheduler()
+
+    config.add_tween('papaye.tweens.LoginRequiredTweenFactory')
     return config.make_wsgi_app()

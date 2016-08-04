@@ -1,9 +1,10 @@
--r ./base.in
+#-r ./base.in
 
 pytest
 pytest-cov
-pytest-sugar
+#pytest-sugar
 pyquery
 tox
 webtest
 pip-tools
+wheel

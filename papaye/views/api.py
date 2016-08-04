@@ -2,7 +2,7 @@ from cornice import Service
 from pyramid.httpexceptions import HTTPNotFound
 
 from papaye.serializers import PackageListSerializer, ReleaseAPISerializer
-from papaye.factories import repository_root_factory, index_root_factory
+from papaye.factories import repository_root_factory
 from papaye.models import Package, Release, ReleaseFile
 
 packages = Service(
@@ -37,7 +37,6 @@ vars = Service(
     name="vars",
     path="/api/vars/json",
     description="Server variables",
-    factory=index_root_factory,
 )
 
 
