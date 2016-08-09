@@ -3,9 +3,11 @@
     <head id="head">
         <title>Papaye Index</title>
         {# Styles  #}
-        {% assets "papaye_css_assets" %}
-        <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
-        {% endassets %}
+        <link rel="stylesheet" type="text/css" href="static/includes/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" type="text/css" href="static/includes/font-awesome/css/font-awesome.css" />
+        <link rel="stylesheet" type="text/css" href="static/includes/WebFont-OpenSans/css/stylesheet.css" />
+        <link rel="stylesheet" type="text/css" href="static/includes/highlightjs/styles/monokai_sublime.css" />
+        <link rel="stylesheet" type="text/css" href="static/style.css" />
     </head>
     <body>
         <nav class="navbar navbar-default" id="navbar">
@@ -19,7 +21,5 @@
 
 <!--templates -->
     {# Scripts #}
-    {% assets "requirejs" %}
-    <script type="text/javascript" data-main="static/papaye/app"  src="{{ ASSET_URL }}"></script>
-    {% endassets %}
+    <script type="text/javascript" data-main="static/papaye/app"  src="static/includes/requirejs/require.js"></script>
 </html>

@@ -1,14 +1,4 @@
-import logging
-import os
-
-from random import choice
-
-from pyramid.authentication import BasicAuthAuthenticationPolicy, AuthTktAuthenticationPolicy
-from pyramid.authorization import ACLAuthorizationPolicy
-from pyramid.config import Configurator, ConfigurationError
-from pyramid.httpexceptions import HTTPNotFound
-from pyramid.path import DottedNameResolver
-from pyramid.session import SignedCookieSessionFactory
+from pyramid.config import Configurator
 from pyramid_beaker import set_cache_regions_from_settings
 
 from papaye.authentification import RouteNameAuthPolicy
@@ -114,9 +104,6 @@ def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
     set_cache_regions_from_settings(settings)
-    static_dir = os.path.join(os.path.dirname(__file__), 'static')
-    settings.setdefault('webassets.base_dir', static_dir)
-    settings.setdefault('webassets.base_url', 'static')
     config = Configurator(settings=settings)
     add_directives(config)
     configure_authn_and_authz(config)
@@ -125,20 +112,7 @@ def main(global_config, **settings):
     configure_views(config)  # Views
     configure_routes(config)  # Routes
     config.commit()
-
-    # Web assets
-    config.add_jinja2_extension('webassets.ext.jinja2.AssetsExtension')
-    config.include('pyramid_webassets')
-    assets_env = config.get_webassets_env()
-    for item in WEBASSETS_DEFAULT_CONFIG.items():
-        assets_env.config.setdefault(*item)
-    jinja2_env = config.get_jinja2_environment()
-    jinja2_env.assets_environment = assets_env
-    config.add_webasset('papaye_js_assets', papaye_js_assets)
-    config.add_webasset('papaye_css_assets', papaye_css_assets)
-    config.add_webasset('requirejs', require_js_resources)
-
-    config.check_database_config()
+    config.add_tween('papaye.tweens.LoginRequiredTweenFactory')
     config.scan(ignore='papaye.tests')
     if 'papaye.worker.combined' not in settings or bool(settings['papaye.worker.combined']):
         config.start_scheduler()
