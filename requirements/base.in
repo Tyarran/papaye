@@ -9,7 +9,6 @@ pyramid_beaker
 pyramid_debugtoolbar
 pyramid_jinja2
 pyramid_tm
-pyramid_webassets
 pyramid_zodbconn
 pytz
 pyzmq
