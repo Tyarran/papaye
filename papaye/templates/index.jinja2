@@ -2,24 +2,24 @@
 <html lang="en">
     <head id="head">
         <title>Papaye Index</title>
-        {# Styles  #}
-        <link rel="stylesheet" type="text/css" href="static/includes/bootstrap/dist/css/bootstrap.css" />
-        <link rel="stylesheet" type="text/css" href="static/includes/font-awesome/css/font-awesome.css" />
-        <link rel="stylesheet" type="text/css" href="static/includes/WebFont-OpenSans/css/stylesheet.css" />
-        <link rel="stylesheet" type="text/css" href="static/includes/highlightjs/styles/monokai_sublime.css" />
+        {# styles  #}
         <link rel="stylesheet" type="text/css" href="static/style.css" />
+        {# end styles  #}
     </head>
+
     <body>
-        <nav class="navbar navbar-default" id="navbar">
-        </nav>
-        <div class="container">
-            <div id="breadcrumb"></div>
-            <div id="content"></div>
-        </div>
+        <div id="container"></div>
     </body>
 
 
-<!--templates -->
-    {# Scripts #}
-    <script type="text/javascript" data-main="static/papaye/app"  src="static/includes/requirejs/require.js"></script>
+    {# scripts #}
+    <script language="javascript">
+    window.APP_CONTEXT = {{ app_context | safe }};
+    </script>
+    <script type="text/javascript" charset="UTF-8" src="/static/jspm_packages/system.js"></script>
+    <script src="/static/jspm.config.js"></script>
+    <script>
+      System.import('src/js/main.js');
+    </script>
+    {# end scripts #}
 </html>

@@ -141,8 +141,9 @@ class Root(SubscriptableBaseModel):
 
     def __acl__(self):
         acl = [
-            (Allow, 'group:installer', 'install'),
-            (Allow, 'group:admin', ALL_PERMISSIONS)
+            # (Allow, 'group:installer', 'install'),
+            # (Allow, 'group:admin', ALL_PERMISSIONS)
+            (Allow, Authenticated, 'view'),
         ]
         registry = get_current_registry()
         anonymous_install = registry.settings.get('papaye.anonymous_install')
@@ -369,4 +370,5 @@ class Application(object):
     def __acl__(self):
         return [
             (Allow, Authenticated, 'view'),
+            # (Allow, Everyone, 'view'),
         ]

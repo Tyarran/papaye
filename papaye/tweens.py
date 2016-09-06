@@ -1,5 +1,6 @@
 from pyramid.httpexceptions import HTTPTemporaryRedirect
 from pyramid.response import Response
+from pyramid.security import authenticated_userid
 
 
 class LoginRequiredTweenFactory(object):

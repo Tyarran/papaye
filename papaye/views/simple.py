@@ -72,7 +72,7 @@ def not_found(request, stop=None):
     route_name="simple",
     renderer="simple.jinja2",
     request_method="GET",
-    permission="install"
+    # permission="install"
 )
 class ListPackagesView(BaseView):
 
@@ -88,7 +88,7 @@ class ListPackagesView(BaseView):
     route_name="simple",
     renderer="simple.jinja2",
     request_method="GET",
-    permission='install'
+    # permission='install'
 )
 class ListReleaseFileView(BaseView):
 
@@ -116,7 +116,7 @@ class ListReleaseFileView(BaseView):
     route_name="simple",
     renderer="simple.jinja2",
     request_method="GET",
-    permission='install'
+    # permission='install'
 )
 class ListReleaseFileByReleaseView(BaseView):
 
@@ -128,7 +128,8 @@ class ListReleaseFileByReleaseView(BaseView):
         }
 
 
-@view_config(context=ReleaseFile, route_name="simple", permission='install', request_method="GET")
+@view_config(context=ReleaseFile, route_name="simple", request_method="GET")
+# @view_config(context=ReleaseFile, route_name="simple", permission='install', request_method="GET")
 class DownloadReleaseView(BaseView):
 
     def __call__(self):

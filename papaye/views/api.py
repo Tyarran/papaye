@@ -10,28 +10,24 @@ packages = Service(
     path="/api/package/json",
     description="List package service",
     factory=repository_root_factory,
-    permission="api",
 )
 package = Service(
     name="package",
     path="/api/package/{package_name}/json",
     description="Package service",
     factory=repository_root_factory,
-    permission="api",
 )
 package_version = Service(
     name="package_by_version",
     path="/api/package/{package_name}/{version}/json",
     description="Package service",
     factory=repository_root_factory,
-    permission="api",
 )
 package_version_filename = Service(
     name="filename_by_package_version",
     path="/api/package/{package_name}/{version}/{filename}/json",
     description="Package service",
     factory=repository_root_factory,
-    permission="api",
 )
 vars = Service(
     name="vars",
@@ -50,6 +46,11 @@ def get_package(request):
             return ReleaseAPISerializer(request).serialize(release)
         else:
             return HTTPNotFound()
+
+
+@package.post()
+def get_package_post(request):
+    return get_package(request)
 
 
 @package.delete()
