@@ -52,6 +52,12 @@ TODO
 # Fuse files
 .fuse*
 
+# jspm
+jspm_packages/
+
+# NodeJS
+node_modules/
+
 # Papaye
 packages/
 papaye.db*

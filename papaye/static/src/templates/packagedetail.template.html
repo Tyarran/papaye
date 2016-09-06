@@ -1,0 +1,128 @@
+    <div>
+        <div class="jumbotron">
+        <h1>{{name}}<small> {{metadata.version}}</small></h1>
+        <p>{{metadata.summary}}</p>
+        <p><a class="btn btn-primary btn-lg" role="button" href="{{download_url}}">Download {{name}} v{{version}}</a></p>
+    </div>
+        <div class="row">
+            <div class="col-md-9">
+                <p>{{{metadata.description.content}}}</p>
+            </div>
+            <div class="col-md-3">
+                <header><h1>Metadata</h1></header>
+                {{#if metadata}}
+                <div>
+                    <div>
+                        <header>Author</header>
+                        <p>
+                            {{metadata.author}}<br>{{metadata.author_email}}
+                        </p>
+                    </div>
+                    <div>
+                        <header>Licence</header>
+                        <p>
+                            {{metadata.licence}}
+                            </p>
+                    </div>
+                    <div>
+                        <header>Platform</header>
+                        <p>
+                            {{metadata.platform}}
+                        </p>
+                    </div>
+                    <div>
+                        <header>Classifiers</header>
+                        <ul id="classifiers">
+                            {{#each metadata.classifiers}}
+                            <li>{{ this }}</li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                    <div>
+                        <header>Keywords</header>
+                        <p>
+                            <ul id='tags'>
+                                {{#each metadata.keywords}}
+                                <li><span class="label label-default">{{this}}</span></li>
+                                {{/each}}
+                            </ul>
+                        </p>
+                    </div>
+                    <div>
+                        <header>Maintainer</header>
+                        <p>
+                            <img src="http://www.gravatar.com/avatar/{{gravatar_hash}}.jpeg" alt="maintainer avatar">
+                        </p>
+                    </div>
+                    <div>
+                    <a class="btn btn-info" href="{{metadata.home_page}}" target="blank" class="glyphicon glyphicon-home"></i> Project home page</a>
+                    </div>
+                </div>
+                {{else}}
+                <div>
+                    No informations
+                </div>
+                {{/if}}
+            </div>
+        </div>
+        <section id="download_link">
+                <ul class="nav nav-tabs " role="tablist">
+                    <li class="active">
+                        <a href="#tab_files" role="tab">Files</a>
+                    </li>
+                    <li>
+                        <a href="#tab_other_releases" role="tab">Other releases</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane spacer active" id="tab_files" >
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>File</th>
+                                    <th>Version</th>
+                                    <th>Upload date</th>
+                                    <th>Size</th>
+                                </tr>
+                            </thead>
+                            {{#each release_files}}
+                            <tr>
+                                <td><a href="{{ url }}">{{ filename }}</a></td>
+                                <td>{{ version }}</td>
+                                <td>{{ upload_date }}</td>
+                                <td>{{ size }}</td>
+                            </tr>
+                            {{/each}}
+                        </table>
+                    </div>
+                    <div class="tab-pane spacer" id="tab_other_releases">
+                        <div>
+                            {{#if hasOtherReleases }}
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Version</th>
+                                        <th>Url</th>
+                                    </tr>
+                                </thead>
+                                {{#each other_releases}}
+                                <tr>
+                                    <td>{{ version }}</td>
+                                    <td><a href="{{ url }}">{{ url }}</a></td>
+                                </tr>
+                                {{/each}}
+                            </table>
+                            {{else}}
+                            <div class="alert alert-info">
+                                <p>
+                                    There are no other release in the repository
+                                </p>
+                            </div>
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+        </section>
+    </div>
+</div>

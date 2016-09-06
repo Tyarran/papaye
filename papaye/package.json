@@ -1,0 +1,77 @@
+{
+  "jspm": {
+    "name": "papaye",
+    "main": "main.js",
+    "directories": {
+      "baseURL": "static"
+    },
+    "dependencies": {
+      "backbone": "npm:backbone@^1.3.3",
+      "backbone.marionette": "npm:backbone.marionette@^2.4.7",
+      "backgrid": "github:wyuenho/backgrid@^0.3.7",
+      "bootstrap": "github:twbs/bootstrap@^3.3.7",
+      "css": "github:systemjs/plugin-css@^0.1.27",
+      "font-awesome": "npm:font-awesome@^4.6.3",
+      "handlebars": "github:components/handlebars.js@^4.0.5",
+      "highlightjs": "github:components/highlightjs@^9.6.0",
+      "inconsolata": "npm:inconsolata@^0.0.2",
+      "jquery": "npm:jquery@^3.1.0",
+      "noty": "npm:noty@^2.3.8",
+      "text": "github:systemjs/plugin-text@^0.0.8",
+      "ubuntu-fontface": "npm:ubuntu-fontface@^0.1.11",
+      "underscore": "npm:underscore@^1.8.3"
+    },
+    "devDependencies": {
+      "plugin-babel": "npm:systemjs-plugin-babel@^0.0.13"
+    },
+    "overrides": {
+      "github:twbs/bootstrap@3.3.7": {
+        "shim": {
+          "js/bootstrap": {
+            "deps": [
+              "jquery"
+            ],
+            "exports": "$"
+          }
+        },
+        "dependencies": {
+          "jquery": "2"
+        },
+        "files": [
+          "dist",
+          "fonts",
+          "js",
+          "css",
+          "less",
+          "grunt",
+          "LICENSE"
+        ],
+        "systemjs": {
+          "main": "dist/js/bootstrap.js",
+          "modules": {
+            "dist/js/bootstrap.js": {
+              "deps": [
+                "jquery"
+              ],
+              "exports": "$"
+            }
+          }
+        }
+      },
+      "github:wyuenho/backgrid@0.3.7": {
+        "registry": "npm"
+      },
+      "npm:font-awesome@4.6.3": {
+        "main": "css/font-awesome.css!",
+        "jspmNodeConversion": false,
+        "registry": "jspm",
+        "dependencies": {
+          "css": "0.1"
+        }
+      },
+      "npm:jquery@2.2.4": {
+        "format": "amd"
+      }
+    }
+  }
+}
