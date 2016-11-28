@@ -2,6 +2,10 @@ import io
 import json
 import types
 import unittest
+import pytest
+import os
+import shutil
+import tempfile
 
 from cgi import FieldStorage
 from mock import patch
@@ -10,7 +14,7 @@ from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.httpexceptions import HTTPNotFound, HTTPTemporaryRedirect
 from pyramid.response import Response
-from pyramid.threadlocal import get_current_registry
+from pyramid.threadlocal import get_current_registry, get_current_request
 from requests.exceptions import ConnectionError
 
 from papaye.tests.tools import (
@@ -22,19 +26,42 @@ from papaye.tests.tools import (
     set_database_connection,
 )
 
+@pytest.fixture(autouse=True)
+def repo_config(request):
+    tmpdir = tempfile.mkdtemp('test_repo')
+    settings = disable_cache()
+    settings.update({
+        'papaye.proxy': False,
+        'papaye.packages_directory': tmpdir,
+        'pyramid.incluces': 'pyramid_zodbconn',
+        'cache.regions': 'pypi',
+        'cache.enabled': 'false',
+    })
+    req = testing.DummyRequest(matched_route=FakeRoute('simple'))
+    set_database_connection(req)
+    config = testing.setUp(settings=settings, request=req)
+    config.add_route(
+        'simple',
+        '/simple*traverse',
+        factory='papaye.factories:repository_root_factory'
+    )
+    config.add_static_view(
+        'repo',
+        tmpdir,
+        cache_max_age=3600
+    )
+
+    def clean_tmp_dir():
+        if os.path.exists(tmpdir):
+            shutil.rmtree(tmpdir)
+
+    request.addfinalizer(clean_tmp_dir)
+
 
 class ListPackageViewTest(unittest.TestCase):
 
     def setUp(self):
-        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        self.blob_dir = set_database_connection(self.request)
-        self.config = testing.setUp(request=self.request)
-        self.config.add_route('simple', '/simple*traverse', factory='papaye.factories:repository_root_factory')
-        registry = get_current_registry()
-        registry.settings = disable_cache()
-
-    def tearDown(self):
-        remove_blob_dir(self.blob_dir)
+        self.request = get_current_request()
 
     def test_list_packages(self):
         from papaye.views.simple import ListPackagesView
@@ -60,6 +87,7 @@ class ListPackageViewTest(unittest.TestCase):
 
         view = ListPackagesView(root, self.request)
         response = view()
+
         self.assertIsInstance(response, dict)
         self.assertIn('objects', response)
         self.assertIsInstance(response['objects'], types.GeneratorType)
@@ -69,15 +97,7 @@ class ListPackageViewTest(unittest.TestCase):
 class ListReleaseViewTest(unittest.TestCase):
 
     def setUp(self):
-        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        self.blob_dir = set_database_connection(self.request)
-        self.config = testing.setUp(request=self.request)
-        self.config.add_route('simple', '/simple*traverse', factory='papaye.factories:repository_root_factory')
-        registry = get_current_registry()
-        registry.settings = disable_cache()
-
-    def tearDown(self):
-        remove_blob_dir(self.blob_dir)
+        self.request = get_current_request()
 
     def test_list_releases_files(self):
         from papaye.views.simple import ListReleaseFileView
@@ -292,14 +312,7 @@ class ListReleaseViewTest(unittest.TestCase):
 class DownloadReleaseViewTest(unittest.TestCase):
 
     def setUp(self):
-        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        self.blob_dir = set_database_connection(self.request)
-        settings = disable_cache()
-        self.config = testing.setUp(request=self.request, settings=settings)
-        self.config.add_route('simple', '/simple*traverse', factory='papaye.factories:repository_root_factory')
-
-    def tearDown(self):
-        remove_blob_dir(self.blob_dir)
+        self.request = get_current_request()
 
     @patch('requests.get')
     def test_download_release(self, mock):
@@ -332,17 +345,13 @@ class DownloadReleaseViewTest(unittest.TestCase):
         view = DownloadReleaseView(release_file, self.request)
         result = view()
 
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.body, b'Hello')
-        self.assertEqual(result.content_type, 'text/plain')
-        self.assertEqual(result.content_disposition, 'attachment; filename="releasefile-1.0.tar.gz"')
+        self.assertEqual(result.status_code, 307)
 
 
 class UploadReleaseViewTest(unittest.TestCase):
 
     def setUp(self):
-        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        self.config = testing.setUp(request=self.request)
+        self.request = get_current_request()
 
     def test_upload_release(self):
         from papaye.models import Root, Package, Release, ReleaseFile, STATUS
@@ -456,18 +465,7 @@ class UploadReleaseViewTest(unittest.TestCase):
 class ListReleaseFileByReleaseViewTest(unittest.TestCase):
 
     def setUp(self):
-        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        self.blob_dir = set_database_connection(self.request)
-        self.config = testing.setUp(request=self.request)
-        self.config.add_route('simple', '/simple*traverse', factory='papaye.factories:repository_root_factory')
-        registry = get_current_registry()
-        registry.settings = {
-            'cache.regions': 'pypi',
-            'cache.enabled': 'false',
-        }
-
-    def tearDown(self):
-        remove_blob_dir(self.blob_dir)
+        self.request = get_current_request()
 
     def test_list_release(self):
         from papaye.views.simple import ListReleaseFileByReleaseView

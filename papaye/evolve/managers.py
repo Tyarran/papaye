@@ -38,6 +38,18 @@ def context_from_root(root):
     return root[APP_ROOT_NAME]
 
 
+def error(msg):
+    """Format the error message and exit"""
+    if isinstance(msg, BaseException):
+        msg = str(msg)
+    print(colored('ERROR: ', 'red', attrs=('bold', )) + msg)
+    sys.exit(1)
+
+
+class EvolveError(BaseException):
+    pass
+
+
 @implementer(IEvolutionManager)
 class PapayeEvolutionManager(object):
 
@@ -85,11 +97,14 @@ class PapayeEvolutionManager(object):
             else:
                 root = self._get_root(version)
             self.task('Executing script')
-            evmodule.evolve(root)
-            if has_load_model:
-                cleanup()
-                self.task('Cleanup monkey patching')
-            self.set_db_version(root, version)
+            try:
+                evmodule.evolve(root, config=self.config)
+                if has_load_model:
+                    cleanup()
+                    self.task('Cleanup model snapshot')
+                self.set_db_version(root, version)
+            except EvolveError as exc:
+                error(exc)
 
     def task(self, string):
         print('>>> {}'.format(string))

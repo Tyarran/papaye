@@ -1,9 +1,14 @@
 from pyramid.interfaces import IAuthenticationPolicy
 from zope.interface import implementer
 
+# from pyramid.authentication import (
+    # BasicAuthAuthenticationPolicy, AuthTktAuthenticationPolicy
+# )
+from pyramid.authentication import AuthTktAuthenticationPolicy
+
 
 @implementer(IAuthenticationPolicy)
-class RouteNameAuthPolicy(object):
+class RouteNameAuthPolicy(AuthTktAuthenticationPolicy):
 
     def __init__(self, **policies):
         self.policies = policies
@@ -29,3 +34,94 @@ class RouteNameAuthPolicy(object):
 
     def forget(self, request):
         return self.get_policy(request).forget(request)
+
+
+@implementer(IAuthenticationPolicy)
+class MultipleAuthPolicy(object):
+
+    def __init__(self, *policies):
+        self._policies = policies
+
+    @property
+    def policies(self):
+        return (policy for policy in self._policies)
+
+    def authenticated_userid(self, request):
+        policy = next(self.policies)
+        return policy.authenticated_userid(request)
+
+    def unauthenticated_userid(self, request):
+        policy = next(self.policies)
+        return policy.unauthenticated_userid(request)
+
+    def effective_principals(self, request):
+        policy = next(self.policies)
+        return policy.effective_principals(request)
+
+    def remember(self, request, principal, **kw):
+        import pdb; pdb.set_trace()
+        result = []
+        for policy in self.policies:
+            result = result + policy.remember(request, principal, **kw)
+        return result
+
+    def forget(self, request):
+        import pdb; pdb.set_trace()
+        result = []
+        for policy in self.policies:
+            result = result + policy.forget(request)
+        return result
+
+
+@implementer(IAuthenticationPolicy)
+class RollingAuthPolicy(object):
+
+    def __init__(self, *policies):
+        self._policies = policies
+
+    def policies(self):
+        return (policy for policy in self._policies)
+
+    def authenticated_userid(self, request):
+        default = None
+        for policy in self.policies():
+            import pdb; pdb.set_trace()
+            auth_userid = policy.authenticated_userid(request)
+            if auth_userid:
+                return auth_userid
+        return default
+
+    def unauthenticated_userid(self, request):
+        default = None
+        for policy in self.policies():
+            unauth_userid = policy.unauthenticated_userid(request)
+            if unauth_userid:
+                return unauth_userid
+        return default
+
+    def effective_principals(self, request):
+        default = []
+        for policy in self.policies():
+            try:
+                return policy.effective_principals(request)
+            except:
+                pass
+        return default
+
+    def remember(self, request, principal, **kw):
+        default = None
+        for policy in self.policies():
+            try:
+                return policy.remember(request, principal, **kw)
+            except:
+                pass
+        return default
+
+    def forget(self, request):
+        default = None
+        for policy in self.policies():
+            try:
+                return policy.forget(request)
+            except:
+                pass
+        return default

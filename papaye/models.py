@@ -7,28 +7,33 @@ import itertools
 import json
 import logging
 import magic
+import os
 import pkg_resources
 import requests
+import uuid
 
 from BTrees.OOBTree import OOBTree
 from ZODB.blob import Blob
 from beaker.cache import cache_region
 from persistent import Persistent
 from pkg_resources import parse_version
-from pyramid.security import Allow, ALL_PERMISSIONS, Everyone, Authenticated
+from pyramid.config import ConfigurationError
+from pyramid.interfaces import ISettings
+from pyramid.security import Allow, Everyone, Authenticated
 from pyramid.threadlocal import get_current_registry
 from pyramid_zodbconn import db_from_uri
 from pytz import utc
 from requests.exceptions import ConnectionError
 
+from papaye.config.utils import SettingsReader
+from papaye.evolve.managers import PapayeEvolutionManager
 from papaye.factories import user_root_factory, repository_root_factory
 from papaye.schemas import Metadata
-from papaye.evolve.managers import PapayeEvolutionManager
 
 
 logger = logging.getLogger(__name__)
 status_type = collections.namedtuple('status', ('local', 'cached', 'distant'))
-SW_VERSION = 6
+SW_VERSION = 7
 STATUS = status_type(*range(0, len(status_type._fields)))
 
 
@@ -290,23 +295,61 @@ class Release(SubscriptableBaseModel):
 
 
 class ReleaseFile(BaseModel):
+    _path = None
+    _packages_directory = None
+    _release_file_directory = None
 
     def __init__(self, filename, content, md5_digest=None, status=None):
+        self.uuid = uuid.uuid4()
         self.filename = self.__name__ = filename
         self.md5_digest = md5_digest
         self.set_content(content)
         self.upload_date = datetime.datetime.now(tz=utc)
         self.status = status if status is not None else STATUS.cached
 
+    def _compute_release_file_directory(self):
+        time_low = self.uuid.time_low
+        path = list(map(lambda x: hex(int(x)), str(time_low)))
+        return os.path.join(*path)
+
     def get_content_type(self, content):
         buf = io.BytesIO(content)
         with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as m:
             self.content_type = m.id_buffer(buf.read())
 
+    def _packages_directory(self):
+        settings = get_current_registry().getUtility(ISettings)
+        packages_directory = SettingsReader(settings).read_str('papaye.packages_directory')
+        if not packages_directory:
+            raise ConfigurationError('packages_directory must be correcly configured')
+        return packages_directory
+
     def set_content(self, content):
-        self.content = Blob(content)
-        self.content_type = self.get_content_type(content)
-        self.size = len(content)
+        os.makedirs(self.path, exist_ok=True)
+        with open(os.path.join(self.path, self.filename), 'wb') as release_file:
+            release_file.write(content)
+            self.relative_path = self._compute_release_file_directory()
+            self.size = len(content)
+            self.content_type = self.get_content_type(content)
+
+    @property
+    def path(self):
+        if not self._path:
+            packages_directory = self._packages_directory()
+            release_file_directory = self._compute_release_file_directory()
+            self._path = os.path.join(
+                packages_directory,
+                release_file_directory
+            )
+        return '{}/{}/{}'.format(
+            self._packages_directory(),
+            self._path,
+            self.filename
+        )
+
+    @path.setter
+    def set_path(self, path):
+        self._path = path
 
     @classmethod
     def clone(cls, model_obj):
@@ -316,7 +359,7 @@ class ReleaseFile(BaseModel):
         clone.filename = model_obj.filename
         clone.md5_digest = model_obj.md5_digest
         clone.size = model_obj.size
-        setattr(clone, 'content', Blob(model_obj.content.open().read()))
+        clone._path = model_obj._path
         clone.upload_date = copy.copy(model_obj.upload_date)
         clone.content_type = model_obj.content_type
         clone.status = model_obj.status
@@ -370,5 +413,4 @@ class Application(object):
     def __acl__(self):
         return [
             (Allow, Authenticated, 'view'),
-            # (Allow, Everyone, 'view'),
         ]

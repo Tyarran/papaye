@@ -19,7 +19,7 @@ def clone(package):
     clone = pickle.loads(pickle.dumps(package))
     for release in clone:
         for rfile in release:
-            rfile.content = Blob(package[release.__name__][rfile.__name__].content.open().read())
+            # rfile.content = Blob(package[release.__name__][rfile.__name__].content.open().read())
             assert hasattr(release, 'metadata')
     return clone
 

@@ -3,6 +3,9 @@ import shutil
 import tempfile
 import transaction
 import unittest
+import pytest
+import os
+import shutil
 
 from mock import patch
 from pyramid import testing
@@ -15,13 +18,34 @@ from papaye.tests.tools import (
 )
 
 
+@pytest.fixture(autouse=True)
+def repo_config(request):
+    tmpdir = tempfile.mkdtemp('test_repo')
+    settings = disable_cache()
+    settings.update({
+        'papaye.proxy': False,
+        'papaye.packages_directory': tmpdir,
+        'pyramid.incluces': 'pyramid_zodbconn',
+    })
+    req = testing.DummyRequest()
+    config = testing.setUp(settings=settings, request=req)
+    config.add_route(
+        'simple',
+        '/simple/*traverse',
+        factory='papaye.factories:repository_root_factory'
+    )
+
+    def clean_tmp_dir():
+        if os.path.exists(tmpdir):
+            shutil.rmtree(tmpdir)
+
+    request.addfinalizer(clean_tmp_dir)
+
+
 class TestDownloadTask(unittest.TestCase):
 
     def setUp(self):
         self.blob_dir = tempfile.mkdtemp()
-        request = testing.DummyRequest()
-        settings = disable_cache()
-        self.config = testing.setUp(request=request, settings=settings)
         self.conn = get_db_connection(self.blob_dir)
         self.root = self.conn.root()['papaye_root']['repository']
 

@@ -1,7 +1,12 @@
 import unittest
+import pytest
+import tempfile
+import os
+import shutil
 
 from mock import patch
 from pyramid import testing
+from pyramid.threadlocal import get_current_request
 from requests.exceptions import ConnectionError
 
 from papaye.tests.tools import (
@@ -12,17 +17,34 @@ from papaye.tests.tools import (
     set_database_connection,
 )
 
+@pytest.fixture(autouse=True)
+def repo_config(request):
+    tmpdir = tempfile.mkdtemp('test_repo')
+    settings = disable_cache()
+    settings.update({
+        'papaye.proxy': False,
+        'papaye.packages_directory': tmpdir,
+        'pyramid.incluces': 'pyramid_zodbconn',
+    })
+    req = testing.DummyRequest()
+    set_database_connection(req)
+    config = testing.setUp(settings=settings, request=req)
+    config.add_route(
+        'simple',
+        '/simple/*traverse',
+        factory='papaye.factories:repository_root_factory'
+    )
+
+    def clean_tmp_dir():
+        if os.path.exists(tmpdir):
+            shutil.rmtree(tmpdir)
+
+    request.addfinalizer(clean_tmp_dir)
 
 class ProxyTest(unittest.TestCase):
 
     def setUp(self):
-        self.request = testing.DummyRequest()
-        self.blob_dir = set_database_connection(self.request)
-        settings = disable_cache()
-        self.config = testing.setUp(request=self.request, settings=settings)
-
-    def tearDown(self):
-        remove_blob_dir(self.blob_dir)
+        self.request = get_current_request()
 
     @patch('requests.get')
     def test_get_remote_informations(self, mock):
@@ -215,7 +237,6 @@ class ProxyTest(unittest.TestCase):
         assert isinstance(result, Package)
         assert len(list(result)) == 1
         assert len(list(result['1.5'])) == 1
-        assert result['1.5']['pyramid-1.5.tar.gz'].content.open().read() == b'a existing content'
         assert result.__parent__ is root
 
     @patch('requests.get')
@@ -413,24 +434,24 @@ class ProxyTest(unittest.TestCase):
         assert 'pyramid-1.3.tar.gz' in list(result['1.3'].release_files.keys())
         release_file = result['1.3']['pyramid-1.3.tar.gz']
         assert release_file is not package['1.3']['pyramid-1.3.tar.gz']
-        assert release_file.content.open().read() == package['1.3']['pyramid-1.3.tar.gz'].content.open().read()
+        assert release_file.path == package['1.3']['pyramid-1.3.tar.gz'].path
         assert release_file.md5_digest == package['1.3']['pyramid-1.3.tar.gz'].md5_digest
         assert release_file.size == package['1.3']['pyramid-1.3.tar.gz'].size
 
         release_file = result['1.4']['pyramid-1.4.tar.gz']
         assert release_file is not package['1.4']['pyramid-1.4.tar.gz']
-        assert release_file.content.open().read() == package['1.4']['pyramid-1.4.tar.gz'].content.open().read()
+        assert release_file.path == package['1.4']['pyramid-1.4.tar.gz'].path
         assert release_file.md5_digest == package['1.4']['pyramid-1.4.tar.gz'].md5_digest
         assert release_file.size == package['1.4']['pyramid-1.4.tar.gz'].size
 
         release_file = result['1.5']['pyramid-1.5.tar.gz']
         assert release_file is not package['1.5']['pyramid-1.5.tar.gz']
-        assert release_file.content.open().read() == package['1.5']['pyramid-1.5.tar.gz'].content.open().read()
+        assert release_file.path == package['1.5']['pyramid-1.5.tar.gz'].path
         assert release_file.md5_digest == package['1.5']['pyramid-1.5.tar.gz'].md5_digest
         assert release_file.size == package['1.5']['pyramid-1.5.tar.gz'].size
 
         release_file = result['1.5']['pyramid-1.5.whl']
         assert release_file is not package['1.5']['pyramid-1.5.whl']
-        assert release_file.content.open().read() == package['1.5']['pyramid-1.5.whl'].content.open().read()
+        assert release_file.path == package['1.5']['pyramid-1.5.whl'].path
         assert release_file.md5_digest == package['1.5']['pyramid-1.5.whl'].md5_digest
         assert release_file.size == package['1.5']['pyramid-1.5.whl'].size

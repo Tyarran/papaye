@@ -2,13 +2,11 @@ import json
 import logging
 
 from deform import Form
-from pyramid.httpexceptions import HTTPForbidden, HTTPTemporaryRedirect, HTTPRedirection, HTTPMovedPermanently
+from pyramid.httpexceptions import HTTPTemporaryRedirect
 from pyramid.response import Response
 from pyramid.security import remember, NO_PERMISSION_REQUIRED
-from pyramid.view import forbidden_view_config
 from pyramid.view import view_config
 
-from papaye.models import User
 from papaye.schemas import LoginSchema
 
 
@@ -34,7 +32,8 @@ def index_view(context, request):
     return {'app_context': json.dumps(app_context)}
 
 
-@view_config(route_name="login", renderer='login.jinja2', permission=NO_PERMISSION_REQUIRED)
+@view_config(route_name="login", renderer='login.jinja2',
+             permission=NO_PERMISSION_REQUIRED)
 class LoginView(object):
 
     def __init__(self, request):
@@ -59,17 +58,12 @@ class LoginView(object):
                 self.request.session['username'] = user.username
                 csrf_token = self.request.session.get_csrf_token()
                 headers.append(('X-CSRF-Token', csrf_token))
-                # headers.append(
-                #     ('Content-Type', 'application/json; charset=UTF-8')
-                # )
                 next_value = self.request.GET.get('next')
                 if next_value:
                     location = self.request.route_url('home') + next_value[1:]
                 else:
                     location = self.request.route_url('home')
-                return HTTPMovedPermanently(location=location, headers=headers)
-                # return HTTPTemporaryRedirect(location=location,
-                #                              headers=headers)
+                return HTTPTemporaryRedirect(location=location, headers=headers)
         return Response(
             json.dumps(None),
             status_code=401,

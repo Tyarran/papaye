@@ -133,12 +133,8 @@ class ListReleaseFileByReleaseView(BaseView):
 class DownloadReleaseView(BaseView):
 
     def __call__(self):
-        response = Response()
-        response.content_disposition = 'attachment; filename="{}"'.format(self.context.filename)
-        response.charset = 'utf-8'
-        response.content_type = self.context.content_type
-        response.body_file = self.context.content.open()
-        response.content_length = self.context.size
+        url = self.request.static_url(self.context.path)
+        response = HTTPTemporaryRedirect(location=url)
         return response
 
 

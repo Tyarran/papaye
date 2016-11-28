@@ -36,7 +36,7 @@ class ConfigTest(unittest.TestCase):
 
     @patch('papaye.models.get_manager')
     def test_check_database_config(self, mock):
-        from papaye import check_database_config
+        from papaye.config.startup import check_database_config
         root = self.get_root()
         mock.return_value = ZODBEvolutionManager(
             root,
@@ -49,7 +49,7 @@ class ConfigTest(unittest.TestCase):
 
     @patch('papaye.models.get_manager')
     def test_check_database_config_outdated(self, mock):
-        from papaye import check_database_config
+        from papaye.config.startup import check_database_config
         root = self.get_root()
         manager = ZODBEvolutionManager(
             root,
@@ -65,7 +65,7 @@ class ConfigTest(unittest.TestCase):
 
     @patch('papaye.models.get_manager')
     def test_check_database_config_without_approot(self, mock):
-        from papaye import check_database_config
+        from papaye.config.startup import check_database_config
         root = self.get_root()
         manager = ZODBEvolutionManager(
             root,
@@ -113,12 +113,14 @@ class TestScheduler(object):
 
 @mock.patch('papaye.tasks.TaskRegistry.register_scheduler')
 def test_start_scheduler(mock):
-    from papaye import start_scheduler
+    from papaye.config.startup import start_scheduler
+    from papaye.config.utils import SettingsReader
     config = Configurator()
     config.registry.settings = {
         'papaye.cache': 'true',
         'papaye.scheduler': 'papaye.tests.test_config:TestScheduler',
     }
+    config.add_directive('settings_reader', lambda c: SettingsReader(c))
 
     start_scheduler(config)
 
@@ -129,12 +131,14 @@ def test_start_scheduler(mock):
 
 @mock.patch('papaye.tasks.TaskRegistry.register_scheduler')
 def test_start_scheduler_without_scheduler_in_configuration(mock):
-    from papaye import start_scheduler
+    from papaye.config.startup import start_scheduler
     from papaye.tasks.devices import DummyScheduler
+    from papaye.config.utils import SettingsReader
     config = Configurator()
     config.registry.settings = {
         'papaye.cache': 'true',
     }
+    config.add_directive('settings_reader', lambda c: SettingsReader(c))
 
     start_scheduler(config)
 
@@ -145,12 +149,14 @@ def test_start_scheduler_without_scheduler_in_configuration(mock):
 
 @mock.patch('papaye.tasks.TaskRegistry.register_scheduler')
 def test_start_scheduler_without_cache_in_configuration(mock):
-    from papaye import start_scheduler
+    from papaye.config.startup import start_scheduler
     from papaye.tasks.devices import DummyScheduler
+    from papaye.config.utils import SettingsReader
     config = Configurator()
     config.registry.settings = {
         'papaye.cache': 'true',
     }
+    config.add_directive('settings_reader', lambda c: SettingsReader(c))
 
     start_scheduler(config)
 

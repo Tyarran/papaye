@@ -1,10 +1,39 @@
 import colander
 import unittest
+import pytest
+import tempfile
+import os
+import shutil
 
 from pyramid import testing
-from pyramid.threadlocal import get_current_registry
+from pyramid.threadlocal import get_current_request
 
 from papaye.tests.tools import FakeRoute, disable_cache
+
+
+@pytest.fixture(autouse=True)
+def repo_config(request):
+    tmpdir = tempfile.mkdtemp('test_repo')
+    settings = disable_cache()
+    settings.update({
+        'papaye.proxy': False,
+        'papaye.packages_directory': tmpdir,
+        'pyramid.incluces': 'pyramid_zodbconn',
+    })
+    req = testing.DummyRequest()
+    config = testing.setUp(settings=settings, request=req)
+    config.add_route(
+        'simple',
+        '/simple/*traverse',
+        factory='papaye.factories:repository_root_factory'
+    )
+    config.add_route('home', '/')
+
+    def clean_tmp_dir():
+        if os.path.exists(tmpdir):
+            shutil.rmtree(tmpdir)
+
+    request.addfinalizer(clean_tmp_dir)
 
 
 class DummySerializer(object):
@@ -52,12 +81,13 @@ class SerializerTest(unittest.TestCase):
 class ReleaseAPISerializerTest(unittest.TestCase):
 
     def setUp(self):
-        self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        self.config = testing.setUp(request=self.request)
-        self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
-        self.config.add_route('home', '/')
-        registry = get_current_registry()
-        registry.settings = disable_cache()
+        self.request = get_current_request()
+        # self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
+        # self.config = testing.setUp(request=self.request)
+        # self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
+        # self.config.add_route('home', '/')
+        # registry = get_current_registry()
+        # registry.settings = disable_cache()
 
     def test_instanciate(self):
         from papaye.serializers import ReleaseAPISerializer
