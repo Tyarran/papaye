@@ -2,7 +2,7 @@ import json
 import logging
 
 from deform import Form
-from pyramid.httpexceptions import HTTPTemporaryRedirect
+from pyramid.httpexceptions import HTTPMovedPermanently
 from pyramid.response import Response
 from pyramid.security import remember, NO_PERMISSION_REQUIRED
 from pyramid.view import view_config
@@ -63,7 +63,7 @@ class LoginView(object):
                     location = self.request.route_url('home') + next_value[1:]
                 else:
                     location = self.request.route_url('home')
-                return HTTPTemporaryRedirect(location=location, headers=headers)
+                return HTTPMovedPermanently(location=location, headers=headers)
         return Response(
             json.dumps(None),
             status_code=401,

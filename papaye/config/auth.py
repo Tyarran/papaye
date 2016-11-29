@@ -29,21 +29,15 @@ def includeme(config):
     authtkt_policy = AuthTktAuthenticationPolicy(
         random_passphrase(), hashalg='sha512'
     )
-    # basic_auth_policy = BasicAuthAuthenticationPolicy(check=auth_check_func)
 
     authn_policy = RouteNameAuthPolicy(
         default=authtkt_policy,
-        # simple=RollingAuthPolicy(
-        #     authtkt_policy,
-        #     BasicAuthAuthenticationPolicy(check=auth_check_func)
-        # )
         simple=BasicAuthAuthenticationPolicy(check=auth_check_func),
     )
-    # authn_policy = MultipleAuthPolicy(authtkt_policy, basic_auth_policy)
     authz_policy = ACLAuthorizationPolicy()
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
     settings = config.registry.settings
-    # if settings.get('papaye.anonymous_browse', 'False') == 'False':
-        # config.set_default_permission('view')
+    if settings.get('papaye.anonymous_browse', 'False') == 'False':
+        config.set_default_permission('view')
     config.set_session_factory(session_factory)
