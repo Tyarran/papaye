@@ -12,9 +12,10 @@ from mock import patch
 from pyramid import testing
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
-from pyramid.httpexceptions import HTTPNotFound, HTTPTemporaryRedirect
+from pyramid.httpexceptions import HTTPMovedPermanently
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
-from pyramid.threadlocal import get_current_registry, get_current_request
+from pyramid.threadlocal import get_current_request
 from requests.exceptions import ConnectionError
 
 from papaye.tests.tools import (
@@ -22,9 +23,9 @@ from papaye.tests.tools import (
     FakeGRequestResponse,
     FakeRoute,
     mock_proxy_response,
-    remove_blob_dir,
     set_database_connection,
 )
+
 
 @pytest.fixture(autouse=True)
 def repo_config(request):
@@ -570,7 +571,7 @@ def test_login_view():
     login_view = LoginView(request)
     result = login_view()
 
-    assert isinstance(result, HTTPTemporaryRedirect)
+    assert isinstance(result, HTTPMovedPermanently)
     assert 'Set-Cookie' in result.headers
     assert 'username' in request.session
     assert request.session['username'] == 'user'
