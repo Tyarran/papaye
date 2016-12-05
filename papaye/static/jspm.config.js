@@ -38,11 +38,13 @@ SystemJS.config({
     "bootstrap": "github:twbs/bootstrap@3.3.7",
     "css": "github:systemjs/plugin-css@0.1.27",
     "font-awesome": "npm:font-awesome@4.6.3",
+    "fs": "github:jspm/nodelibs-fs@0.2.0-alpha",
     "handlebars": "github:components/handlebars.js@4.0.5",
     "highlightjs": "github:components/highlightjs@9.6.0",
     "inconsolata": "npm:inconsolata@0.0.2",
     "jquery": "npm:jquery@3.1.0",
     "noty": "npm:noty@2.3.8",
+    "spinkit": "npm:spinkit@1.2.5",
     "text": "github:systemjs/plugin-text@0.0.8",
     "ubuntu-fontface": "npm:ubuntu-fontface@0.1.11",
     "underscore": "npm:underscore@1.8.3"

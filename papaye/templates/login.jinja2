@@ -1,2 +1,7 @@
-{{ form.render()| safe }}
-{{ request }}
+{% extends "base.jinja2" %}
+{% block content %}
+<div class="">
+    <h2 class="form-signin-heading">Please sign in</h2>
+    {{ form.render()| safe }}
+</div>
+{% endblock %}
