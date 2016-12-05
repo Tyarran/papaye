@@ -48,28 +48,31 @@ class LoginView(object):
         return {'form': form, 'request': self.request}
 
     def post(self):
-        data = self.schema.deserialize(self.request.POST)
-        username_matching_users = [user for user in self.request.root
-                                   if user.username == data['username']]
-        if len(username_matching_users):
-            user = username_matching_users[0]
-            if user.password_verify(data['password']):
-                headers = remember(self.request, user.username)
-                self.request.session['username'] = user.username
-                csrf_token = self.request.session.get_csrf_token()
-                headers.append(('X-CSRF-Token', csrf_token))
-                next_value = self.request.GET.get('next')
-                if next_value:
-                    location = self.request.route_url('home') + next_value[1:]
-                else:
+        try:
+            data = self.schema.deserialize(self.request.POST)
+            username_matching_users = [
+                user for user in self.request.root
+                if user.username == data['username']
+            ]
+            if len(username_matching_users):
+                user = username_matching_users[0]
+                if user.password_verify(data['password']):
+                    headers = remember(self.request, user.username)
+                    self.request.session['username'] = user.username
+                    csrf_token = self.request.session.get_csrf_token()
+                    headers.append(('X-CSRF-Token', csrf_token))
+                    next_value = self.request.GET.get('next')
                     location = self.request.route_url('home')
-                return HTTPMovedPermanently(location=location, headers=headers)
-        return Response(
-            json.dumps(None),
-            status_code=401,
-            content_type='application/json',
-            charset='utf-8'
-        )
+                    if next_value:
+                        location = location + next_value[1:]
+                    return HTTPMovedPermanently(location=location, headers=headers)
+        except:
+            return Response(
+                json.dumps(None),
+                status_code=401,
+                content_type='application/json',
+                charset='utf-8'
+            )
 
 
 @view_config(route_name="logout", permission=NO_PERMISSION_REQUIRED)

@@ -1,5 +1,6 @@
 from cornice import Service
 from pyramid.httpexceptions import HTTPNotFound
+from pyramid.interfaces import ISettings
 
 from papaye.serializers import PackageListSerializer, ReleaseAPISerializer
 from papaye.factories import repository_root_factory
@@ -110,7 +111,11 @@ def get_package_by_version(request):
 
 @vars.get()
 def get_variables(request):
+    settings = request.registry.getUtility(ISettings)
     return {
+        'repository_route_url': request.static_url(
+            settings['papaye.packages_directory'] + '/'
+        ),
         'simple_route_url': request.route_url('simple', traverse=''),
         'is_logged_url': request.route_url('islogged'),
         'login_route_url': request.route_url('login'),

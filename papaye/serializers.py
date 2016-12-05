@@ -101,9 +101,8 @@ class ReleaseAPISerializer(Serializer):
             else:
                 data['gravatar_hash'] = None
         release_file = self.get_release_file(release)
-        data['download_url'] = self.request.resource_url(
-            release_file,
-            route_name='simple',
+        data['download_url'] = self.request.static_url(
+            release_file.path
         )
         data['release_files'] = self.get_release_files(release)
         data['other_releases'] = self.get_other_releases(release)
