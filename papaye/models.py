@@ -27,7 +27,7 @@ from requests.exceptions import ConnectionError
 
 from papaye.config.utils import SettingsReader
 from papaye.evolve.managers import PapayeEvolutionManager
-from papaye.factories import user_root_factory, repository_root_factory
+from papaye.factories.root import user_root_factory, repository_root_factory
 from papaye.schemas import Metadata
 
 
@@ -84,10 +84,17 @@ class MyOOBTree(OOBTree):
 
 
 class BaseModel(Persistent):
-    __name__ = ''
 
     def __repr__(self):
-        return '<{}.{} "{}" at {}>'.format(self.__module__, self.__class__.__name__, self.__name__, id(self))
+        return '<{}.{} "{}" at {}>'.format(
+            self.__module__,
+            self.__class__.__name__,
+            self.__name__,
+            id(self)
+        )
+        
+
+class ClonableModelMixin(object):
 
     @classmethod
     def clone(cls, model_obj):
@@ -98,51 +105,69 @@ class BaseModel(Persistent):
                 setattr(clone, key, Blob(value.open().read()))
             else:
                 setattr(clone, key, copy.copy(value))
-        clone.__name__ = model_obj.__name__
         return clone
 
 
 class SubscriptableBaseModel(BaseModel):
     subobjects_attr = None
 
-    def get_subobjects(self):
+    def __init__(self, name, *args, **kwargs):
+        self.name = name
+        if '__parent__' in kwargs:
+            self.__parent__ = kwargs.get('__parent__')
+            self.__parent__[self.__name__] = self
+
+    @property
+    def __name__(self):
+        return getattr(self, 'name', None)
+
+    @property
+    def subobjects(self):
         return getattr(self, self.subobjects_attr)
 
     def get(self, key, default=None):
-        getitem_object = self.get_subobjects()
+        getitem_object = self.subobjects
         if key in getitem_object.keys():
             return getitem_object[key]
         else:
             return default
 
+    def child(self, subobject):
+        key = format_key(subobject.__name__)
+        self.subobjects[key] = subobject
+        self.subobjects[key].__parent__ = self
+        return self
+
     def __contains__(self, obj_or_name):
         if isinstance(obj_or_name, str):
-            elements = list(self.get_subobjects())
+            elements = list(self.subobjects)
         else:
-            subobjects = self.get_subobjects()
-            elements = [subobjects[element] for element in subobjects]
+            elements = [
+                self.subobjects[element] for element in self.subobjects
+            ]
         return obj_or_name in elements
 
     def __iter__(self):
-        return (self.get_subobjects()[item] for item in self.get_subobjects())
+        return (self.subobjects[item] for item in self.subobjects)
 
     def __len__(self):
         return len(list(getattr(self, self.subobjects_attr)))
 
     def __delitem__(self, key):
         key = format_key(key)
-        del(self.get_subobjects()[key])
+        del(self.subobjects[key])
 
     def keys(self):
-        return (elem for elem in self.get_subobjects())
+        return (elem for elem in self.subobjects)
 
 
-class Root(SubscriptableBaseModel):
-    __name__ = __parent__ = None
+class Root(ClonableModelMixin, SubscriptableBaseModel):
+    __parent__ = None
     subobjects_attr = 'packages'
 
-    def __init__(self):
+    def __init__(self, name):
         self.packages = MyOOBTree()
+        # self.__name__ = name
 
     def __acl__(self):
         acl = [
@@ -156,15 +181,15 @@ class Root(SubscriptableBaseModel):
         return acl
 
     def __iter__(self):
-        return (package for package in self.get_subobjects().values())
+        return (package for package in self.subobjects.values())
 
     def __getitem__(self, name_or_index):
         if isinstance(name_or_index, int):
             return next(itertools.islice(self.__iter__(), name_or_index, name_or_index + 1))
-        keys = [key for key in self.get_subobjects().keys()
+        keys = [key for key in self.subobjects.keys()
                 if format_key(key) == format_key(name_or_index)]
         if len(keys) == 1:
-            return self.get_subobjects()[keys[0]]
+            return self.subobjects[keys[0]]
 
     def __setitem__(self, key, package):
         if not hasattr(self, '_p_updated_keys'):
@@ -172,17 +197,18 @@ class Root(SubscriptableBaseModel):
         self._p_updated_keys.append(key)
         if isinstance(package, Package):
             package.__parent__ = self
-        self.get_subobjects()[key] = package
+        self.subobjects[key] = package
 
 
-class Package(SubscriptableBaseModel):
+class Package(ClonableModelMixin, SubscriptableBaseModel):
     pypi_url = 'http://pypi.python.org/pypi/{}/json'
     subobjects_attr = 'releases'
 
-    def __init__(self, name):
-        self.__name__ = name
+    def __init__(self, name, **kwargs):
+        # self.__name__ = name
         self.name = name
         self.releases = MyOOBTree()
+        super().__init__(name, **kwargs)
 
     def __getitem__(self, release_name_or_index):
         try:
@@ -251,11 +277,10 @@ class Package(SubscriptableBaseModel):
             return {}
 
 
-class Release(SubscriptableBaseModel):
+class Release(ClonableModelMixin, SubscriptableBaseModel):
     subobjects_attr = 'release_files'
 
-    def __init__(self, name, version, metadata, deserialize_metadata=True):
-        self.__name__ = name
+    def __init__(self, version, metadata={}, deserialize_metadata=True, **kwargs):
         self.release_files = MyOOBTree()
         self.version = version
         self.original_metadata = metadata
@@ -263,12 +288,23 @@ class Release(SubscriptableBaseModel):
             schema = Metadata()
             self.metadata = schema.serialize(metadata)
             self.metadata = schema.deserialize(self.metadata)
+        super().__init__(
+            name=version,
+            metadata=metadata,
+            deserialize_metadata=True,
+            **kwargs,
+        )
 
-    def __getitem__(self, name_or_index):
+    def __getitem__(self, version_or_index):
         try:
-            if isinstance(name_or_index, int):
-                return next(itertools.islice(self.__iter__(), name_or_index, name_or_index + 1))
-            return self.release_files[format_key(name_or_index)]
+            if isinstance(version_or_index, int):
+                return next(
+                    itertools.islice(
+                    self.__iter__(),
+                    version_or_index,
+                    version_or_index + 1)
+                )
+            return self.release_files[format_key(version_or_index)]
         except (KeyError, IndexError, StopIteration):
             return None
 
@@ -294,18 +330,23 @@ class Release(SubscriptableBaseModel):
             return root[package_name].get(release, None)
 
 
-class ReleaseFile(BaseModel):
+class ReleaseFile(ClonableModelMixin, BaseModel):
     _path = None
     _packages_directory = None
     _release_file_directory = None
 
-    def __init__(self, filename, content, md5_digest=None, status=None):
+    def __init__(self, filename, content, md5_digest=None, status=None, **kwargs):
         self.uuid = uuid.uuid4()
-        self.filename = self.__name__ = filename
+        self.filename = filename
         self.md5_digest = md5_digest
         self.set_content(content)
         self.upload_date = datetime.datetime.now(tz=utc)
         self.status = status if status is not None else STATUS.cached
+        self.__parent__ = kwargs.get('__parent__', None)
+
+    @property
+    def __name__(self):
+        return self.filename
 
     def _compute_release_file_directory(self):
         time_low = self.uuid.time_low
@@ -325,8 +366,8 @@ class ReleaseFile(BaseModel):
         return packages_directory
 
     def set_content(self, content):
-        os.makedirs(self.path, exist_ok=True)
-        with open(os.path.join(self.path, self.filename), 'wb') as release_file:
+        os.makedirs(os.path.dirname(self.path), exist_ok=True)
+        with open(self.path, 'wb') as release_file:
             release_file.write(content)
             self.relative_path = self._compute_release_file_directory()
             self.size = len(content)
@@ -335,14 +376,16 @@ class ReleaseFile(BaseModel):
     @property
     def path(self):
         if not self._path:
-            packages_directory = self._packages_directory()
-            release_file_directory = self._compute_release_file_directory()
-            self._path = os.path.join(
-                packages_directory,
-                release_file_directory
-            )
-        return '{}/{}/{}'.format(
-            self._packages_directory(),
+            try:
+                packages_directory = self._packages_directory()
+                release_file_directory = self._compute_release_file_directory()
+                self._path = os.path.join(
+                    packages_directory,
+                    release_file_directory
+                )
+            except Exception:
+                return None
+        return os.path.join(
             self._path,
             self.filename
         )
@@ -355,7 +398,7 @@ class ReleaseFile(BaseModel):
     def clone(cls, model_obj):
         """Return a clone on given object"""
         clone = cls.__new__(cls)
-        clone.__name__ = model_obj.__name__
+        # clone.__name__ = model_obj.__name__
         clone.filename = model_obj.filename
         clone.md5_digest = model_obj.md5_digest
         clone.size = model_obj.size
