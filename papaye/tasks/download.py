@@ -6,7 +6,7 @@ import transaction
 
 from ZODB.DB import DB
 
-from papaye.factories import repository_root_factory
+from papaye.factories.root import repository_root_factory
 from papaye.models import Package, Release, ReleaseFile
 from papaye.proxy import download_file
 from papaye.tasks import task
@@ -43,14 +43,13 @@ def download_release_from_pypi(db_or_root, package_name, release_name, filename)
     for attempt in transaction.attempts():
         with attempt:
             if root[package_name] is None:
-                root[package_name] = Package(package_name)
+                root[package_name] = Package(package_name, root=root)
             release_ready_exists = release_name in root[package_name]
             if not release_ready_exists:
                 root[package_name][release_name] = Release(
                     release_name,
-                    release_name,
                     metadata['info'],
-                    deserialize_metadata=True
+                    package=root[package_name],
                 )
 
             if filename not in root[package_name][release_name]:
@@ -62,6 +61,11 @@ def download_release_from_pypi(db_or_root, package_name, release_name, filename)
                 if not content:
                     transaction.abort()
                     return None
-                root[package_name][release_name][filename] = ReleaseFile(filename, content, md5_digest)
+                root[package_name][release_name][filename] = ReleaseFile(
+                    filename,
+                    content,
+                    md5_digest,
+                    release=root[package_name][release_name],
+                )
     if db:
         conn.close()

@@ -27,8 +27,8 @@ def clone(package):
 def smart_merge(repository_package, remote_package, root=None):
     """Merge package content into the given root if not exists"""
     merged_package = repository_package
-    root = root if root is not None else Root()
-    merged_package.__parent__ = root
+    root = root if root is not None else Root(name='smart_merge_root')
+    merged_package.root = root
 
     if remote_package is not None:
         existing_releases = list(merged_package.releases.keys())
@@ -88,15 +88,14 @@ class PyPiProxy:
         package_name = self.get_remote_package_name(package_name)
         if package_name:
             info = self.get_remote_informations(self.pypi_url.format(package_name))
-            package_root = Root()
+            package_root = Root('repository')
             package = Package(info['info']['name'])
-            package.__parent__ = package_root
+            package.root = package_root
             package_root[package.name] = package
             remote_releases = info['releases'].keys() if not release_name else [release_name, ]
 
             for remote_release in remote_releases:
                 release = Release(
-                    remote_release,
                     remote_release,
                     metadata=info['info'],
                     deserialize_metadata=metadata

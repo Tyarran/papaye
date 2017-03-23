@@ -14,10 +14,9 @@ Backgrid.PackagelinkCell = Backgrid.Cell.extend({
   formatter: Backgrid.StringFormatter,
 
   render() {
-    this.$el.html(`<a href="${this.model.detailUrl()}">${this.model.get('name')}</a>`)
+    this.$el.html(`<a href="${this.model.detailUrl()}">${this.model.get('name')}</a>`);
     return this;
   }
-
 });
 
 

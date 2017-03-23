@@ -9,13 +9,11 @@ from pyramid import testing
 from pyramid.threadlocal import get_current_request
 from requests.exceptions import ConnectionError
 
-from papaye.tests.tools import (
-    FakeGRequestResponse,
-    disable_cache,
-    mock_proxy_response,
-    remove_blob_dir,
-    set_database_connection,
-)
+from papaye.factories import models as factories
+from papaye.tests.tools import FakeGRequestResponse, disable_cache
+from papaye.tests.tools import mock_proxy_response, remove_blob_dir
+from papaye.tests.tools import set_database_connection
+
 
 @pytest.fixture(autouse=True)
 def repo_config(request):
@@ -32,7 +30,7 @@ def repo_config(request):
     config.add_route(
         'simple',
         '/simple/*traverse',
-        factory='papaye.factories:repository_root_factory'
+        factory='papaye.factories.root:repository_root_factory'
     )
 
     def clean_tmp_dir():
@@ -41,6 +39,7 @@ def repo_config(request):
 
     request.addfinalizer(clean_tmp_dir)
 
+
 class ProxyTest(unittest.TestCase):
 
     def setUp(self):
@@ -48,129 +47,146 @@ class ProxyTest(unittest.TestCase):
 
     @patch('requests.get')
     def test_get_remote_informations(self, mock):
+        # Given
         from papaye.proxy import PyPiProxy
         mock_proxy_response(mock)
         url = "http://pypi.python.org/pypi/pyramid/json"
-
         proxy = PyPiProxy()
+
+        # When
         result = proxy.get_remote_informations(url)
+
+        # Then
         self.assertIsInstance(result, dict)
         self.assertEqual(result['info']['name'], 'pyramid')
 
     @patch('requests.get')
     def test_get_remote_informations_404(self, mock):
+        # Given
         from papaye.proxy import PyPiProxy
         mock.return_value = FakeGRequestResponse(404, b'')
         url = "http://pypi.python.org/pypi/pyramid/json"
-
         proxy = PyPiProxy()
+
+        # When
         result = proxy.get_remote_informations(url)
+
+        # Then
         self.assertIsNone(result)
 
     @patch('requests.get')
     def test_get_remote_informations_connection_error(self, mock):
+        # Given
         from papaye.proxy import PyPiProxy
         mock.side_effect = ConnectionError
         url = "http://pypi.python.org/pypi/pyramid/json"
-
         proxy = PyPiProxy()
+
+        # When
         result = proxy.get_remote_informations(url)
+
+        # Then
         self.assertIsNone(result)
 
     @patch('requests.get')
     def test_get_remote_package_name(self, mock):
+        # Given
         from papaye.proxy import PyPiProxy
         mock.side_effect = ConnectionError
         url = "http://pypi.python.org/pypi/pyramid/json"
-
         proxy = PyPiProxy()
+
+        # When
         result = proxy.get_remote_package_name(url)
+
+        # Then
         self.assertIsNone(result)
 
     def test_smart_merge_with_other_release(self):
-        from papaye.factories import repository_root_factory
+        # Given
+        from papaye.factories.root import repository_root_factory
         from papaye.models import Package, Release, ReleaseFile
         from papaye.proxy import smart_merge
-        package1 = Package(name='pyramid')
-        package1['1.5'] = Release(name='1.5', version='1.5', metadata={})
-        package1['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
+        release1 = factories.ReleaseFactory(
+            version='1.5',
             filename='pyramid-1.5.tar.gz',
-            content=b'',
-            md5_digest='12345'
+            md5_digest='12345',
+            package__name='pyramid',
         )
-
-        package2 = Package(name='pyramid')
-        package2['1.6'] = Release(name='1.6', version='1.6', metadata={})
-        package2['1.6']['pyramid-1.6.tar.gz'] = ReleaseFile(
+        release2 = factories.ReleaseFactory(
+            version='1.6',
             filename='pyramid-1.6.tar.gz',
-            content=b'',
-            md5_digest='12345'
+            md5_digest='12345',
+            package__name='pyramid',
         )
+        package1 = release1.package
+        package2 = release2.package
 
+        # When
         result = smart_merge(package1, package2)
 
+        # Then
         assert isinstance(result, Package)
-        assert len(list(result.__parent__)) == 1
+        assert len(list(result.root)) == 1
         assert len(list(result)) == 2
-        assert repository_root_factory(self.request) is not result.__parent__
-
+        assert repository_root_factory(self.request) is not result.root
         result = smart_merge(package1, package2)
-
         assert isinstance(result, Package)
         assert len(list(result)) == 2
-        assert repository_root_factory(self.request) is not result.__parent__
+        assert repository_root_factory(self.request) is not result.root
 
     def test_smart_merge_with_other_package(self):
         from papaye.models import Package, Release, ReleaseFile
         from papaye.proxy import smart_merge
-        package1 = Package(name='pyramid')
-        package1['1.5'] = Release(name='1.5', version='1.5', metadata={})
-        package1['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
+        release1 = factories.ReleaseFactory(
+            version='1.5',
             filename='pyramid-1.5.tar.gz',
-            content=b'',
-            md5_digest='12345'
+            md5_digest='12345',
+            package__name='pyramid',
         )
-
-        package2 = Package(name='other')
-        package2['1.6'] = Release(name='1.6', version='1.6', metadata={})
-        package2['1.6']['other-1.6.tar.gz'] = ReleaseFile(
-            filename='other-1.6.tar.gz',
-            content=b'',
-            md5_digest='12345'
+        release2 = factories.ReleaseFactory(
+            version='1.6',
+            filename='pyramid-1.6.tar.gz',
+            md5_digest='12345',
+            package__name='pyramid',
         )
+        package1 = release1.package
+        package2 = release2.package
 
         result = smart_merge(package1, package2)
 
         assert isinstance(result, Package)
-        assert len(list(result.__parent__)) == 1
+        assert len(list(result.root)) == 1
         assert result.__name__ == 'pyramid'
 
     def test_smart_merge_with_different_release_file(self):
-        from papaye.factories import repository_root_factory
+        # Given
+        from papaye.factories.root import repository_root_factory
         from papaye.models import Package, Release, ReleaseFile
         from papaye.proxy import smart_merge
-        package1 = Package(name='pyramid')
-        package1['1.5'] = Release(name='1.5', version='1.5', metadata={})
-        package1['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
+        release_file1 = factories.ReleaseFileFactory(
+            release__version='1.5',
             filename='pyramid-1.5.tar.gz',
-            content=b'',
-            md5_digest='12345'
+            md5_digest='12345',
+            release__package__name='pyramid',
         )
-
-        package2 = Package(name='pyramid')
-        package2['1.5'] = Release(name='1.5', version='1.5', metadata={})
-        package2['1.5']['pyramid-1.5.whl'] = ReleaseFile(
+        release_file2 = factories.ReleaseFileFactory(
+            release__version='1.5',
             filename='pyramid-1.5.whl',
-            content=b'',
-            md5_digest='12345'
+            md5_digest='12345',
+            release__package__name='pyramid',
         )
+        package1 = release_file1.release.package
+        package2 = release_file2.release.package
 
+        # When
         result = smart_merge(package1, package2)
 
+        # Then
         assert isinstance(result, Package)
         assert len(list(result)) == 1
         assert len(list(result['1.5'])) == 2
-        assert repository_root_factory(self.request) is not result.__parent__
+        assert repository_root_factory(self.request) is not result.root
 
     def test_smart_merge_with_new_package(self):
         from papaye.models import Package, Release, ReleaseFile, Root
@@ -178,13 +194,13 @@ class ProxyTest(unittest.TestCase):
         package1 = Package(name='pyramid')
 
         package2 = Package(name='pyramid')
-        package2['1.5'] = Release(name='1.5', version='1.5', metadata={})
+        package2['1.5'] = Release(version='1.5', metadata={})
         package2['1.5']['pyramid-1.5.whl'] = ReleaseFile(
             filename='pyramid-1.5.whl',
             content=b'',
             md5_digest='12345'
         )
-        root = Root()
+        root = Root(name='root')
 
         result = smart_merge(package1, package2, root=root)
 
@@ -197,13 +213,13 @@ class ProxyTest(unittest.TestCase):
         from papaye.models import Package, Release, ReleaseFile, Root
         from papaye.proxy import smart_merge
         package = Package(name='pyramid')
-        package['1.5'] = Release(name='1.5', version='1.5', metadata={})
+        package['1.5'] = Release(version='1.5', metadata={})
         package['1.5']['pyramid-1.5.whl'] = ReleaseFile(
             filename='pyramid-1.5.whl',
             content=b'',
             md5_digest='12345'
         )
-        root = Root()
+        root = Root(name='root')
 
         result = smart_merge(package, None, root=root)
 
@@ -216,7 +232,7 @@ class ProxyTest(unittest.TestCase):
         from papaye.models import Package, Release, ReleaseFile, Root
         from papaye.proxy import smart_merge
         package1 = Package(name='pyramid')
-        package1['1.5'] = Release(name='1.5', version='1.5', metadata={})
+        package1['1.5'] = Release(version='1.5', metadata={})
         package1['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
             filename='pyramid-1.5.tar.gz',
             content=b'a existing content',
@@ -224,13 +240,13 @@ class ProxyTest(unittest.TestCase):
         )
 
         package2 = Package(name='pyramid')
-        package2['1.5'] = Release(name='1.5', version='1.5', metadata={})
+        package2['1.5'] = Release(version='1.5', metadata={})
         package2['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
             filename='pyramid-1.5.tar.gz',
             content=b'a new content',
             md5_digest='12345'
         )
-        root = Root()
+        root = Root(name='root')
 
         result = smart_merge(package1, package2, root=root)
 
@@ -297,7 +313,7 @@ class ProxyTest(unittest.TestCase):
         from papaye.proxy import PyPiProxy
         mock_proxy_response(mock)
         package1 = Package(name='pyramid')
-        package1['100.5'] = Release(name='100.5', version='100.5', metadata={})
+        package1['100.5'] = Release(version='100.5', metadata={})
         package1['100.5']['pyramid-100.5.tar.gz'] = ReleaseFile(
             filename='pyramid-100.5.tar.gz',
             content=b'a existing content',
@@ -321,7 +337,7 @@ class ProxyTest(unittest.TestCase):
         from papaye.proxy import PyPiProxy
         mock_proxy_response(mock)
         package1 = Package(name='pyramid')
-        package1['100.5'] = Release(name='100.5', version='100.5', metadata={})
+        package1['100.5'] = Release(version='100.5', metadata={})
         package1['100.5']['pyramid-100.5.tar.gz'] = ReleaseFile(
             filename='pyramid-100.5.tar.gz',
             content=b'a existing content',
@@ -342,7 +358,7 @@ class ProxyTest(unittest.TestCase):
         from papaye.proxy import PyPiProxy
         mock_proxy_response(mock)
         package1 = Package(name='pyramid')
-        package1['100.5'] = Release(name='100.5', version='100.5', metadata={})
+        package1['100.5'] = Release(version='100.5', metadata={})
         package1['100.5']['pyramid-100.5.tar.gz'] = ReleaseFile(
             filename='pyramid-100.5.tar.gz',
             content=b'a existing content',
@@ -363,7 +379,7 @@ class ProxyTest(unittest.TestCase):
         from papaye.proxy import PyPiProxy
         mock.return_value = FakeGRequestResponse(404, b'')
         package1 = Package(name='pyramid')
-        package1['100.5'] = Release(name='100.5', version='100.5', metadata={})
+        package1['100.5'] = Release(version='100.5', metadata={})
         package1['100.5']['pyramid-100.5.tar.gz'] = ReleaseFile(
             filename='pyramid-100.5.tar.gz',
             content=b'a existing content',
@@ -380,7 +396,7 @@ class ProxyTest(unittest.TestCase):
         from papaye.proxy import clone
         from papaye.models import Package, Release, ReleaseFile
         package = Package(name='pyramid')
-        package['1.5'] = Release(name='1.5', version='1.5', metadata={})
+        package['1.5'] = Release(version='1.5', metadata={})
         package['1.5']['pyramid-1.5.tar.gz'] = ReleaseFile(
             filename='pyramid-1.5.tar.gz',
             content=b'a existing content',
@@ -399,9 +415,9 @@ class ProxyTest(unittest.TestCase):
         from papaye.proxy import clone
         from papaye.models import Package, Release, ReleaseFile
         package = Package(name='pyramid')
-        package['1.3'] = Release(name='1.3', version='1.3', metadata={})
-        package['1.4'] = Release(name='1.4', version='1.4', metadata={})
-        package['1.5'] = Release(name='1.5', version='1.5', metadata={})
+        package['1.3'] = Release(version='1.3', metadata={})
+        package['1.4'] = Release(version='1.4', metadata={})
+        package['1.5'] = Release(version='1.5', metadata={})
         package['1.3']['pyramid-1.3.tar.gz'] = ReleaseFile(
             filename='pyramid-1.3.tar.gz',
             content=b'a existing content',

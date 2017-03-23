@@ -1,7 +1,7 @@
 import functools
 import transaction
 
-from papaye.factories import user_root_factory, repository_root_factory, default_root_factory
+from papaye.factories.root import user_root_factory, repository_root_factory, default_root_factory
 
 
 def set_database_version(request, version):

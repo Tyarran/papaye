@@ -8,3 +8,4 @@ tox
 webtest
 pip-tools
 wheel
+factory_boy

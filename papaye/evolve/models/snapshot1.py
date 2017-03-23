@@ -19,7 +19,7 @@ from repoze.evolution import ZODBEvolutionManager
 from requests.exceptions import ConnectionError
 from pytz import utc
 
-from papaye.factories import user_root_factory, repository_root_factory, APP_ROOT_NAME
+from papaye.factories.root import user_root_factory, repository_root_factory, APP_ROOT_NAME
 from papaye.schemas import Metadata
 
 

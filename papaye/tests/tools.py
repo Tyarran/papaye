@@ -9,7 +9,7 @@ from ZODB.blob import BlobStorage
 from ZODB.DB import DB
 from ZODB.MappingStorage import MappingStorage
 
-from papaye.models import BaseModel
+from papaye.models import Model
 from papaye.scripts.initialize import create_app_root
 from papaye.serializers import Serializer
 
@@ -126,7 +126,7 @@ def mock_proxy_response(mock, response=None, side_effect=False):
         setattr(mock, attr, response)
 
 
-class TestModel(BaseModel):
+class TestModel(Model):
 
     def __init__(self, value):
         self.value = value

@@ -94,9 +94,12 @@ class ListReleaseFileView(BaseView):
 
     def __call__(self):
         package = self.context
+        root = self.context
         proxy = PyPiProxy()
         stop = hasattr(self, 'stop') and self.stop
         repository = package.__parent__ if stop else proxy.merged_repository(package)
+        if repository is not root:
+            repository.name = root.name
         rfiles = [rfile for rel in repository[package.__name__] for rfile in rel]
         context = {'objects': ((self.request.resource_url(
             rfile,
@@ -155,13 +158,12 @@ class UploadView():
             md5_digest = post.get('md5_digest')
 
             package = self.context[name] if self.context.get(name) else Package(name)
-            package.__parent__ = self.context
+            package.root = self.context
             self.context[name] = package
 
-            release = package[version] if package.releases.get(version) else Release(name=version,
-                                                                                     version=version,
+            release = package[version] if package.releases.get(version) else Release(version=version,
                                                                                      metadata=metadata)
-            release.__parent__ = package
+            release.package = package
             self.context[name][version] = release
 
             if release.release_files.get(content.filename):

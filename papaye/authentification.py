@@ -59,14 +59,12 @@ class MultipleAuthPolicy(object):
         return policy.effective_principals(request)
 
     def remember(self, request, principal, **kw):
-        import pdb; pdb.set_trace()
         result = []
         for policy in self.policies:
             result = result + policy.remember(request, principal, **kw)
         return result
 
     def forget(self, request):
-        import pdb; pdb.set_trace()
         result = []
         for policy in self.policies:
             result = result + policy.forget(request)
@@ -85,7 +83,6 @@ class RollingAuthPolicy(object):
     def authenticated_userid(self, request):
         default = None
         for policy in self.policies():
-            import pdb; pdb.set_trace()
             auth_userid = policy.authenticated_userid(request)
             if auth_userid:
                 return auth_userid

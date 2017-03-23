@@ -8,6 +8,7 @@ from pyramid.config import Configurator
 from pyramid.threadlocal import get_current_request
 from repoze.evolution import ZODBEvolutionManager
 
+from papaye.factories import models as factories
 from papaye.tests.tools import set_database_connection
 
 
@@ -16,14 +17,16 @@ class ConfigTest(unittest.TestCase):
     def setUp(self):
         self.request = testing.DummyRequest()
         self.config = testing.setUp(request=self.request)
-        self.blob_dir = set_database_connection(self.request, config=self.config)
+        self.blob_dir = set_database_connection(
+            self.request,
+            config=self.config
+        )
 
     def tearDown(self):
         shutil.rmtree(self.blob_dir)
 
     def get_root(self):
-        from papaye.models import Root
-        root = Root()
+        root = factories.RootFactory()
 
         def root_func():
             return {'papaye_root': {'repository': {}, 'user': {}}}

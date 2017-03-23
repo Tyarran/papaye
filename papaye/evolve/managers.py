@@ -7,7 +7,7 @@ from repoze.evolution.interfaces import IEvolutionManager
 from termcolor import colored
 from zope.interface import implementer
 
-from papaye.factories import APP_ROOT_NAME
+from papaye.factories.root import APP_ROOT_NAME
 
 
 def cleanup():

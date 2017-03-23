@@ -21,7 +21,7 @@ from pyramid_zodbconn import db_from_uri
 from pytz import utc
 from requests.exceptions import ConnectionError
 
-from papaye.factories import user_root_factory, repository_root_factory
+from papaye.factories.root import user_root_factory, repository_root_factory
 from papaye.schemas import Metadata
 from papaye.evolve.managers import PapayeEvolutionManager
 
@@ -157,13 +157,10 @@ class Root(SubscriptableBaseModel):
     def __getitem__(self, name_or_index):
         if isinstance(name_or_index, int):
             return next(itertools.islice(self.__iter__(), name_or_index, name_or_index + 1))
-        try:
-            keys = [key for key in self.get_subobjects().keys()
-                    if format_key(key) == format_key(name_or_index)]
-            if len(keys) == 1:
-                return self.get_subobjects()[keys[0]]
-        except Exception as ex:
-            import pdb; pdb.set_trace()
+        keys = [key for key in self.get_subobjects().keys()
+                if format_key(key) == format_key(name_or_index)]
+        if len(keys) == 1:
+            return self.get_subobjects()[keys[0]]
 
     def __setitem__(self, key, package):
         if not hasattr(self, '_p_updated_keys'):

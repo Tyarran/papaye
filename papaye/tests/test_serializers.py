@@ -8,6 +8,7 @@ import shutil
 from pyramid import testing
 from pyramid.threadlocal import get_current_request
 
+from papaye.factories import models as factories
 from papaye.tests.tools import FakeRoute, disable_cache
 
 
@@ -25,7 +26,12 @@ def repo_config(request):
     config.add_route(
         'simple',
         '/simple/*traverse',
-        factory='papaye.factories:repository_root_factory'
+        factory='papaye.factories.root:repository_root_factory'
+    )
+    config.add_static_view(
+        'repo',
+        tmpdir,
+        cache_max_age=3600
     )
     config.add_route('home', '/')
 
@@ -42,6 +48,9 @@ class DummySerializer(object):
 
 
 class SerializerTest(unittest.TestCase):
+
+    def setUp(self):
+        self.maxDiff = None
 
     def test_instanciate(self):
         from papaye.serializers import Serializer
@@ -82,12 +91,7 @@ class ReleaseAPISerializerTest(unittest.TestCase):
 
     def setUp(self):
         self.request = get_current_request()
-        # self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        # self.config = testing.setUp(request=self.request)
-        # self.config.add_route('simple', '/simple/*traverse', factory='papaye.factories:repository_root_factory')
-        # self.config.add_route('home', '/')
-        # registry = get_current_registry()
-        # registry.settings = disable_cache()
+        self.maxDiff = None
 
     def test_instanciate(self):
         from papaye.serializers import ReleaseAPISerializer
@@ -101,19 +105,34 @@ class ReleaseAPISerializerTest(unittest.TestCase):
     def test_serialize(self):
         from papaye.serializers import ReleaseAPISerializer
         from papaye.models import Package, Release, ReleaseFile
+        request = get_current_request()
         serializer = ReleaseAPISerializer(request=self.request)
-        package = Package(name='package')
-        package['1.0'] = Release('1.0', '1.0', {
-            'summary': 'The package',
-            'description': 'A description',
-        })
-        package['2.0'] = Release('2.0', '2.0', {
-            'summary': 'The package',
-            'description': 'A description',
-        })
-        package['1.0']['package-1.0.tar.gz'] = ReleaseFile('package-1.0.tar.gz', b'')
+        package = factories.PackageFactory(name='package')
+        package['1.0'] = factories.ReleaseFactory(
+            version='1.0',
+            metadata={
+                'summary': 'The package',
+                'description': 'A description',
+            },
+            package=package,
+        )
+        release = factories.ReleaseFactory(
+            version='2.0',
+            metadata={
+                'summary': 'The package',
+                'description': 'A description',
+            },
+            package=package,
+        )
+        package['2.0'] = release
+        release_file = factories.ReleaseFileFactory(
+            name='package-1.0.tar.gz',
+            content=b'',
+            release=release,
+        )
+        package['1.0']['package-1.0.tar.gz'] = release_file
         expected = {
-            'name': 'package',
+            'name': package.name,
             'version': '1.0',
             'gravatar_hash': None,
             'metadata': {
@@ -131,13 +150,13 @@ class ReleaseAPISerializerTest(unittest.TestCase):
                 'classifiers': [],
                 'name': None,
             },
-            'download_url': 'http://example.com/simple/package/1.0/package-1.0.tar.gz/',
+            'download_url': request.static_url(release_file.path),
             'release_files': [{
                 'size': '0',
-                'filename': 'package-1.0.tar.gz',
-                'url': 'http://example.com/simple/package/1.0/package-1.0.tar.gz/',
+                'filename': release_file.filename,
+                'url': request.resource_url(release_file, route_name='simple'),
                 'version': '1.0',
-                'upload_date': str(package['1.0']['package-1.0.tar.gz'].upload_date),
+                'upload_date': str(release_file.upload_date),
             }],
             'other_releases': [{
                 'url': 'http://example.com/#/browse/package/2.0',
@@ -147,33 +166,60 @@ class ReleaseAPISerializerTest(unittest.TestCase):
 
         result = serializer.serialize(package['1.0'])
 
-        self.assertEqual(result, expected)
+        for key, value in result.items():
+            assert value == expected[key]
 
     def test_serialize_with_metadata_is_none(self):
         from papaye.serializers import ReleaseAPISerializer
         from papaye.models import Package, Release, ReleaseFile
+        request = get_current_request()
         serializer = ReleaseAPISerializer(request=self.request)
-        package = Package(name='package')
-        package['1.0'] = Release('1.0', '1.0', {
-            'summary': 'The package',
-            'description': 'A description',
-        })
-        package['1.0'].metadata = None
-        package['2.0'] = Release('2.0', '2.0', {
-            'summary': 'The package',
-            'description': 'A description',
-        })
-        package['1.0']['package-1.0.tar.gz'] = ReleaseFile('package-1.0.tar.gz', b'')
+        package = factories.PackageFactory(name='package')
+        release1 = factories.ReleaseFactory(
+            version='1.0',
+            metadata=None,
+            package=package,
+        )
+        package['1.0'] = release1
+
+        release2 = factories.ReleaseFactory(
+            version='2.0',
+            metadata={
+                'summary': 'The package',
+                'description': 'A description',
+            },
+            package=package,
+        )
+        package['2.0'] = release2
+
+        release_file = factories.ReleaseFileFactory(
+            filename='package-1.0.tar.gz',
+            release=release1,
+        )
+        package['1.0']['package-1.0.tar.gz'] = release_file
         expected = {
-            'name': 'package',
+            'name': package.name,
             'version': '1.0',
             'gravatar_hash': None,
-            'metadata': None,
-            'download_url': 'http://example.com/simple/package/1.0/package-1.0.tar.gz/',
+            'metadata': {
+                'version': None,
+                'author': None,
+                'author_email': None,
+                'home_page': None,
+                'keywords': [],
+                'license': None,
+                'summary': None,
+                'maintainer': None,
+                'maintainer_email': None,
+                'description': None,
+                'platform': None,
+                'classifiers': [], 'name': None,
+            },
+            'download_url': request.static_url(release_file.path),
             'release_files': [{
-                'size': '0',
+                'size': '9',
                 'filename': 'package-1.0.tar.gz',
-                'url': 'http://example.com/simple/package/1.0/package-1.0.tar.gz/',
+                'url': request.resource_url(release_file, route_name='simple'),
                 'version': '1.0',
                 'upload_date': str(package['1.0']['package-1.0.tar.gz'].upload_date),
             }],
@@ -185,4 +231,5 @@ class ReleaseAPISerializerTest(unittest.TestCase):
 
         result = serializer.serialize(package['1.0'])
 
-        self.assertEqual(result, expected)
+        for key, value in result.items():
+            assert value == expected[key]

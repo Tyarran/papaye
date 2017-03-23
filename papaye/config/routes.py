@@ -1,4 +1,4 @@
-from papaye.factories import (
+from papaye.factories.root import (
     repository_root_factory,
     user_root_factory,
     application_factory,

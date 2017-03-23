@@ -1,5 +1,5 @@
-import collections
 import copy
+import collections
 import datetime
 import hashlib
 import io
@@ -75,15 +75,13 @@ class MyOOBTree(OOBTree):
                     merged_state.update(dict(chunk(pr, 2)))
 
             for pr in new_state[0][0]:
-                if pr[0] not in pr_name_old:
-                    merged_state.update(dict(chunk(pr, 2)))
-            new_old_state = ((((tuple(itertools.chain(*list(merged_state.items())))), ), ), )  # OOBtree state. Beurk!
-            return super()._p_resolveConflict(new_old_state, stored_state, new_state)
+                new_old_state = ((((tuple(itertools.chain(*list(merged_state.items())))), ), ), )  # OOBtree state. Beurk!
+                return super()._p_resolveConflict(new_old_state, stored_state, new_state)
         except:
             return old_state
 
 
-class BaseModel(Persistent):
+class Model(Persistent):
 
     def __repr__(self):
         return '<{}.{} "{}" at {}>'.format(
@@ -92,7 +90,15 @@ class BaseModel(Persistent):
             self.__name__,
             id(self)
         )
-        
+
+    def __init__(self, *args, **kwargs):
+        # Breaks the super() calls chain
+        pass
+
+    def __getattr__(self, attribute):
+        # Breaks the super() calls chain
+        return self.__getattribute__(attribute)
+
 
 class ClonableModelMixin(object):
 
@@ -108,22 +114,28 @@ class ClonableModelMixin(object):
         return clone
 
 
-class SubscriptableBaseModel(BaseModel):
-    subobjects_attr = None
+class SubscriptableMixin(object):
+    _subobjects_attr = None
+    _parent_name = None
+    _name_attribute = 'name'
 
     def __init__(self, name, *args, **kwargs):
+        super().__init__(name, *args, **kwargs)
         self.name = name
-        if '__parent__' in kwargs:
-            self.__parent__ = kwargs.get('__parent__')
-            self.__parent__[self.__name__] = self
+        if kwargs.get(self._parent_name) is not None:
+            self.__parent__[format_key(self.__name__)] = self
 
     @property
     def __name__(self):
-        return getattr(self, 'name', None)
+        return getattr(self, self._name_attribute, None)
+
+    @property
+    def __parent__(self):
+        return getattr(self, self._parent_name, None)
 
     @property
     def subobjects(self):
-        return getattr(self, self.subobjects_attr)
+        return getattr(self, self._subobjects_attr)
 
     def get(self, key, default=None):
         getitem_object = self.subobjects
@@ -134,8 +146,8 @@ class SubscriptableBaseModel(BaseModel):
 
     def child(self, subobject):
         key = format_key(subobject.__name__)
-        self.subobjects[key] = subobject
-        self.subobjects[key].__parent__ = self
+        self._subobjects[key] = subobject
+        self._subobjects[key].__parent__ = self
         return self
 
     def __contains__(self, obj_or_name):
@@ -143,7 +155,7 @@ class SubscriptableBaseModel(BaseModel):
             elements = list(self.subobjects)
         else:
             elements = [
-                self.subobjects[element] for element in self.subobjects
+                self._subobjects[element] for element in self.subobjects
             ]
         return obj_or_name in elements
 
@@ -151,7 +163,7 @@ class SubscriptableBaseModel(BaseModel):
         return (self.subobjects[item] for item in self.subobjects)
 
     def __len__(self):
-        return len(list(getattr(self, self.subobjects_attr)))
+        return len(list(getattr(self, self._subobjects_attr)))
 
     def __delitem__(self, key):
         key = format_key(key)
@@ -161,13 +173,21 @@ class SubscriptableBaseModel(BaseModel):
         return (elem for elem in self.subobjects)
 
 
-class Root(ClonableModelMixin, SubscriptableBaseModel):
-    __parent__ = None
-    subobjects_attr = 'packages'
+SubscriptableBaseModel = SubscriptableMixin
+
+
+class Root(ClonableModelMixin, SubscriptableBaseModel, Model):
+    _subobjects_attr = 'packages'
+    __name__ = ''
 
     def __init__(self, name):
+        self.name = name
         self.packages = MyOOBTree()
-        # self.__name__ = name
+
+    @property
+    def __parent__(self):
+        """Root object has no parent"""
+        return None
 
     def __acl__(self):
         acl = [
@@ -195,20 +215,23 @@ class Root(ClonableModelMixin, SubscriptableBaseModel):
         if not hasattr(self, '_p_updated_keys'):
             self._p_updated_keys = []
         self._p_updated_keys.append(key)
-        if isinstance(package, Package):
-            package.__parent__ = self
+        # if isinstance(package, Package):
+        #     package.__parent__ = self
         self.subobjects[key] = package
 
 
-class Package(ClonableModelMixin, SubscriptableBaseModel):
+class Package(SubscriptableMixin, ClonableModelMixin, Model):
     pypi_url = 'http://pypi.python.org/pypi/{}/json'
-    subobjects_attr = 'releases'
+    _subobjects_attr = 'releases'
+    _name_atribute = 'name'
+    _parent_name = 'root'
 
-    def __init__(self, name, **kwargs):
+    def __init__(self, name, root=None, **kwargs):
         # self.__name__ = name
         self.name = name
         self.releases = MyOOBTree()
-        super().__init__(name, **kwargs)
+        self.root = root
+        super().__init__(name, root=root, **kwargs)
 
     def __getitem__(self, release_name_or_index):
         try:
@@ -221,7 +244,6 @@ class Package(ClonableModelMixin, SubscriptableBaseModel):
     def __setitem__(self, key, value):
         key = format_key(key)
         self.releases[key] = value
-        self.releases[key].__parent__ = self
 
     @classmethod
     @cache_region('pypi', 'get_last_remote_filename')
@@ -277,21 +299,26 @@ class Package(ClonableModelMixin, SubscriptableBaseModel):
             return {}
 
 
-class Release(ClonableModelMixin, SubscriptableBaseModel):
-    subobjects_attr = 'release_files'
+class Release(SubscriptableMixin, ClonableModelMixin, Model):
+    _subobjects_attr = 'release_files'
+    _parent_name = 'package'
+    _name_attribute = 'version'
 
-    def __init__(self, version, metadata={}, deserialize_metadata=True, **kwargs):
+    def __init__(self, version, metadata={},
+                 deserialize_metadata=True, package=None, **kwargs):
         self.release_files = MyOOBTree()
         self.version = version
-        self.original_metadata = metadata
+        self.package = package
+        self.original_metadata = metadata or {}
         if deserialize_metadata:
             schema = Metadata()
-            self.metadata = schema.serialize(metadata)
+            self.metadata = schema.serialize(self.original_metadata)
             self.metadata = schema.deserialize(self.metadata)
         super().__init__(
             name=version,
             metadata=metadata,
             deserialize_metadata=True,
+            package=package,
             **kwargs,
         )
 
@@ -300,9 +327,10 @@ class Release(ClonableModelMixin, SubscriptableBaseModel):
             if isinstance(version_or_index, int):
                 return next(
                     itertools.islice(
-                    self.__iter__(),
-                    version_or_index,
-                    version_or_index + 1)
+                        self.__iter__(),
+                        version_or_index,
+                        version_or_index + 1
+                    )
                 )
             return self.release_files[format_key(version_or_index)]
         except (KeyError, IndexError, StopIteration):
@@ -311,7 +339,6 @@ class Release(ClonableModelMixin, SubscriptableBaseModel):
     def __setitem__(self, key, value):
         key = format_key(key)
         self.release_files[key] = value
-        self.release_files[key].__parent__ = self
 
     @classmethod
     def by_packagename(cls, package_name, request):
@@ -330,23 +357,41 @@ class Release(ClonableModelMixin, SubscriptableBaseModel):
             return root[package_name].get(release, None)
 
 
-class ReleaseFile(ClonableModelMixin, BaseModel):
+class ReleaseFile(ClonableModelMixin, Model):
     _path = None
     _packages_directory = None
     _release_file_directory = None
+    __parent__ = None
+    _parent_name = 'release'
+    _name_attribute = 'filename'
 
-    def __init__(self, filename, content, md5_digest=None, status=None, **kwargs):
+    def __init__(self, filename, content, md5_digest=None,
+                 status=None, release=None, **kwargs):
         self.uuid = uuid.uuid4()
         self.filename = filename
+        self.release = release
         self.md5_digest = md5_digest
         self.set_content(content)
         self.upload_date = datetime.datetime.now(tz=utc)
         self.status = status if status is not None else STATUS.cached
-        self.__parent__ = kwargs.get('__parent__', None)
+        super().__init__(
+            filename,
+            content,
+            md5_digest=md5_digest,
+            status=status,
+            release=release,
+            **kwargs,
+        )
+        if release is not None:
+            self.__parent__[format_key(self.__name__)] = self
 
     @property
     def __name__(self):
         return self.filename
+
+    @property
+    def __parent__(self):
+        return self.release
 
     def _compute_release_file_directory(self):
         time_low = self.uuid.time_low
@@ -398,7 +443,6 @@ class ReleaseFile(ClonableModelMixin, BaseModel):
     def clone(cls, model_obj):
         """Return a clone on given object"""
         clone = cls.__new__(cls)
-        # clone.__name__ = model_obj.__name__
         clone.filename = model_obj.filename
         clone.md5_digest = model_obj.md5_digest
         clone.size = model_obj.size
@@ -418,7 +462,7 @@ class ReleaseFile(ClonableModelMixin, BaseModel):
             return root[package][release].get(releasefile, None)
 
 
-class User(BaseModel):
+class User(Model):
 
     def __init__(self, username, password, **kwargs):
         self.username = username

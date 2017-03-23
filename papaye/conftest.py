@@ -53,7 +53,7 @@ def routes(env, packages_directory):
     env['config'].add_route(
         'simple',
         '/simple/*traverse',
-        factory='papaye.factories:repository_root_factory'
+        factory='papaye.factories.root:repository_root_factory'
     )
 
 
@@ -84,7 +84,7 @@ def repo_configuration(request, request_factory, tmpdir, config_factory):
     config.add_route(
         'simple',
         '/simple/*traverse',
-        factory='papaye.factories:repository_root_factory'
+        factory='papaye.factories.root:repository_root_factory'
     )
 
     def clean_tmp_dir():

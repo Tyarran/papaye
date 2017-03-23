@@ -5,7 +5,7 @@ import sys
 import transaction
 
 from papaye.scripts.common import get_settings
-from papaye.factories import user_root_factory, APP_NAME
+from papaye.factories.root import user_root_factory, APP_NAME
 from papaye.models import User, Root, get_connection, get_manager
 
 
@@ -47,11 +47,13 @@ def create_app_root(dbconn):
     if manager.key not in zodb_root:
         zodb_root[manager.key] = {manager.package_name: manager.sw_version}
     if '{}_root'.format(APP_NAME) not in zodb_root:
-        zodb_root['{}_root'.format(APP_NAME)] = Root()
+        zodb_root['{}_root'.format(APP_NAME)] = Root('{}_root'.format(APP_NAME))
     if 'user' not in zodb_root['{}_root'.format(APP_NAME)]:
-        zodb_root['{}_root'.format(APP_NAME)]['user'] = Root()
+        zodb_root['{}_root'.format(APP_NAME)]['user'] = Root('user_root')
     if 'repository' not in zodb_root['{}_root'.format(APP_NAME)]:
-        zodb_root['{}_root'.format(APP_NAME)]['repository'] = Root()
+        zodb_root['{}_root'.format(APP_NAME)]['repository'] = Root(
+            'repository_root'
+        )
 
 
 def create_admin_user(dbconn, username, password):

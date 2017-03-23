@@ -15,6 +15,7 @@ def evolve(root):
 
         for release_name in package.releases:
             release = package[release_name]
+
             release.__parent__ = package
             print('\tUpgrade {} release'.format(release.__name__))
 

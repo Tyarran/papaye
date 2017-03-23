@@ -1,11 +1,11 @@
 import io
+import os
+import pytest
+import shutil
 import shutil
 import tempfile
 import transaction
 import unittest
-import pytest
-import os
-import shutil
 
 from mock import patch
 from pyramid import testing
@@ -31,8 +31,8 @@ def repo_config(request):
     config = testing.setUp(settings=settings, request=req)
     config.add_route(
         'simple',
-        '/simple/*traverse',
-        factory='papaye.factories:repository_root_factory'
+        '/simple*traverse',
+        factory='papaye.factories.root:repository_root_factory'
     )
 
     def clean_tmp_dir():
@@ -48,12 +48,13 @@ class TestDownloadTask(unittest.TestCase):
         self.blob_dir = tempfile.mkdtemp()
         self.conn = get_db_connection(self.blob_dir)
         self.root = self.conn.root()['papaye_root']['repository']
+        self.maxDiff = None
 
     def tearDown(self):
         shutil.rmtree(self.blob_dir)
 
     @patch('requests.get')
-    @patch('papaye.factories.repository_root_factory')
+    @patch('papaye.factories.root.repository_root_factory')
     def test_download_release_from_pypi(self, get_connection_mock, request_mock):
         from papaye.tasks.download import download_release_from_pypi
         get_connection_mock.return_value = self.root
@@ -85,7 +86,7 @@ class TestDownloadTask(unittest.TestCase):
 
     @patch('requests.get')
     def test_download_release_from_pypi_with_bad_md5(self, request_mock):
-        from papaye.factories import repository_root_factory
+        from papaye.factories.root import repository_root_factory
         from papaye.tasks.download import download_release_from_pypi
 
         json_request_response = open(get_resource('pyramid1.4.json'), 'rb')
@@ -103,7 +104,7 @@ class TestDownloadTask(unittest.TestCase):
 
     @patch('requests.get')
     def test_download_release_from_pypi_with_existing_package(self, request_mock):
-        from papaye.factories import repository_root_factory
+        from papaye.factories.root import repository_root_factory
         from papaye.models import Package, Release, ReleaseFile
         from papaye.tasks.download import download_release_from_pypi
         json_request_response = open(get_resource('pyramid1.4.json'), 'rb')
@@ -114,7 +115,7 @@ class TestDownloadTask(unittest.TestCase):
         ]
         root = repository_root_factory(self.conn)
         package = Package('pyramid')
-        release = Release('1.0', '1.0', metadata={})
+        release = Release('1.0', metadata={})
         release_file = ReleaseFile('pyramid-1.0.tar.gz', b'')
         root['pyramid'] = package
         root['pyramid']['1.0'] = release
@@ -127,7 +128,7 @@ class TestDownloadTask(unittest.TestCase):
 
     @patch('hashlib.md5')
     @patch('requests.get')
-    @patch('papaye.factories.repository_root_factory')
+    @patch('papaye.factories.root.repository_root_factory')
     def test_download_release_from_pypi_different_metadata(self, get_connection_mock, request_mock, md5mock):
         from papaye.models import Package, Release, ReleaseFile
         from papaye.tasks.download import download_release_from_pypi
@@ -151,7 +152,7 @@ class TestDownloadTask(unittest.TestCase):
 
         root = self.root
         package = Package('pyramid')
-        release = Release('1.5', '1.5', metadata={'version': '1.5'}, deserialize_metadata=True)
+        release = Release('1.5', metadata={'version': '1.5'}, deserialize_metadata=True)
         release_file = ReleaseFile('pyramid-1.5.tar.gz', b'')
         root['pyramid'] = package
         root['pyramid']['1.5'] = release

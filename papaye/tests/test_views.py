@@ -18,13 +18,9 @@ from pyramid.response import Response
 from pyramid.threadlocal import get_current_request
 from requests.exceptions import ConnectionError
 
-from papaye.tests.tools import (
-    disable_cache,
-    FakeGRequestResponse,
-    FakeRoute,
-    mock_proxy_response,
-    set_database_connection,
-)
+from papaye.tests.tools import disable_cache, FakeGRequestResponse, FakeRoute
+from papaye.tests.tools import mock_proxy_response, set_database_connection
+from papaye.factories import models as factories
 
 
 @pytest.fixture(autouse=True)
@@ -44,7 +40,7 @@ def repo_config(request):
     config.add_route(
         'simple',
         '/simple*traverse',
-        factory='papaye.factories:repository_root_factory'
+        factory='papaye.factories.root:repository_root_factory'
     )
     config.add_static_view(
         'repo',
@@ -66,12 +62,12 @@ class ListPackageViewTest(unittest.TestCase):
 
     def test_list_packages(self):
         from papaye.views.simple import ListPackagesView
-        from papaye.models import Package, Root
+        from papaye.models import Package
 
         # Test packages
-        root = Root()
-        root['package1'] = Package(name='package1')
-        root['package2'] = Package(name='package2')
+        root = factories.RootFactory()
+        factories.PackageFactory(name='package1', root=root)
+        factories.PackageFactory(name='package2', root=root)
 
         view = ListPackagesView(root, self.request)
         response = view()
@@ -83,8 +79,7 @@ class ListPackageViewTest(unittest.TestCase):
 
     def test_list_packages_without_package(self):
         from papaye.views.simple import ListPackagesView
-        from papaye.models import Root  # Test packages
-        root = Root()
+        root = factories.RootFactory()
 
         view = ListPackagesView(root, self.request)
         response = view()
@@ -105,14 +100,17 @@ class ListReleaseViewTest(unittest.TestCase):
         from papaye.models import Package, Release, Root, ReleaseFile
 
         # Test packages
-        root = Root()
-        root['package1'] = Package(name='package1')
-        root['package1']['release1'] = Release(name='release1', version='1.0', metadata={})
-        root['package1']['release1'].__parent__ = root['package1']
-        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
-                                                                          content=b'',
-                                                                          md5_digest='12345')
-        root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
+        root = factories.RootFactory()
+        package = factories.PackageFactory(name='package1', root=root)
+        release = factories.ReleaseFactory(
+            version='1.0', metadata={}, package=package
+        )
+        factories.ReleaseFileFactory(
+            filename='releasefile1.tar.gz',
+            content=b'',
+            md5_digest='12345',
+            release=release,
+        )
 
         view = ListReleaseFileView(root['package1'], self.request)
         response = view()
@@ -122,8 +120,8 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertIsInstance(response['objects'], types.GeneratorType)
         self.assertEqual(
             [(url, release.__name__) for url, release in response['objects']],
-            [('http://example.com/simple/package1/release1/releasefile1.tar.gz#md5=12345',
-              root['package1']['release1']['releasefile1.tar.gz'].__name__)]
+            [('http://example.com/simple/package1/1.0/releasefile1.tar.gz#md5=12345',
+              root['package1']['1.0']['releasefile1.tar.gz'].__name__)]
         )
 
     def test_list_releases_files_with_multiple_files(self):
@@ -131,18 +129,18 @@ class ListReleaseViewTest(unittest.TestCase):
         from papaye.models import Package, Release, Root, ReleaseFile
 
         # Test packages
-        root = Root()
+        root = factories.RootFactory()
         root['package1'] = Package(name='package1')
-        root['package1']['release1'] = Release(name='release1', version='1.0', metadata={})
-        root['package1']['release1'].__parent__ = root['package1']
+        root['package1']['release1'] = Release('1.0', metadata={})
+        root['package1']['release1'].package = root['package1']
         root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
                                                                           content=b'',
                                                                           md5_digest='12345')
-        root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
+        root['package1']['release1']['releasefile1.tar.gz'].release = root['package1']['release1']
         root['package1']['release1']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz',
                                                                           content=b'',
                                                                           md5_digest='12345')
-        root['package1']['release1']['releasefile2.tar.gz'].__parent__ = root['package1']['release1']
+        root['package1']['release1']['releasefile2.tar.gz'].release = root['package1']['release1']
 
         view = ListReleaseFileView(root['package1'], self.request)
         response = view()
@@ -153,9 +151,9 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertEqual(
             [(url, release.__name__) for url, release in response['objects']],
             [
-                ('http://example.com/simple/package1/release1/releasefile1.tar.gz#md5=12345',
+                ('http://example.com/simple/package1/1.0/releasefile1.tar.gz#md5=12345',
                  root['package1']['release1']['releasefile1.tar.gz'].__name__),
-                ('http://example.com/simple/package1/release1/releasefile2.tar.gz#md5=12345',
+                ('http://example.com/simple/package1/1.0/releasefile2.tar.gz#md5=12345',
                  root['package1']['release1']['releasefile2.tar.gz'].__name__),
             ],
         )
@@ -165,22 +163,28 @@ class ListReleaseViewTest(unittest.TestCase):
         from papaye.models import Package, Release, Root, ReleaseFile
 
         # Test packages
-        root = Root()
-        root['package1'] = Package(name='package1')
-        root['package1']['release1'] = Release(name='release1', version='1.0', metadata={})
-        root['package1']['release1'].__parent__ = root['package1']
-        root['package1']['release2'] = Release(name='release2', version='2.0', metadata={})
-        root['package1']['release2'].__parent__ = root['package1']
-        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
-                                                                          content=b'',
-                                                                          md5_digest='12345')
-        root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
-        root['package1']['release2']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz',
-                                                                          content=b'',
-                                                                          md5_digest='12345')
-        root['package1']['release2']['releasefile2.tar.gz'].__parent__ = root['package1']['release2']
+        root = factories.RootFactory()
+        package = factories.PackageFactory(name='package1', root=root)
+        release1 = factories.ReleaseFactory(
+            version='1.0', metadata={}, package=package,
+        )
+        release2 = factories.ReleaseFactory(
+            version='2.0', metadata={}, package=package,
+        )
+        release_file1 = factories.ReleaseFileFactory(
+            filename='releasefile1.tar.gz',
+            content=b'',
+            md5_digest='12345',
+            release=release1,
+        )
+        release_file2 = factories.ReleaseFileFactory(
+            filename='releasefile2.tar.gz',
+            content=b'',
+            md5_digest='12345',
+            release=release2,
+        )
 
-        view = ListReleaseFileView(root['package1'], self.request)
+        view = ListReleaseFileView(package, self.request)
         response = view()
 
         self.assertIsInstance(response, dict)
@@ -189,10 +193,10 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertEqual(
             [(url, release.__name__) for url, release in response['objects']],
             [
-                ('http://example.com/simple/package1/release1/releasefile1.tar.gz#md5=12345',
-                 root['package1']['release1']['releasefile1.tar.gz'].__name__),
-                ('http://example.com/simple/package1/release2/releasefile2.tar.gz#md5=12345',
-                 root['package1']['release2']['releasefile2.tar.gz'].__name__),
+                ('http://example.com/simple/package1/1.0/releasefile1.tar.gz#md5=12345',
+                 root['package1']['1.0']['releasefile1.tar.gz'].__name__),
+                ('http://example.com/simple/package1/2.0/releasefile2.tar.gz#md5=12345',
+                 root['package1']['2.0']['releasefile2.tar.gz'].__name__),
             ],
         )
 
@@ -201,23 +205,30 @@ class ListReleaseViewTest(unittest.TestCase):
         from papaye.models import Package, Release, Root, ReleaseFile
 
         # Test packages
-        root = Root()
-        root['package1'] = Package(name='package1')
-        root['package2'] = Package(name='package2')
-        root['package1']['release1'] = Release(name='release1', version='1.0', metadata={})
-        root['package1']['release1'].__parent__ = root['package1']
-        root['package2']['release2'] = Release(name='release2', version='2.0', metadata={})
-        root['package2']['release2'].__parent__ = root['package2']
-        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
-                                                                          content=b'',
-                                                                          md5_digest='12345')
-        root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
-        root['package2']['release2']['releasefile2.tar.gz'] = ReleaseFile(filename='releasefile2.tar.gz',
-                                                                          content=b'',
-                                                                          md5_digest='12345')
-        root['package2']['release2']['releasefile2.tar.gz'].__parent__ = root['package2']['release2']
+        root = factories.RootFactory()
+        package1 = factories.PackageFactory(name='package1', root=root)
+        package2 = factories.PackageFactory(name='package2', root=root)
+        release1 = factories.ReleaseFactory(
+            version='1.0', metadata={}, package=package1,
+        )
+        release2 = factories.ReleaseFactory(
+            version='2.0', metadata={}, package=package2,
+        )
+        factories.ReleaseFileFactory(
+            filename='releasefile1.tar.gz',
+            content=b'',
+            md5_digest='12345',
+            release=release1,
+        )
+        factories.ReleaseFileFactory(
+            filename='releasefile2.tar.gz',
+            content=b'',
+            md5_digest='12345',
+            release=release2,
+        )
 
         view = ListReleaseFileView(root['package1'], self.request)
+
         response = view()
 
         self.assertIsInstance(response, dict)
@@ -226,8 +237,8 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertEqual(
             [(url, release.__name__) for url, release in response['objects']],
             [
-                ('http://example.com/simple/package1/release1/releasefile1.tar.gz#md5=12345',
-                 root['package1']['release1']['releasefile1.tar.gz'].__name__),
+                ('http://example.com/simple/package1/1.0/releasefile1.tar.gz#md5=12345',
+                 root['package1']['1.0']['releasefile1.tar.gz'].__name__),
             ],
         )
 
@@ -240,8 +251,8 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertEqual(
             [(url, release.__name__) for url, release in response['objects']],
             [
-                ('http://example.com/simple/package2/release2/releasefile2.tar.gz#md5=12345',
-                 root['package2']['release2']['releasefile2.tar.gz'].__name__),
+                ('http://example.com/simple/package2/2.0/releasefile2.tar.gz#md5=12345',
+                 root['package2']['2.0']['releasefile2.tar.gz'].__name__),
             ],
         )
 
@@ -254,18 +265,21 @@ class ListReleaseViewTest(unittest.TestCase):
         mock.return_value = "3.0"
 
         # Test packages
-        root = Root()
-        root['package1'] = Package(name='package1')
-        root['package1']['release1'] = Release(name='release1', version='1.0', metadata={})
-        root['package1']['release1'].__parent__ = root['package1']
-        root['package1']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
-                                                                          content=b'',
-                                                                          md5_digest='12345')
-        root['package1']['release1']['releasefile1.tar.gz'].__parent__ = root['package1']['release1']
+        root = factories.RootFactory()
+        package = factories.PackageFactory(name='package1', root=root)
+        release = factories.ReleaseFactory(
+            version='1.0', metadata={}, package=package,
+        )
+        release_file = factories.ReleaseFileFactory(
+            filename='releasefile1.tar.gz',
+            content=b'',
+            md5_digest='12345',
+            release=release,
+        )
 
-        self.request.matchdict['traverse'] = (root['package1'].__name__, root['package1']['release1'].__name__)
+        self.request.matchdict['traverse'] = (package.name, release.name)
         self.request.registry.settings['papaye.proxy'] = 'true'
-        view = ListReleaseFileView(root['package1'], self.request)
+        view = ListReleaseFileView(package, self.request)
         pypi_result = {
             'info': {
                 'name': 'package1',
@@ -291,18 +305,20 @@ class ListReleaseViewTest(unittest.TestCase):
         mock_proxy_response(mock)
 
         # Test packages
-        root = Root()
-        root['pyramid'] = Package(name='pyramid')
-        root['pyramid']['release1'] = Release(name='release1', version='1.0', metadata={})
-        root['pyramid']['release1'].__parent__ = root['pyramid']
-        root['pyramid']['release1']['releasefile1.tar.gz'] = ReleaseFile(filename='releasefile1.tar.gz',
-                                                                         content=b'',
-                                                                         md5_digest='12345')
-        root['pyramid']['release1']['releasefile1.tar.gz'].__parent__ = root['pyramid']['release1']
+        root = factories.RootFactory()
+        package = factories.PackageFactory(name='pyramid', root=root)
+        release = factories.ReleaseFactory(
+            version='1.0', metadata={}, package=package
+        )
+        release_file = factories.ReleaseFileFactory(
+            filename='releasefile1.tar.gz', content=b'',
+            md5_digest='12345',
+            release=release,
+        )
 
-        self.request.matchdict['traverse'] = (root['pyramid'].__name__, root['pyramid']['release1'].__name__)
+        self.request.matchdict['traverse'] = (package.name, release.version)
         self.request.registry.settings['papaye.proxy'] = 'true'
-        view = ListReleaseFileView(root['pyramid'], self.request)
+        view = ListReleaseFileView(package, self.request)
 
         response = view()
 
@@ -320,12 +336,16 @@ class DownloadReleaseViewTest(unittest.TestCase):
         from papaye.views.simple import DownloadReleaseView
         from papaye.models import ReleaseFile, Release, Package
 
-        package = Package(name='package')
-        release = Release(name='1.0', version='1.0', metadata={})
-        release_file = ReleaseFile(filename='releasefile-1.0.tar.gz', content=b'Hello')
+        package = factories.PackageFactory(name='package')
+        release = factories.ReleaseFactory(
+            version='1.0', metadata={}, package=package,
+        )
+        release_file = factories.ReleaseFileFactory(
+            filename='releasefile-1.0.tar.gz',
+            content=b'Hello',
+            release=release,
+        )
         release_file.content_type = 'text/plain'
-        package['1.0'] = release
-        package['1.0']['releasefile-1.0.tar.gz'] = release_file
 
         pypi_response = {
             'info': {
@@ -372,7 +392,7 @@ class UploadReleaseViewTest(unittest.TestCase):
             ":action": "file_upload",
             "md5_digest": "Fake MD5"
         }
-        root = Root()
+        root = factories.RootFactory()
         self.request.root = root
         view = UploadView(root, self.request)
         result = view()
@@ -408,13 +428,18 @@ class UploadReleaseViewTest(unittest.TestCase):
             "name": "my_package",
             ":action": "file_upload",
         }
-        root = Root()
+        root = factories.RootFactory()
 
         # Create initial release
-        package = Package('my_package')
-        package['1.0'] = Release('1.0', '1.0', metadata={})
-        package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
-        root['my-package'] = package
+        package = factories.PackageFactory(name='my_package', root=root)
+        release = factories.ReleaseFactory(
+            version='1.0', metadata={}, package=package,
+        )
+        factories.ReleaseFileFactory(
+            filename='foo.tar.gz',
+            content=b'',
+            release=release,
+        )
 
         view = UploadView(root, self.request)
         result = view()
@@ -439,13 +464,16 @@ class UploadReleaseViewTest(unittest.TestCase):
             "name": "my_package",
             ":action": "file_upload",
         }
-        root = Root()
+        root = factories.RootFactory()
 
         # Create initial release
-        package = Package('my-package')
-        package['1.0'] = Release('1.0', '1.0', metadata={})
-        package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'Fake Content')
-        root['my-package'] = package
+        package = factories.PackageFactory(name='my-package', root=root)
+        release = factories.ReleaseFactory(
+            version='1.0', metadata={}, package=package,
+        )
+        factories.ReleaseFileFactory(
+            filename='foo.tar.gz', content=b'Fake Content', release=release,
+        )
 
         view = UploadView(root, self.request)
         result = view()
@@ -471,38 +499,46 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
     def test_list_release(self):
         from papaye.views.simple import ListReleaseFileByReleaseView
         from papaye.models import Package, Release, ReleaseFile
-        from papaye.factories import repository_root_factory
+        from papaye.factories.root import repository_root_factory
 
         # Initial data
         root = repository_root_factory(self.request)
-        package = Package('my_package')
-        package['1.0'] = Release('1.0', '1.0', metadata={})
-        package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
-        root['my_package'] = package
-        view = ListReleaseFileByReleaseView(package['1.0'], self.request)
+        package = factories.PackageFactory(name='my_package', root=root)
+        release = factories.ReleaseFactory(version='1.0', metadata={}, package=package)
+        release_file = factories.ReleaseFileFactory(
+            filename='foo.tar.gz', release=release
+        )
+        view = ListReleaseFileByReleaseView(release, self.request)
 
         result = view()
 
         self.assertIsInstance(result, dict)
         self.assertIn('objects', result)
         self.assertEqual(list(result['objects']), [('http://example.com/simple/my_package/1.0/foo.tar.gz/',
-                                                    package['1.0']['foo.tar.gz'])])
+                                                    release_file)])
 
     def test_list_release_with_two_release(self):
         from papaye.views.simple import ListReleaseFileByReleaseView
         from papaye.models import Package, Release, ReleaseFile
-        from papaye.factories import repository_root_factory
+        from papaye.factories.root import repository_root_factory
 
         # Initial data
         root = repository_root_factory(self.request)
-        package = Package('my_package')
-        package['1.0'] = Release('1.0', '1.0', metadata={})
-        package['1.0']['foo.tar.gz'] = ReleaseFile('foo.tar.gz', b'')
-        package['2.0'] = Release('2.0', '2.0', metadata={})
-        package['2.0']['foo2.tar.gz'] = ReleaseFile('foo2.tar.gz', b'')
-        root['my_package'] = package
-        view1 = ListReleaseFileByReleaseView(package['1.0'], self.request)
-        view2 = ListReleaseFileByReleaseView(package['2.0'], self.request)
+
+        package = factories.PackageFactory(name='my_package', root=root)
+        release = factories.ReleaseFactory(version='1.0', metadata={}, package=package)
+        release2 = factories.ReleaseFactory(
+            version='2.0', metadata={}, package=package,
+        )
+        release_file = factories.ReleaseFileFactory(
+            filename='foo.tar.gz', release=release,
+        )
+        release_file2 = factories.ReleaseFileFactory(
+            filename='foo2.tar.gz', release=release2,
+        )
+
+        view1 = ListReleaseFileByReleaseView(release, self.request)
+        view2 = ListReleaseFileByReleaseView(release2, self.request)
 
         result1 = view1()
         result2 = view2()
@@ -510,11 +546,11 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
         self.assertIsInstance(result1, dict)
         self.assertIn('objects', result1)
         self.assertEqual(list(result1['objects']), [('http://example.com/simple/my_package/1.0/foo.tar.gz/',
-                                                     package['1.0']['foo.tar.gz'])])
+                                                     release_file)])
         self.assertIsInstance(result2, dict)
         self.assertIn('objects', result2)
         self.assertEqual(list(result2['objects']), [('http://example.com/simple/my_package/2.0/foo2.tar.gz/',
-                                                     package['2.0']['foo2.tar.gz'])])
+                                                     release_file2)])
 
     def test_upload_release_with_spaces(self):
         from papaye.models import Root, Package, Release, ReleaseFile
@@ -534,7 +570,7 @@ class ListReleaseFileByReleaseViewTest(unittest.TestCase):
             ":action": "file_upload",
             "md5_digest": "Fake MD5"
         }
-        root = Root()
+        root = factories.RootFactory()
         self.request.root = root
         view = UploadView(root, self.request)
         result = view()
@@ -565,7 +601,7 @@ def test_login_view():
     request = testing.DummyRequest()
     request.method = 'POST'
     request.POST = {'username': 'user', 'password': 'seekrit'}
-    request.root = Root()
+    request.root = factories.RootFactory()
     request.root['user'] = User('user', 'seekrit')
 
     login_view = LoginView(request)
@@ -587,7 +623,7 @@ def test_login_view_bad_password():
     config.set_authentication_policy(authn_policy)
     request = testing.DummyRequest()
     request.POST = {'username': 'user', 'password': 'seekrit'}
-    request.root = Root()
+    request.root = factories.RootFactory()
     request.root['user'] = User('user', 'bad password')
 
     login_view = LoginView(request)

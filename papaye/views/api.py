@@ -3,7 +3,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.interfaces import ISettings
 
 from papaye.serializers import PackageListSerializer, ReleaseAPISerializer
-from papaye.factories import repository_root_factory
+from papaye.factories.root import repository_root_factory
 from papaye.models import Package, Release, ReleaseFile
 
 packages = Service(

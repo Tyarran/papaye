@@ -125,7 +125,7 @@ class PackageTest(unittest.TestCase):
 
     def test_repository_is_up_to_date(self):
         release = factories.ReleaseFactory(version='1.0')
-        package = release.__parent__
+        package = release.package
 
         self.assertTrue(package.repository_is_up_to_date('1.0'))
         self.assertTrue(package.repository_is_up_to_date('0.9'))
@@ -138,7 +138,7 @@ class PackageTest(unittest.TestCase):
     def test_by_name(self):
         from papaye.models import Package
         package = factories.PackageFactory(
-            name='package1', __parent__=self.root,
+            name='package1', root=self.root,
         )
 
         result = Package.by_name('package1', self.request)
@@ -154,8 +154,8 @@ class PackageTest(unittest.TestCase):
 
     def test_get_last_release(self):
         package = factories.PackageFactory()
-        factories.ReleaseFactory(__parent__=package, version='1.0')
-        factories.ReleaseFactory(__parent__=package, version='2.0')
+        factories.ReleaseFactory(release=package, version='1.0')
+        factories.ReleaseFactory(package=package, version='2.0')
 
         result = package.get_last_release()
 
@@ -163,8 +163,8 @@ class PackageTest(unittest.TestCase):
 
     def test_get_last_release_with_minor(self):
         package = factories.PackageFactory()
-        factories.ReleaseFactory(__parent__=package, version='1.1')
-        factories.ReleaseFactory(__parent__=package, version='1.2')
+        factories.ReleaseFactory(package=package, version='1.1')
+        factories.ReleaseFactory(package=package, version='1.2')
 
         result = package.get_last_release()
 
@@ -172,10 +172,10 @@ class PackageTest(unittest.TestCase):
 
     def test_get_last_release_with_alpha(self):
         package = factories.PackageFactory()
-        factories.ReleaseFactory(__parent__=package, version='1.0')
+        factories.ReleaseFactory(package=package, version='1.0')
         for minor in ['a1', 'a2', 'b1', 'b2', 'rc1']:
             factories.ReleaseFactory(
-                __parent__=package,
+                package=package,
                 version='1.0{}'.format(minor),
             )
 
@@ -192,7 +192,7 @@ class PackageTest(unittest.TestCase):
 
     def test_iter(self):
         release = factories.ReleaseFactory()
-        package = release.__parent__
+        package = release.package
 
         result = iter(package)
 
@@ -201,7 +201,7 @@ class PackageTest(unittest.TestCase):
 
     def test_get_index(self):
         release = factories.ReleaseFactory()
-        package = release.__parent__
+        package = release.package
 
         result = package[0]
 
@@ -209,7 +209,7 @@ class PackageTest(unittest.TestCase):
 
     def test_get_index_bad(self):
         release = factories.ReleaseFactory()
-        package = release.__parent__
+        package = release.package
 
         result = package[1]
 
@@ -217,7 +217,7 @@ class PackageTest(unittest.TestCase):
 
     def test_get_item(self):
         release = factories.ReleaseFactory(version='1.0')
-        package = release.__parent__
+        package = release.package
 
         result = package['1.0']
 
@@ -225,7 +225,7 @@ class PackageTest(unittest.TestCase):
 
     def test_get_item_with_bad_release_name(self):
         release = factories.ReleaseFactory(version='1.0')
-        package = release.__parent__
+        package = release.package
 
         result = package['Bad release name']
 
@@ -269,10 +269,10 @@ class ReleaseTest(unittest.TestCase):
         from papaye.factories.root import repository_root_factory
         from papaye.models import Release
         root = repository_root_factory(self.request)
-        package = factories.PackageFactory(__parent__=root)
-        release = factories.ReleaseFactory(version='1.0', __parent__=package)
+        package = factories.PackageFactory(root=root)
+        release = factories.ReleaseFactory(version='1.0', package=package)
 
-        result = Release.by_packagename(package.__name__, self.request)
+        result = Release.by_packagename(package.name, self.request)
 
         self.assertEqual(result, [release])
 
@@ -301,7 +301,7 @@ class ReleaseTest(unittest.TestCase):
         result = Release.clone(release)
 
         assert result is not release
-        assert result.__name__ == release.__name__
+        assert result.name == release.name
         assert result.version == release.version
         assert result.original_metadata == release.original_metadata
         assert result.metadata == release.metadata
@@ -329,24 +329,10 @@ class ReleaseTest(unittest.TestCase):
         assert result is None
 
 
-# def test_get_index():
-    # from papaye.models import Release, ReleaseFile
-    # release = Release('1.0', '1.0', metadata={})
-    # release_file = ReleaseFile('filename.tar.gz', b'')
-    # release['filename.tar.gz'] = release_file
-
-    # result = release[0]
-
-    # assert result == release_file
-
-
 @pytest.mark.usefixtures('repo_config')
 class ReleaseFileTest(unittest.TestCase):
 
     def setUp(self):
-        # self.request = testing.DummyRequest(matched_route=FakeRoute('simple'))
-        # self.config = testing.setUp(request=self.request)
-        # self.blob_dir = set_database_connection(self.request)
         self.request = get_current_request()
 
     def test__init__(self):
@@ -389,7 +375,6 @@ class ReleaseFileTest(unittest.TestCase):
         assert result.path == release_file.path
         assert result.content_type == release_file.content_type
         assert result.size == release_file.size
-        assert result.__name__ == release_file.__name__
         assert id(result) != id(release_file)
 
 
@@ -435,10 +420,10 @@ class UserTest(unittest.TestCase):
 @pytest.mark.usefixtures('repo_config')
 class SubscriptableModelTest(unittest.TestCase):
 
-    from papaye.models import SubscriptableBaseModel
+    from papaye.models import SubscriptableBaseModel, Model
 
-    class Model(SubscriptableBaseModel):
-        subobjects_attr = 'attribute'
+    class Model(SubscriptableBaseModel, Model):
+        _subobjects_attr = 'attribute'
 
     def test_get(self):
         model_instance = self.Model(name='test')
@@ -465,9 +450,9 @@ class SubscriptableModelTest(unittest.TestCase):
 @pytest.mark.usefixtures('repo_config')
 class BaseModelTest(unittest.TestCase):
 
-    from papaye.models import BaseModel, ClonableModelMixin
+    from papaye.models import Model, ClonableModelMixin
 
-    class TestModel(ClonableModelMixin, BaseModel):
+    class TestModel(ClonableModelMixin, Model):
         def __init__(self, attr1, attr2):
             self.attr1 = attr1
             self.attr2 = attr2
