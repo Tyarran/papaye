@@ -9,7 +9,7 @@ click==6.6                # via pip-tools
 coverage==4.2             # via pytest-cov
 cssselect==1.0.0          # via pyquery
 factory-boy==2.8.1
-Faker==0.7.7              # via factory-boy
+faker==0.7.7              # via factory-boy
 first==2.0.1              # via pip-tools
 lxml==3.7.1               # via pyquery
 pip-tools==1.8.0
@@ -23,6 +23,6 @@ six==1.10.0               # via faker, pip-tools, python-dateutil, webtest
 tox==2.5.0
 virtualenv==15.1.0        # via tox
 waitress==1.0.1           # via webtest
-WebOb==1.7.0              # via webtest
+webob==1.7.0              # via webtest
 webtest==2.0.24
 wheel==0.29.0

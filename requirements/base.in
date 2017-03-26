@@ -4,7 +4,7 @@ cssmin
 docutils
 filemagic
 jsmin
-pyramid >=1.7, <=1.8
+pyramid >=1.8, <=1.9
 pyramid_beaker
 pyramid_debugtoolbar
 pyramid_jinja2

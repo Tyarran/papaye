@@ -1,12 +1,12 @@
 from random import choice
 
-from pyramid.authentication import (
-    BasicAuthAuthenticationPolicy, AuthTktAuthenticationPolicy
-)
+from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.authentication import BasicAuthAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.session import SignedCookieSessionFactory
 
-from papaye.authentification import RouteNameAuthPolicy, RollingAuthPolicy, MultipleAuthPolicy
+from papaye.authentification import RouteNameAuthPolicy, RollingAuthPolicy
+from papaye.authentification import MultipleAuthPolicy
 from papaye.models import User
 
 
@@ -27,7 +27,7 @@ def auth_check_func(username, password, request):
 def includeme(config):
     session_factory = SignedCookieSessionFactory(random_passphrase())
     authtkt_policy = AuthTktAuthenticationPolicy(
-        random_passphrase(), hashalg='sha512'
+        random_passphrase(), hashalg='sha512',
     )
 
     authn_policy = RouteNameAuthPolicy(
