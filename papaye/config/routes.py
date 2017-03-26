@@ -1,5 +1,4 @@
 from papaye.factories.root import (
-    repository_root_factory,
     user_root_factory,
     application_factory,
 )
@@ -13,5 +12,5 @@ def includeme(config):
     config.add_route(
         'simple',
         '/simple*traverse',
-        factory=repository_root_factory
+        factory='papaye.factories.root:repository_root_factory',
     )

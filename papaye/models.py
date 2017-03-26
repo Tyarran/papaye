@@ -33,7 +33,7 @@ from papaye.schemas import Metadata
 
 logger = logging.getLogger(__name__)
 status_type = collections.namedtuple('status', ('local', 'cached', 'distant'))
-SW_VERSION = 7
+SW_VERSION = 8
 STATUS = status_type(*range(0, len(status_type._fields)))
 
 
@@ -438,6 +438,14 @@ class ReleaseFile(ClonableModelMixin, Model):
     @path.setter
     def set_path(self, path):
         self._path = path
+
+    @property
+    def full_path(self):
+        try:
+            return os.path.join(self._packages_directory(), self.path)
+        except:
+            return None
+
 
     @classmethod
     def clone(cls, model_obj):

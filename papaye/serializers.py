@@ -2,7 +2,8 @@ import colander
 import hashlib
 
 
-from papaye.schemas import APIMetadata, String, APIReleaseFiles, APIOtherReleases, NullableMapping
+from papaye.schemas import APIMetadata, String, APIReleaseFiles
+from papaye.schemas import APIOtherReleases, NullableMapping
 
 
 class Serializer(object):
@@ -101,8 +102,7 @@ class ReleaseAPISerializer(Serializer):
             else:
                 data['gravatar_hash'] = None
         release_file = self.get_release_file(release)
-        path = getattr(release_file, 'path', None)
-        data['download_url'] = self.request.static_url(path) if path else None
+        data['download_url'] = self.request.static_url(release_file.full_path)
         data['release_files'] = self.get_release_files(release)
         data['other_releases'] = self.get_other_releases(release)
         return data
