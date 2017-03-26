@@ -65,3 +65,7 @@ readme.*
 papaye/static/.webassets-cache/
 papaye/static/includes/
 papaye/static/gen/
+dist/*
+repository/
+*.blob
+papaye/static/libs/
