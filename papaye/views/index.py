@@ -2,6 +2,7 @@ import json
 import logging
 
 from deform import Form
+from deform.exception import ValidationFailure
 from pyramid.httpexceptions import HTTPMovedPermanently
 from pyramid.response import Response
 from pyramid.security import remember, NO_PERMISSION_REQUIRED
@@ -39,40 +40,29 @@ class LoginView(object):
     def __init__(self, request):
         self.request = request
         self.schema = LoginSchema().bind(request=self.request)
+        self.form = Form(self.schema, buttons=('submit', ))
 
     def __call__(self):
         return getattr(self, self.request.method.lower())()
 
     def get(self):
-        form = Form(self.schema, buttons=('submit', ))
-        return {'form': form, 'request': self.request}
+        return {'form': self.form, 'request': self.request}
 
     def post(self):
+        controls = self.request.POST.items()
         try:
-            data = self.schema.deserialize(self.request.POST)
-            username_matching_users = [
-                user for user in self.request.root
-                if user.username == data['username']
-            ]
-            if len(username_matching_users):
-                user = username_matching_users[0]
-                if user.password_verify(data['password']):
-                    headers = remember(self.request, user.username)
-                    self.request.session['username'] = user.username
-                    csrf_token = self.request.session.get_csrf_token()
-                    headers.append(('X-CSRF-Token', csrf_token))
-                    next_value = self.request.GET.get('next')
-                    location = self.request.route_url('home')
-                    if next_value:
-                        location = location + next_value[1:]
-                    return HTTPMovedPermanently(location=location, headers=headers)
-        except:
-            return Response(
-                json.dumps(None),
-                status_code=401,
-                content_type='application/json',
-                charset='utf-8'
-            )
+            validated = self.form.validate(controls)
+            headers = remember(self.request, validated['username'])
+            self.request.session['username'] = validated['username']
+            csrf_token = self.request.session.get_csrf_token()
+            headers.append(('X-CSRF-Token', csrf_token))
+            next_value = self.request.GET.get('next')
+            location = self.request.route_url('home')
+            if next_value:
+                location = location + next_value[1:]
+            return HTTPMovedPermanently(location=location, headers=headers)
+        except ValidationFailure:
+            return {'form': self.form, 'request': self.request}
 
 
 @view_config(route_name="logout", permission=NO_PERMISSION_REQUIRED)

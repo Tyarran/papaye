@@ -155,3 +155,18 @@ class LoginSchema(colander.MappingSchema):
     password = colander.SchemaNode(
         String(), missing=None, widget=PasswordWidget()
     )
+
+    def validator(self, node, appstruct):
+        request = node.bindings['request']
+        username = appstruct.get('username') or ''
+        password = appstruct.get('password') or ''
+        error = colander.Invalid(node, 'username and/or password invalid')
+        username_matching_users = [
+            user for user in request.root
+            if user.username == username
+        ]
+        if not len(username_matching_users):
+            raise error
+        user = username_matching_users[0]
+        if not user.password_verify(password):
+            raise error
