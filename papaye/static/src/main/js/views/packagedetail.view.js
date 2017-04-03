@@ -21,7 +21,7 @@ const PackageDetailView = Marionette.ItemView.extend({
 
   templateHelpers() {
       return {
-          hashOtherReleases: this.model.get('other_releases').length === 0,
+          hasOtherReleases: this.model.get('other_releases').length >= 1,
       }
   },
 

@@ -82,9 +82,8 @@ class ReleaseAPISerializer(Serializer):
         for release_file in release_files:
             item = {key: getattr(release_file, key, None) for key in keys}
             item['version'] = release.version
-            item['url'] = self.request.resource_url(
-                release_file,
-                route_name='simple',
+            item['url'] = self.request.static_url(
+                release_file.full_path
             )
             result.append(item)
         return result
