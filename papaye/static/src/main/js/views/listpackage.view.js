@@ -42,6 +42,7 @@ const ListPackageView = Marionette.LayoutView.extend({
 
     initialize() {
         this.collection = new PackageSummaryCollection();
+        this.packageSummaries = new PackageSummaryCollection();
         this.grid = new Backgrid.Grid({
             columns: [{
                 name: 'name',
@@ -58,12 +59,13 @@ const ListPackageView = Marionette.LayoutView.extend({
         });
 
         this.listenTo(this.collection, 'update', this.renderGrid);
+        this.listenTo(this.packageSummaries, 'update', this.synchronizeCollection);
     },
 
     onFilterInputKeyUp(event) {
         const filterValue = this.ui.filterInput.val();
 
-        const result = this.collection.filter((packageSummary) => {
+        const result = this.packageSummaries.filter((packageSummary) => {
             return packageSummary.get('name').startsWith(filterValue);
         });
         this.collection.reset(result);
@@ -79,7 +81,11 @@ const ListPackageView = Marionette.LayoutView.extend({
     },
 
     onShow() {
-        this.collection.fetch();
+        this.packageSummaries.fetch();
+    },
+
+    synchronizeCollection(collection) {
+        this.collection.add(collection.models)
     },
 });
 
