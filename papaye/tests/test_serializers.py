@@ -104,7 +104,6 @@ class ReleaseAPISerializerTest(unittest.TestCase):
 
     def test_serialize(self):
         from papaye.serializers import ReleaseAPISerializer
-        from papaye.models import Package, Release, ReleaseFile
         request = get_current_request()
         serializer = ReleaseAPISerializer(request=self.request)
         package = factories.PackageFactory(name='package')
@@ -154,7 +153,7 @@ class ReleaseAPISerializerTest(unittest.TestCase):
             'release_files': [{
                 'size': '0',
                 'filename': release_file.filename,
-                'url': request.resource_url(release_file, route_name='simple'),
+                'url': request.static_url(release_file.path),
                 'version': '1.0',
                 'upload_date': str(release_file.upload_date),
             }],
@@ -171,7 +170,6 @@ class ReleaseAPISerializerTest(unittest.TestCase):
 
     def test_serialize_with_metadata_is_none(self):
         from papaye.serializers import ReleaseAPISerializer
-        from papaye.models import Package, Release, ReleaseFile
         request = get_current_request()
         serializer = ReleaseAPISerializer(request=self.request)
         package = factories.PackageFactory(name='package')
@@ -219,7 +217,7 @@ class ReleaseAPISerializerTest(unittest.TestCase):
             'release_files': [{
                 'size': '9',
                 'filename': 'package-1.0.tar.gz',
-                'url': request.resource_url(release_file, route_name='simple'),
+                'url': request.static_url(release_file.path),
                 'version': '1.0',
                 'upload_date': str(package['1.0']['package-1.0.tar.gz'].upload_date),
             }],
