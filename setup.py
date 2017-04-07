@@ -10,16 +10,18 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 README = open(join(HERE, 'README.rst')).read()
 CHANGES = open(join(HERE, 'CHANGES.txt')).read()
 REQUIREMENTS_DIR = join(HERE, 'requirements')
-REQUIREMENTS_BASE = join(REQUIREMENTS_DIR, 'base.txt')
-REQUIREMENTS_DEV = join(REQUIREMENTS_DIR, 'dev.txt')
+REQUIREMENTS_FILE = join(REQUIREMENTS_DIR, 'requirements.txt')
+REQUIREMENTS_DEV_FILE = join(REQUIREMENTS_DIR, 'requirements-dev.txt')
 VERSION = '0.2.2'
 
 
-dependency_gen = pip.req.parse_requirements(REQUIREMENTS_BASE, session=False)
-INSTALL_REQUIRES = [str(ir.req) for ir in dependency_gen]
+dependency_gen = pip.req.parse_requirements(REQUIREMENTS_FILE, session=False)
+REQUIREMENTS = [str(ir.req) for ir in dependency_gen]
 
-dependency_gen = pip.req.parse_requirements(REQUIREMENTS_DEV, session=False)
-DEV_REQUIRES = [str(ir.req) for ir in dependency_gen]
+dependency_gen = pip.req.parse_requirements(
+    REQUIREMENTS_DEV_FILE, session=False,
+)
+REQUIREMENTS_DEV = [str(ir.req) for ir in dependency_gen]
 
 
 setup(name='papaye',
@@ -42,9 +44,9 @@ setup(name='papaye',
       include_package_data=True,
       zip_safe=False,
       test_suite='papaye',
-      install_requires=INSTALL_REQUIRES,
+      install_requires=REQUIREMENTS,
       extras_require={
-          'dev': DEV_REQUIRES,
+          'dev': REQUIREMENTS_DEV,
       },
       entry_points="""\
       [paste.app_factory]

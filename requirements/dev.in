@@ -1,11 +1,10 @@
-#-r ./base.in
+-r tools.in
 
 pytest
 pytest-cov
-#pytest-sugar
+pytest-sugar
 pyquery
 tox
 webtest
-pip-tools
 wheel
 factory_boy

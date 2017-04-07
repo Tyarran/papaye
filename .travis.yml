@@ -1,15 +1,15 @@
-# Wire up travis
 language: "python"
 
 python:
-  - "3.3"
-  - "3.4"
+  - "3.5"
+  - "3.6"
 
 install:
-  - "pip install -r requirements/dev.txt"
+  - "pip install -r requirements/tools.txt"
+  - "pip-sync requirements/requirements-dev.txt"
 
-script: "py.test"
+script: "tox"
 
 notifications:
   email:
-    - "commande.romain@gmail.com"
+    - "commande.romain+papaye@gmail.com"
