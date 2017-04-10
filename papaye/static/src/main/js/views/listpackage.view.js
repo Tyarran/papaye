@@ -26,7 +26,7 @@ const ListPackageView = Marionette.LayoutView.extend({
 
     ui: {
         listPackage: '.list-placeholder',
-        resetFilterBtn: 'span.btn.reset-filter',
+        resetFilterBtn: '.reset-filter',
         filterInput: 'input.filter',
         packageCount: '.package-count'
     },
@@ -77,7 +77,8 @@ const ListPackageView = Marionette.LayoutView.extend({
     },
 
     resetFilterBtnClick() {
-        this.ui.filterInput.empty();
+        this.ui.filterInput.val(null);
+        this.collection.reset(this.packageSummaries.models);
     },
 
     onShow() {
