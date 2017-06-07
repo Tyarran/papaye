@@ -29,6 +29,7 @@ from papaye.config.utils import SettingsReader
 from papaye.evolve.managers import PapayeEvolutionManager
 from papaye.factories.root import user_root_factory, repository_root_factory
 from papaye.schemas import Metadata
+from papaye.serializers import ReleaseAPISerializer, PackageListSerializer
 
 
 logger = logging.getLogger(__name__)
@@ -298,6 +299,10 @@ class Package(SubscriptableMixin, ClonableModelMixin, Model):
         else:
             return {}
 
+    def __json__(self, request):
+        serializer = PackageListSerializer()
+        return serializer.serialize(self)
+
 
 class Release(SubscriptableMixin, ClonableModelMixin, Model):
     _subobjects_attr = 'release_files'
@@ -315,8 +320,7 @@ class Release(SubscriptableMixin, ClonableModelMixin, Model):
             self.metadata = schema.serialize(self.original_metadata)
             self.metadata = schema.deserialize(self.metadata)
         super().__init__(
-            name=version,
-            metadata=metadata,
+            name=version, metadata=metadata,
             deserialize_metadata=True,
             package=package,
             **kwargs,
@@ -355,6 +359,9 @@ class Release(SubscriptableMixin, ClonableModelMixin, Model):
             root = repository_root_factory(request)
         if package_name in [pkg.__name__ for pkg in root]:
             return root[package_name].get(release, None)
+
+    def __json__(self, request):
+        return ReleaseAPISerializer(request).serialize(self)
 
 
 class ReleaseFile(ClonableModelMixin, Model):

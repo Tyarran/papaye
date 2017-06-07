@@ -15,6 +15,10 @@ def main(global_config, **settings):
     config.include('papaye.config.routes')
     config.include('papaye.config.views')
     config.include('papaye.config.startup')
+    config.add_renderer(
+        name='json_api_compat',
+        factory='papaye.views.api.compat.renderers.CompatAPIRendererFactory'
+    )
     config.commit()
     config.add_tween('papaye.tweens.LoginRequiredTweenFactory')
     config.scan(ignore='papaye.tests')

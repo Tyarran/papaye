@@ -57,10 +57,10 @@ def create_repository(nb_release_file):
 
 
 def test_get_packages(request_factory):
-    from papaye.views.api import list_packages
+    from papaye.views.api.compat.api import list_packages
     request = request_factory(settings={})
     root = factories.RootFactory()
-    release = factories.ReleaseFactory(
+    release1 = factories.ReleaseFactory(
         version='1.0',
         metadata={
             'summary': 'The package 1',
@@ -69,7 +69,7 @@ def test_get_packages(request_factory):
         package__name='package1',
         package__root=root,
     )
-    factories.ReleaseFactory(
+    release2 = factories.ReleaseFactory(
         version='1.0',
         metadata={
             'summary': 'The package 2',
@@ -78,251 +78,89 @@ def test_get_packages(request_factory):
         package__name='package2',
         package__root=root,
     )
-    expected = [{
-        'name': 'package1',
-        'summary': 'The package 1',
-    }, {
-        'name': 'package2',
-        'summary': 'The package 2',
-    }, ]
+    expected = [
+        release1.package,
+        release2.package,
+    ]
     request.context = root
 
     result = list_packages(request)
 
-    assert isinstance(result, dict) is True
-    assert 'result' in result
-    assert isinstance(result['result'], list) is True
-    assert 'count' in result
-    assert result['count'] == 2
-    assert len(result['result']) == 2
-    assert isinstance(result['result'][0], dict) is True
-    assert [dict(element) for element in result['result']] == expected
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert result == expected
 
 
-def test_get_packages_with_no_package_in_database(request_factory):
-    from papaye.views.api import list_packages
+def test_get_packages_without_package_in_database(request_factory):
+    from papaye.views.api.compat.api import list_packages
     request = request_factory(settings={})
     root = factories.RootFactory()
     request.context = root
 
     result = list_packages(request)
 
-    assert isinstance(result, dict) is True
-    assert 'result' in result
-    assert isinstance(result['result'], list) is True
-    assert 'count' in result
-    assert result['count'] == 0
-    assert len(result['result']) == 0
-    assert result['result'] == []
+    assert isinstance(result, list)
+    assert result == []
 
 
 def test_get_package(repo_config):
-    from papaye.views.api import get_package
+    from papaye.views.api.compat.api import get_package
+    from papaye.models import Release
     request = get_current_request()
     root, packages = create_repository(2)
-    request.context = root
-    request.matchdict = {'package_name': packages[0].name}
+    request.context = packages[0]
 
     result = get_package(request)
 
-    assert isinstance(result, dict) is True
-    assert result['name'] == packages[0].name
-    assert 'metadata' in result
-
-
-def test_get_package_unknown(request_factory):
-    from papaye.views.api import get_package
-    from papaye.models import Root
-    request = request_factory(settings={})
-    root = factories.RootFactory()
-    request.context = root
-    request.matchdict = {'package_name': 'package1'}
-
-    result = get_package(request)
-
-    assert isinstance(result, HTTPNotFound) is True
+    assert isinstance(result, Release)
+    assert result.package.name == packages[0].name
 
 
 def test_get_package_by_version():
-    from papaye.views.api import get_package_by_version
+    from papaye.views.api.compat.api import get_package_by_version
+    from papaye.models import Release
     request = get_current_request()
     root, packages = create_repository(2)
     request.context = root
-    request.matchdict = {'package_name': packages[0].name, 'version': '1.0'}
-
-    result = get_package_by_version(request)
-
-    assert isinstance(result, dict) is True
-
-
-def test_get_package_by_version_with_unknown_package(request_factory,
-                                                     config_factory):
-    from papaye.views.api import get_package_by_version
-    request = get_current_request()
-    root, packages = create_repository(2)
-    request.context = root
-    request.matchdict = {
-        'package_name': 'package'.format(len(packages) + 1),
-        'version': '1.0'
+    request.validated = {
+        'path': {
+            'package_name': packages[0].name,
+            'version': packages[0]['1.0'].version,
+        }
     }
 
     result = get_package_by_version(request)
 
-    assert isinstance(result, HTTPNotFound) is True
+    assert isinstance(result, Release)
 
 
-def test_get_package_by_version_with_unknown_release(request_factory):
-    from papaye.views.api import get_package_by_version
-    request = request_factory(settings={})
+def test_get_package_by_version_with_unknown_package(request_factory,
+                                                     config_factory):
+    from papaye.views.api.compat.api import get_package_by_version
+    request = get_current_request()
     root, packages = create_repository(2)
     request.context = root
-    request.matchdict = {'package_name': packages[0].name, 'version': '2.0'}
+    request.validated = {
+        'path': {
+            'package_name': 'package'.format(len(packages) + 1),
+            'version': '1.0'
+        }
+    }
 
     result = get_package_by_version(request)
 
-    assert isinstance(result, HTTPNotFound) is True
-
-
-def test_remove_package(request_factory):
-    from papaye.views.api import remove_package
-    request = request_factory(settings={})
-    root, packages = create_repository(1)
-    request.context = root
-    request.root = root
-    request.matchdict = {'package_name': packages[0].name}
-
-    result = remove_package(request)
-
-    assert isinstance(result, dict)
-    assert 'success' in result
-    assert result['success']
-    assert 'package1' not in root
-
-
-def test_remove_package_not_existing(request_factory):
-    from papaye.views.api import remove_package
-    request = request_factory(settings={})
-    root = factories.RootFactory()
-    request.context = root
-    request.root = root
-    request.matchdict = {'package_name': 'package1'}
-
-    result = remove_package(request)
-
     assert isinstance(result, HTTPNotFound)
 
 
-def test_remove_release(request_factory):
-    from papaye.views.api import remove_release
+def test_get_package_by_version_with_unknown_release(request_factory):
+    from papaye.views.api.compat.api import get_package_by_version
     request = request_factory(settings={})
-    root, packages = create_repository(1)
+    root, packages = create_repository(2)
     request.context = root
-    request.root = root
-    request.matchdict = {'package_name': packages[0].name, 'version': '1.0'}
+    request.validated = {
+        'path': {'package_name': packages[0].name, 'version': '2.0'}
+    }
 
-    result = remove_release(request)
-
-    assert isinstance(result, dict)
-    assert 'success' in result
-    assert result['success']
-    assert packages[0].name in [pkg.__name__ for pkg in root]
-    assert '1.0' not in [rel.__name__ for rel in root[packages[0].name]]
-
-
-def test_remove_release_not_existing_package(request_factory):
-    from papaye.views.api import remove_release
-    request = request_factory(settings={})
-    root = factories.RootFactory()
-    request.context = root
-    request.root = root
-    request.matchdict = {'package_name': 'package1', 'version': '1.0'}
-
-    result = remove_release(request)
-
-    assert isinstance(result, HTTPNotFound)
-
-
-def test_remove_release_not_existing_release(request_factory):
-    from papaye.views.api import remove_release
-    request = request_factory(settings={})
-    root, packages = create_repository(1)
-    request.context = root
-    request.root = root
-    request.matchdict = {'package_name': packages[0].name, 'version': '10.0'}
-
-    result = remove_release(request)
-
-    assert isinstance(result, HTTPNotFound)
-
-
-def rest_remove_releasefile(request_factory):
-    from papaye.views.api import remove_releasefile
-    from papaye.models import Package, Root, Release, ReleaseFile
-    request = request_factory(settings={})
-    root = Root()
-    root['package1'] = Package(name='package1')
-    root['package1']['1.0'] = Release('1.0', '1.0', {
-        'summary': 'The package 1',
-        'description': 'A description',
-    })
-    root['package1']['1.0']['package1-1.0.tar.gz'] = ReleaseFile(
-        'package1-1.0.tar.gz', b''
-    )
-    request.context = root
-    request.root = root
-    request.matchdict = {'package_name': 'package1', 'version': '1.0',
-                         'filename': 'package1-1.0.tar.gz'}
-
-    result = remove_releasefile(request)
-
-    assert isinstance(result, dict)
-    assert 'success' in result
-    assert result['success']
-    assert 'package1' in [pkg.__name__ for pkg in root]
-    assert len(list(root['package1'])) == 1
-    assert len(list(root['package1']['1.0'])) == 0
-
-
-def test_remove_releasefile_not_existing_package(request_factory):
-    from papaye.views.api import remove_releasefile
-    request = request_factory(settings={})
-    root = factories.ReleaseFactory()
-    request.context = root
-    request.root = root
-    request.matchdict = {'package_name': 'package1',
-                         'version': '1.0',
-                         'filename': 'package1-1.0.tar.gz'}
-
-    result = remove_releasefile(request)
-
-    assert isinstance(result, HTTPNotFound)
-
-
-def test_remove_releasefile_not_existing_release(request_factory):
-    from papaye.views.api import remove_releasefile
-    request = request_factory(settings={})
-    root, packages = create_repository(1)
-    request.context = root
-    request.root = root
-    request.matchdict = {'package_name': 'package1',
-                         'version': '10.0',
-                         'filename': 'package1-1.0.tar.gz'}
-
-    result = remove_releasefile(request)
-
-    assert isinstance(result, HTTPNotFound)
-
-
-def test_remove_releasefile_not_existing_releasefile(request_factory):
-    from papaye.views.api import remove_releasefile
-    request = request_factory(settings={})
-    root, packages = create_repository(1)
-    request.context = root
-    request.root = root
-    request.matchdict = {'package_name': 'package1',
-                         'version': '1.0',
-                         'filename': 'package1-1.0.tar.gz'}
-
-    result = remove_releasefile(request)
+    result = get_package_by_version(request)
 
     assert isinstance(result, HTTPNotFound)
