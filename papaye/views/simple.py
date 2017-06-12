@@ -136,7 +136,7 @@ class ListReleaseFileByReleaseView(BaseView):
 class DownloadReleaseView(BaseView):
 
     def __call__(self):
-        url = self.request.static_url(self.context.path)
+        url = self.request.static_url(self.context.full_path)
         response = HTTPTemporaryRedirect(location=url)
         return response
 
