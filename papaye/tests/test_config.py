@@ -87,7 +87,7 @@ class ConfigTest(unittest.TestCase):
         self.assertRaises(ConfigurationError, check_database_config, self.config)
 
 
-class TestScheduler(object):
+class SchedulerTest(object):
 
     def __init__(self, *args, **kwargs):
         pass
@@ -121,7 +121,7 @@ def test_start_scheduler(mock):
     config = Configurator()
     config.registry.settings = {
         'papaye.cache': 'true',
-        'papaye.scheduler': 'papaye.tests.test_config:TestScheduler',
+        'papaye.scheduler': 'papaye.tests.test_config:SchedulerTest',
     }
     config.add_directive('settings_reader', lambda c: SettingsReader(c))
 
@@ -129,7 +129,7 @@ def test_start_scheduler(mock):
 
     get_current_request()
 
-    assert isinstance(mock.call_args[0][0], TestScheduler)
+    assert isinstance(mock.call_args[0][0], SchedulerTest)
 
 
 @mock.patch('papaye.tasks.TaskRegistry.register_scheduler')
