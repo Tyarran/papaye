@@ -91,27 +91,52 @@ class ListPackagesView(BaseView):
     # permission='install'
 )
 class ListReleaseFileView(BaseView):
+    _repository = None
+
+    def __init__(self, context, request):
+        super().__init__(context, request)
+        self.proxy_instance = PyPiProxy()
+        self.stop = hasattr(self, 'stop') and self.stop
+
+    @property
+    def repository(self):
+        if self._repository is None:
+            if self.stop:
+                self._repository = self.context
+            else:
+                self._repository = self.proxy_instance.merged_repository(
+                    self.context
+                )
+        return self._repository
 
     def __call__(self):
         package = self.context
         root = self.context
-        proxy = PyPiProxy()
-        stop = hasattr(self, 'stop') and self.stop
-        repository = package.__parent__ if stop else proxy.merged_repository(package)
-        if repository is not root:
-            repository.name = root.name
-        rfiles = [rfile for rel in repository[package.__name__] for rfile in rel]
-        context = {'objects': ((self.request.resource_url(
-            rfile,
-            route_name='simple'
-        )[:-1] + "#md5={}".format(rfile.md5_digest), rfile) for rfile in rfiles)}
+        if self.repository is not root:
+            self.repository.name = root.name
+        rfiles = [
+            rfile for rel in self.repository[package.__name__]
+            for rfile in rel
+        ]
+        context = {
+            'objects': (self.format_release_file(rfile) for rfile in rfiles)
+        }
         transaction.abort()
         if len(rfiles):
             return context
-        elif stop:
+        elif self.stop:
             return HTTPNotFound()
         else:
             return not_found(self.request)
+
+    def format_release_file(self, release_file):
+        if hasattr(release_file, 'pypi_url'):
+            return release_file.pypi_url, release_file
+        else:
+            return self.request.resource_url(
+                release_file,
+                route_name='simple'
+            )[:-1] + "#md5={}".format(release_file.md5_digest), release_file
 
 
 @view_config(
