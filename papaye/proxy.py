@@ -89,7 +89,7 @@ class PyPiProxy:
         if package_name:
             info = self.get_remote_informations(self.pypi_url.format(package_name))
             package_root = Root('repository')
-            package = Package(info['info']['name'])
+            package = Package(package_name)
             package.root = package_root
             package_root[package.name] = package
             remote_releases = info['releases'].keys() if not release_name else [release_name, ]

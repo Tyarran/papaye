@@ -11,7 +11,9 @@ from pyramid.httpexceptions import (
 )
 from pyramid.response import Response
 from pyramid.security import forget
-from pyramid.view import view_config, notfound_view_config, forbidden_view_config
+from pyramid.view import (
+    view_config, notfound_view_config, forbidden_view_config
+)
 
 from papaye.models import ReleaseFile, Package, Release, Root, STATUS
 from papaye.proxy import PyPiProxy
@@ -102,7 +104,7 @@ class ListReleaseFileView(BaseView):
     def repository(self):
         if self._repository is None:
             if self.stop:
-                self._repository = self.context
+                self._repository = self.context.root
             else:
                 self._repository = self.proxy_instance.merged_repository(
                     self.context
@@ -115,7 +117,7 @@ class ListReleaseFileView(BaseView):
         if self.repository is not root:
             self.repository.name = root.name
         rfiles = [
-            rfile for rel in self.repository[package.__name__]
+            rfile for rel in self.repository[package.name]
             for rfile in rel
         ]
         context = {
