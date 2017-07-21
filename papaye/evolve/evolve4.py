@@ -2,9 +2,9 @@ from papaye.evolve.managers import load_model, context_from_root
 
 
 @load_model('papaye.evolve.models.snapshot1')
-def evolve(root):
+def evolve(root, config=None):
     context = context_from_root(root)
-    repository = context['repository']
+    repository = context.get('repository', tuple())
 
     for package_name in repository:
         package = repository[package_name]

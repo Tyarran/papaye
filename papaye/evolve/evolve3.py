@@ -142,9 +142,9 @@ class APIMetadata(colander.MappingSchema):
 
 
 @load_model('papaye.evolve.models.snapshot1')
-def evolve(root):
+def evolve(root, config=None):
     context = context_from_root(root)
-    repository = context['repository']
+    repository = context.get('repository', tuple())
     schema = Metadata(typ=NullableMapping(), default=None)
 
     for package_name in repository:

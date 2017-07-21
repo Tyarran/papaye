@@ -25,7 +25,10 @@ def database_already_initialized(dbconn):
     zodb_root = get_database_root(dbconn)
     if not '{}_root'.format(APP_NAME) in zodb_root:
         return False
-    if not len([user for user in zodb_root['{}_root'.format(APP_NAME)]['user'] if 'group:admin' in user.groups]):
+    if not len([
+        user for user in zodb_root['{}_root'.format(APP_NAME)]['user']
+        if 'group:admin' in user.groups
+    ]):
         return False
     return True
 
@@ -34,11 +37,10 @@ def admin_already_exists(dbconn, username):
     zodb_root = get_database_root(dbconn)
     if not '{}_root'.format(APP_NAME) in zodb_root:
         return False
-    users = [user.username for user in zodb_root['{}_root'.format(APP_NAME)]['user'] if user.username == username]
-    if users:
-        return True
-    else:
-        return False
+    return any(
+        user.username for user in zodb_root['{}_root'.format(APP_NAME)]['user']
+        if user.username == username
+    )
 
 
 def create_app_root(dbconn):

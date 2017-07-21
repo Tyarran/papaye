@@ -8,7 +8,7 @@ __doc__ = ''.join('Data migration. Get model \'__parent__\' '
 @load_model('papaye.evolve.models.snapshot2')
 def evolve(root, config):
     context = context_from_root(root)
-    repository = context['repository']
+    repository = context.get('repository', tuple())
     for package in repository:
         package.root = package.__parent__
         delattr(package, '__parent__')

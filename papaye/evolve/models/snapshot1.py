@@ -49,7 +49,15 @@ def get_connection(settings):
     return db.open()
 
 
-class Root(OOBTree):
+class SnapshotModel(object):
+
+    def __setstate__(self, state):
+        if state is None:
+            state = {}
+        self.__dict__ = state
+
+
+class Root(SnapshotModel, OOBTree):
     __name__ = __parent__ = None
 
     def __acl__(self):

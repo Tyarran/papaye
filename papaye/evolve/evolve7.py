@@ -27,7 +27,7 @@ def evolve(root, config):
         raise EvolveError('The repository directory is already exists. '
                           'Please remove them or choose another directory '
                           'in your settings file ({})'.format(
-                              config.registry._settings.__file__
+                              config.registry._settings.get('__file__', None)
                           ))
     tmpdir = tempfile.mkdtemp('packages_directory')
     for package in context['repository']:

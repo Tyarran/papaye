@@ -13,7 +13,6 @@ import requests
 import uuid
 
 from BTrees.OOBTree import OOBTree
-from ZODB.blob import Blob
 from beaker.cache import cache_region
 from persistent import Persistent
 from pkg_resources import parse_version
@@ -108,10 +107,7 @@ class ClonableModelMixin(object):
         """Return a clone on given object"""
         clone = cls.__new__(cls)
         for key, value in model_obj.__dict__.items():
-            if isinstance(value, Blob):
-                setattr(clone, key, Blob(value.open().read()))
-            else:
-                setattr(clone, key, copy.copy(value))
+            setattr(clone, key, copy.copy(value))
         return clone
 
 

@@ -4,7 +4,6 @@ import logging
 import pickle
 import requests
 
-from ZODB.blob import Blob
 from beaker.cache import cache_region
 from requests.exceptions import ConnectionError
 
