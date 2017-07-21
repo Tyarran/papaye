@@ -5,8 +5,7 @@ from pyramid.authentication import BasicAuthAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.session import SignedCookieSessionFactory
 
-from papaye.authentification import RouteNameAuthPolicy, RollingAuthPolicy
-from papaye.authentification import MultipleAuthPolicy
+from papaye.authentification import RouteNameAuthPolicy
 from papaye.models import User
 
 
