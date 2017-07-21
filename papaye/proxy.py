@@ -17,9 +17,10 @@ def clone(package):
     """Clone a package and his subobjects"""
     clone = pickle.loads(pickle.dumps(package))
     for release in clone:
-        for rfile in release:
-            # rfile.content = Blob(package[release.__name__][rfile.__name__].content.open().read())
-            assert hasattr(release, 'metadata')
+        if not hasattr(release, 'metadata'):
+            raise AttributeError(
+                'Release object must contains a attribute named "metadata"'
+            )
     return clone
 
 
@@ -97,7 +98,8 @@ class PyPiProxy:
                 release = Release(
                     remote_release,
                     metadata=info['info'],
-                    deserialize_metadata=metadata
+                    deserialize_metadata=metadata,
+                    package=package,
                 )
                 package[remote_release] = release
 
@@ -105,11 +107,11 @@ class PyPiProxy:
                     filename = remote_release_file['filename']
                     md5_digest = remote_release_file['md5_digest']
                     if not content:
-                        release_file = ReleaseFile(filename, b'', md5_digest)
+                        release_file = ReleaseFile(filename, b'', md5_digest, release=release)
                     else:
                         content_file = download_file(filename, remote_release_file['url'], md5_digest)
                         if content_file is not None:
-                            release_file = ReleaseFile(filename, content_file, md5_digest)
+                            release_file = ReleaseFile(filename, content_file, md5_digest, release=release)
                         else:
                             continue
 

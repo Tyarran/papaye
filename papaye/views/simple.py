@@ -121,7 +121,7 @@ class ListReleaseFileView(BaseView):
             for rfile in rel
         ]
         context = {
-            'objects': (self.format_release_file(rfile) for rfile in rfiles)
+            'objects': [self.format_release_file(rfile) for rfile in rfiles]
         }
         transaction.abort()
         if len(rfiles):
@@ -132,13 +132,10 @@ class ListReleaseFileView(BaseView):
             return not_found(self.request)
 
     def format_release_file(self, release_file):
-        if hasattr(release_file, 'pypi_url'):
-            return release_file.pypi_url, release_file
-        else:
-            return self.request.resource_url(
-                release_file,
-                route_name='simple'
-            )[:-1] + "#md5={}".format(release_file.md5_digest), release_file
+        return self.request.resource_url(
+            release_file,
+            route_name='simple'
+        )[:-1] + "#md5={}".format(release_file.md5_digest), release_file
 
 
 @view_config(
