@@ -24,7 +24,6 @@ from pyramid_zodbconn import db_from_uri
 from pytz import utc
 from requests.exceptions import ConnectionError
 
-from papaye.config.utils import SettingsReader
 from papaye.evolve.managers import PapayeEvolutionManager
 from papaye.factories.root import user_root_factory, repository_root_factory
 from papaye.schemas import Metadata
@@ -407,10 +406,15 @@ class ReleaseFile(ClonableModelMixin, Model):
             self.content_type = m.id_buffer(buf.read())
 
     def _packages_directory(self):
-        settings = get_current_registry().getUtility(ISettings)
-        packages_directory = SettingsReader(settings).read_str('papaye.packages_directory')
+        settings = get_current_registry().getUtility(
+            ISettings,
+            name='settings'
+        )
+        packages_directory = settings.get('papaye').get('packages_directory')
         if not packages_directory:
-            raise ConfigurationError('packages_directory must be correcly configured')
+            raise ConfigurationError(
+                'packages_directory must be correcly configured'
+            )
         return packages_directory
 
     def set_content(self, content):

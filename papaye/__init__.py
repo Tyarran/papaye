@@ -1,6 +1,7 @@
 from colander import Invalid
 from pyramid.config import Configurator, ConfigurationError
 from pyramid_beaker import set_cache_regions_from_settings
+from pyramid.interfaces import ISettings
 
 from papaye.config.utils import SettingsReader
 from papaye.config.schemas.settings import Settings
@@ -26,6 +27,11 @@ def main(global_config, **settings):
     set_cache_regions_from_settings(settings)
     deserialized_settings = deserialize(settings)
     config = Configurator(settings=settings)
+    config.registry.registerUtility(
+        deserialized_settings,
+        ISettings,
+        name='settings'
+    )
     config.add_directive('settings_reader', lambda c: SettingsReader(c))
     config.reader = SettingsReader(config)
     config.include('papaye.config.auth')
