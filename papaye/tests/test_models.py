@@ -22,30 +22,6 @@ from papaye.tests.tools import (
 from papaye.factories import models as factories
 
 
-@pytest.fixture(autouse=True)
-def repo_config(request):
-    tmpdir = tempfile.mkdtemp('test_repo')
-    settings = {
-        'papaye.proxy': False,
-        'papaye.packages_directory': tmpdir,
-        'pyramid.incluces': 'pyramid_zodbconn',
-    }
-    req = testing.DummyRequest()
-    set_database_connection(req)
-    config = testing.setUp(settings=settings, request=req)
-    config.add_route(
-        'simple',
-        '/simple/*traverse',
-        factory='papaye.factories.root:repository_root_factory'
-    )
-
-    def clean_tmp_dir():
-        if os.path.exists(tmpdir):
-            shutil.rmtree(tmpdir)
-
-    request.addfinalizer(clean_tmp_dir)
-
-
 class TestRoot(unittest.TestCase):
 
     def test_iter(self):
@@ -66,7 +42,6 @@ class TestRoot(unittest.TestCase):
         assert result == package
 
 
-@pytest.mark.usefixtures('repo_config')
 class PackageTest(unittest.TestCase):
 
     def setUp(self):
@@ -232,7 +207,6 @@ class PackageTest(unittest.TestCase):
         assert result is None
 
 
-@pytest.mark.usefixtures('repo_config')
 class ReleaseTest(unittest.TestCase):
 
     def setUp(self):
@@ -329,7 +303,6 @@ class ReleaseTest(unittest.TestCase):
         assert result is None
 
 
-@pytest.mark.usefixtures('repo_config')
 class ReleaseFileTest(unittest.TestCase):
 
     def setUp(self):
@@ -378,7 +351,6 @@ class ReleaseFileTest(unittest.TestCase):
         assert id(result) != id(release_file)
 
 
-@pytest.mark.usefixtures('repo_config')
 class UserTest(unittest.TestCase):
 
     def setUp(self):
@@ -417,7 +389,6 @@ class UserTest(unittest.TestCase):
         self.assertIsNone(result)
 
 
-@pytest.mark.usefixtures('repo_config')
 class SubscriptableModelTest(unittest.TestCase):
 
     from papaye.models import SubscriptableBaseModel, Model
@@ -447,7 +418,6 @@ class SubscriptableModelTest(unittest.TestCase):
         self.assertIsNone(result)
 
 
-@pytest.mark.usefixtures('repo_config')
 class BaseModelTest(unittest.TestCase):
 
     from papaye.models import Model, ClonableModelMixin

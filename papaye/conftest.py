@@ -6,6 +6,8 @@ import shutil
 from pyramid import testing
 from pyramid.interfaces import ISettings
 
+from papaye.tests.tools import set_database_connection
+
 
 @pytest.fixture
 def env():
@@ -81,6 +83,7 @@ def repo_configuration(request, request_factory, tmpdir, config_factory):
         'pyramid.incluces': 'pyramid_zodbconn',
     }
     req = request_factory()
+    set_database_connection(req)
     config = config_factory(settings=settings, request=req)
     deserialized_settings = {
         'papaye': {
