@@ -11,35 +11,6 @@ from papaye.tests.tools import set_database_connection
 from papaye.factories import models as factories
 
 
-@pytest.fixture(autouse=True)
-def repo_config(request):
-    tmpdir = tempfile.mkdtemp('test_repo')
-    settings = {
-        'papaye.proxy': False,
-        'papaye.packages_directory': tmpdir,
-        'pyramid.incluces': 'pyramid_zodbconn',
-    }
-    req = testing.DummyRequest()
-    set_database_connection(req)
-    config = testing.setUp(settings=settings, request=req)
-    config.add_route(
-        'simple',
-        '/simple/*traverse',
-        factory='papaye.factories.root:repository_root_factory'
-    )
-    config.add_static_view(
-        'repo',
-        tmpdir,
-        cache_max_age=3600,
-    )
-
-    def clean_tmp_dir():
-        if os.path.exists(tmpdir):
-            shutil.rmtree(tmpdir)
-
-    request.addfinalizer(clean_tmp_dir)
-
-
 def create_repository(nb_release_file):
     root = factories.RootFactory()
     packages = []
@@ -103,7 +74,7 @@ def test_get_packages_without_package_in_database(request_factory):
     assert result == []
 
 
-def test_get_package(repo_config):
+def test_get_package():
     from papaye.views.api.compat.api import get_package
     from papaye.models import Release
     request = get_current_request()

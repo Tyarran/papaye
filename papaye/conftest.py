@@ -4,6 +4,7 @@ import pytest
 import shutil
 
 from pyramid import testing
+from pyramid.interfaces import ISettings
 
 
 @pytest.fixture
@@ -81,6 +82,23 @@ def repo_configuration(request, request_factory, tmpdir, config_factory):
     }
     req = request_factory()
     config = config_factory(settings=settings, request=req)
+    deserialized_settings = {
+        'papaye': {
+            'packages_directory': tmpdir.strpath,
+            'proxy': False,
+        }
+    }
+    config.registry.registerUtility(
+        deserialized_settings,
+        ISettings,
+        name='settings'
+    )
+    config.set_request_property(
+        lambda x: deserialized_settings,
+        'papaye_settings',
+        reify=True
+    )
+
     config.add_route(
         'simple',
         '/simple/*traverse',
