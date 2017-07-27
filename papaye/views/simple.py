@@ -121,7 +121,7 @@ class ListReleaseFileView(BaseView):
             for rfile in rel
         ]
         context = {
-            'objects': [self.format_release_file(rfile) for rfile in rfiles]
+            'objects': (self.format_release_file(rfile) for rfile in rfiles)
         }
         transaction.abort()
         if len(rfiles):

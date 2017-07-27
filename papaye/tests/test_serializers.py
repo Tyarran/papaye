@@ -1,45 +1,10 @@
 import colander
 import unittest
-import pytest
-import tempfile
-import os
-import shutil
 
 from pyramid import testing
 from pyramid.threadlocal import get_current_request
 
 from papaye.factories import models as factories
-from papaye.tests.tools import FakeRoute, disable_cache
-
-
-@pytest.fixture(autouse=True)
-def repo_config(request):
-    tmpdir = tempfile.mkdtemp('test_repo')
-    settings = disable_cache()
-    settings.update({
-        'papaye.proxy': False,
-        'papaye.packages_directory': tmpdir,
-        'pyramid.incluces': 'pyramid_zodbconn',
-    })
-    req = testing.DummyRequest()
-    config = testing.setUp(settings=settings, request=req)
-    config.add_route(
-        'simple',
-        '/simple/*traverse',
-        factory='papaye.factories.root:repository_root_factory'
-    )
-    config.add_static_view(
-        'repo',
-        tmpdir,
-        cache_max_age=3600
-    )
-    config.add_route('home', '/')
-
-    def clean_tmp_dir():
-        if os.path.exists(tmpdir):
-            shutil.rmtree(tmpdir)
-
-    request.addfinalizer(clean_tmp_dir)
 
 
 class DummySerializer(object):

@@ -1,43 +1,12 @@
 import unittest
-import pytest
-import tempfile
-import os
-import shutil
 
 from mock import patch
-from pyramid import testing
 from pyramid.threadlocal import get_current_request
 from requests.exceptions import ConnectionError
 
 from papaye.factories import models as factories
-from papaye.tests.tools import FakeGRequestResponse, disable_cache
-from papaye.tests.tools import mock_proxy_response, remove_blob_dir
-from papaye.tests.tools import set_database_connection
-
-
-@pytest.fixture(autouse=True)
-def repo_config(request):
-    tmpdir = tempfile.mkdtemp('test_repo')
-    settings = disable_cache()
-    settings.update({
-        'papaye.proxy': False,
-        'papaye.packages_directory': tmpdir,
-        'pyramid.incluces': 'pyramid_zodbconn',
-    })
-    req = testing.DummyRequest()
-    set_database_connection(req)
-    config = testing.setUp(settings=settings, request=req)
-    config.add_route(
-        'simple',
-        '/simple/*traverse',
-        factory='papaye.factories.root:repository_root_factory'
-    )
-
-    def clean_tmp_dir():
-        if os.path.exists(tmpdir):
-            shutil.rmtree(tmpdir)
-
-    request.addfinalizer(clean_tmp_dir)
+from papaye.tests.tools import FakeGRequestResponse
+from papaye.tests.tools import mock_proxy_response
 
 
 class ProxyTest(unittest.TestCase):

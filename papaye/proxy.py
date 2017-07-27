@@ -34,16 +34,16 @@ def smart_merge(repository_package, remote_package, root=None):
         existing_releases = list(merged_package.releases.keys())
 
         for release in remote_package:
-            release_name = release.__name__
+            release_name = release.name
             if release_name not in existing_releases:
                 merged_package[release_name] = release
             else:
                 existing_release = merged_package[release_name]
                 existing_release_files = list(merged_package[release_name].release_files.keys())
                 for release_file in release:
-                    if release_file.__name__ not in existing_release_files:
-                        existing_release[release_file.__name__] = release_file
-    root[merged_package.__name__] = merged_package
+                    if release_file.filename not in existing_release_files:
+                        existing_release[release_file.filename] = release_file
+    root[merged_package.name] = merged_package
     return merged_package
 
 
@@ -68,7 +68,7 @@ class PyPiProxy:
         try:
             response = requests.get(self.pypi_simple_url.format(package_name))
             if response.status_code == 200:
-                result = response.url.split('/')[-2] if response.url.endswith('/') else response.url.split('/')[-1]
+                result = json.loads(response.content)['info']['name']
         except ConnectionError:
             pass
         return result

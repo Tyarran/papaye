@@ -6,7 +6,13 @@ import shutil
 from pyramid import testing
 from pyramid.interfaces import ISettings
 
-from papaye.tests.tools import set_database_connection
+from papaye.tests.tools import set_database_connection, disable_cache
+
+
+class FakeRoute():
+
+    def __init__(self, name):
+        self.name = name
 
 
 @pytest.fixture
@@ -77,12 +83,14 @@ def config_factory(*args, **kwargs):
 
 @pytest.fixture
 def repo_configuration(request, request_factory, tmpdir, config_factory):
-    settings = {
+    settings = disable_cache()
+    settings.update({
         'papaye.proxy': False,
         'papaye.packages_directory': tmpdir.strpath,
         'pyramid.incluces': 'pyramid_zodbconn',
-    }
-    req = request_factory()
+    })
+#     req = testing.DummyRequest()
+    req = request_factory(matched_route=FakeRoute('simple'))
     set_database_connection(req)
     config = config_factory(settings=settings, request=req)
     deserialized_settings = {
@@ -101,12 +109,17 @@ def repo_configuration(request, request_factory, tmpdir, config_factory):
         'papaye_settings',
         reify=True
     )
-
+    config.add_static_view(
+        'repo',
+        tmpdir.strpath,
+        cache_max_age=3600
+    )
     config.add_route(
         'simple',
-        '/simple/*traverse',
+        '/simple*traverse',
         factory='papaye.factories.root:repository_root_factory'
     )
+    config.add_route('home', '/')
 
     def clean_tmp_dir():
         if os.path.exists(tmpdir.strpath):

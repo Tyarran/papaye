@@ -2,7 +2,6 @@ import io
 import os
 import pytest
 import shutil
-import shutil
 import tempfile
 import transaction
 import unittest
@@ -16,30 +15,6 @@ from papaye.tests.tools import (
     get_db_connection,
     get_resource,
 )
-
-
-@pytest.fixture(autouse=True)
-def repo_config(request):
-    tmpdir = tempfile.mkdtemp('test_repo')
-    settings = disable_cache()
-    settings.update({
-        'papaye.proxy': False,
-        'papaye.packages_directory': tmpdir,
-        'pyramid.incluces': 'pyramid_zodbconn',
-    })
-    req = testing.DummyRequest()
-    config = testing.setUp(settings=settings, request=req)
-    config.add_route(
-        'simple',
-        '/simple*traverse',
-        factory='papaye.factories.root:repository_root_factory'
-    )
-
-    def clean_tmp_dir():
-        if os.path.exists(tmpdir):
-            shutil.rmtree(tmpdir)
-
-    request.addfinalizer(clean_tmp_dir)
 
 
 class TestDownloadTask(unittest.TestCase):

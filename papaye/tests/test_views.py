@@ -23,38 +23,6 @@ from papaye.tests.tools import mock_proxy_response, set_database_connection
 from papaye.factories import models as factories
 
 
-@pytest.fixture(autouse=True)
-def repo_config(request):
-    tmpdir = tempfile.mkdtemp('test_repo')
-    settings = disable_cache()
-    settings.update({
-        'papaye.proxy': False,
-        'papaye.packages_directory': tmpdir,
-        'pyramid.incluces': 'pyramid_zodbconn',
-        'cache.regions': 'pypi',
-        'cache.enabled': 'false',
-    })
-    req = testing.DummyRequest(matched_route=FakeRoute('simple'))
-    set_database_connection(req)
-    config = testing.setUp(settings=settings, request=req)
-    config.add_route(
-        'simple',
-        '/simple*traverse',
-        factory='papaye.factories.root:repository_root_factory'
-    )
-    config.add_static_view(
-        'repo',
-        tmpdir,
-        cache_max_age=3600
-    )
-
-    def clean_tmp_dir():
-        if os.path.exists(tmpdir):
-            shutil.rmtree(tmpdir)
-
-    request.addfinalizer(clean_tmp_dir)
-
-
 class ListPackageViewTest(unittest.TestCase):
 
     def setUp(self):
