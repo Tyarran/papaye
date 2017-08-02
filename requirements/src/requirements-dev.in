@@ -1,0 +1,15 @@
+-r requirements.in
+
+factory_boy
+mock
+pdbpp
+pip-tools
+pyquery
+pytest
+pytest-cov
+pytest-mock
+pytest-sugar
+setuptools
+tox
+webtest
+wheel
