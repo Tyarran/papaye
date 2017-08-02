@@ -67,7 +67,9 @@ class PyPiProxy:
         try:
             response = requests.get(self.pypi_url.format(package_name))
             if response.status_code == 200:
-                result = json.loads(response.content)['info']['name']
+                result = json.loads(
+                    response.content.decode('utf-8')
+                )['info']['name']
         except ConnectionError:
             pass
         return result
