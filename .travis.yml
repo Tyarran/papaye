@@ -7,7 +7,7 @@ python:
   - "3.6"
 
 install:
-  - "pip install -r requirements/src/tools.txt"
+  - "pip install -r requirements/src/tools.in"
   - "pip-sync requirements/requirements-dev.txt"
 
 script: "tox -e python$TRAVIS_PYTHON_VERSION"
