@@ -59,14 +59,13 @@ def download_file(filename, url, md5_digest):
 
 
 class PyPiProxy:
-    pypi_simple_url = 'https://pypi.python.org/simple/{}/'
     pypi_url = 'https://pypi.python.org/pypi/{}/json'
 
     @cache_region('pypi', 'get_remote_package_name')
     def get_remote_package_name(self, package_name):
         result = None
         try:
-            response = requests.get(self.pypi_simple_url.format(package_name))
+            response = requests.get(self.pypi_url.format(package_name))
             if response.status_code == 200:
                 result = json.loads(response.content)['info']['name']
         except ConnectionError:

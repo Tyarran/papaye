@@ -7,6 +7,7 @@ from papaye.config.utils import SettingsReader
 from papaye.config.schemas.settings import Settings
 
 
+
 def deserialize(settings):
     try:
         settings_to_deserialize = {
