@@ -1,9 +1,9 @@
 -r requirements.in
+-r tools.in
 
 factory_boy
 mock
 pdbpp
-pip-tools
 pyquery
 pytest
 pytest-cov

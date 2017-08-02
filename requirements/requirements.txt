@@ -39,7 +39,7 @@ pytz==2017.2
 pyzmq==16.0.2
 repoze.evolution==0.6
 repoze.lru==0.6           # via pyramid, pyramid-debugtoolbar
-requests==2.18.2
+requests==2.18.3
 simplejson==3.11.1        # via cornice
 six==1.10.0               # via zeo, zodb
 termcolor==1.1.0

@@ -60,7 +60,7 @@ pytz==2017.2
 pyzmq==16.0.2
 repoze.evolution==0.6
 repoze.lru==0.6           # via pyramid, pyramid-debugtoolbar
-requests==2.18.2
+requests==2.18.3
 simplejson==3.11.1        # via cornice
 six==1.10.0               # via faker, mock, pip-tools, python-dateutil, webtest, zeo, zodb
 termcolor==1.1.0
@@ -86,4 +86,5 @@ zope.deprecation==4.2.0   # via deform, pyramid, pyramid-jinja2
 zope.interface==4.4.2     # via btrees, persistent, pyramid, repoze.evolution, transaction, zeo, zodb
 
 # The following packages are considered to be unsafe in a requirements file:
+pip==9.0.1
 setuptools==36.2.7
