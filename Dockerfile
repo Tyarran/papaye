@@ -2,7 +2,7 @@ FROM debian
 
 MAINTAINER Romain Commandé, commande.romain@gmail.com
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y build-essential python3-dev libzmq-dev libxml2-dev libxslt1-dev python3-pip libffi-dev libssl-dev && apt-get clean && apt-get autoclean && apt-get autoremove
+RUN apt-get update && apt-get upgrade -y && apt-get install -y build-essential python3-dev libzmq3-dev libxml2-dev libxslt1-dev python3-pip libffi-dev libssl-dev && apt-get clean && apt-get autoclean && apt-get autoremove
 RUN apt-get install -y python3-pip
 RUN pip3 install -U pip
 RUN pip3 install virtualenv
