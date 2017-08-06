@@ -121,11 +121,14 @@ class PyPiProxy:
             return package_root
         return None
 
-    def merged_repository(self, local_package, release_name=None, metadata=False, root=None):
-        package_name = local_package.__name__
-        remote_repository = self.build_remote_repository(package_name,
-                                                         release_name=release_name,
-                                                         metadata=metadata)
+    def merged_repository(self, local_package, release_name=None,
+                          metadata=False, root=None):
+        package_name = local_package.name
+        remote_repository = self.build_remote_repository(
+            package_name,
+            release_name=release_name,
+            metadata=metadata
+        )
         remote_package = remote_repository[package_name] if remote_repository else None
         if getattr(local_package, 'fake', False) and not remote_repository:
             return None

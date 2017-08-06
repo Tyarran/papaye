@@ -168,11 +168,9 @@ class ListReleaseViewTest(unittest.TestCase):
             ],
         )
 
-    @patch('papaye.models.Package.get_last_remote_version')
-    def test_list_releases_files_with_another_package(self, mock):
+    def test_list_releases_files_with_another_package(self):
         from papaye.views.simple import ListReleaseFileView
         from papaye.models import Package, Release, Root, ReleaseFile
-        mock.side_effect = ('package1', 'package2')
 
         # Test packages
         root = factories.RootFactory()
@@ -198,6 +196,7 @@ class ListReleaseViewTest(unittest.TestCase):
         )
 
         view = ListReleaseFileView(root['package1'], self.request)
+        view.stop = True
 
         response = view()
 
@@ -213,6 +212,7 @@ class ListReleaseViewTest(unittest.TestCase):
         )
 
         view = ListReleaseFileView(root['package2'], self.request)
+        view.stop = True
         response = view()
 
         self.assertIsInstance(response, dict)
@@ -240,7 +240,7 @@ class ListReleaseViewTest(unittest.TestCase):
         release = factories.ReleaseFactory(
             version='1.0', metadata={}, package=package,
         )
-        release_file = factories.ReleaseFileFactory(
+        factories.ReleaseFileFactory(
             filename='releasefile1.tar.gz',
             content=b'',
             md5_digest='12345',
