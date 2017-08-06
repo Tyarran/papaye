@@ -44,7 +44,7 @@ def main(global_config, **settings):
     )
     config.commit()
     config.add_tween('papaye.tweens.LoginRequiredTweenFactory')
-    config.scan(ignore='papaye.tests')
+    config.scan(ignore=['papaye.tests', 'papaye.conftest'])
     config.set_request_property(
         lambda x: deserialized_settings,
         'papaye_settings',
