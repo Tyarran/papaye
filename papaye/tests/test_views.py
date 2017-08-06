@@ -168,9 +168,11 @@ class ListReleaseViewTest(unittest.TestCase):
             ],
         )
 
-    def test_list_releases_files_with_another_package(self):
+    @patch('papaye.models.Package.get_last_remote_version')
+    def test_list_releases_files_with_another_package(self, mock):
         from papaye.views.simple import ListReleaseFileView
         from papaye.models import Package, Release, Root, ReleaseFile
+        mock.side_effect = ('package1', 'package2')
 
         # Test packages
         root = factories.RootFactory()
@@ -203,10 +205,10 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertIn('objects', response)
         self.assertIsInstance(response['objects'], types.GeneratorType)
         self.assertEqual(
-            [(url, release.__name__) for url, release in response['objects']],
+            [(url, release.filename) for url, release in response['objects']],
             [
                 ('http://example.com/simple/package1/1.0/releasefile1.tar.gz#md5=12345',
-                 root['package1']['1.0']['releasefile1.tar.gz'].__name__),
+                 root['package1']['1.0']['releasefile1.tar.gz'].filename),
             ],
         )
 
@@ -217,10 +219,10 @@ class ListReleaseViewTest(unittest.TestCase):
         self.assertIn('objects', response)
         self.assertIsInstance(response['objects'], types.GeneratorType)
         self.assertEqual(
-            [(url, release.__name__) for url, release in response['objects']],
+            [(url, release.filename) for url, release in response['objects']],
             [
                 ('http://example.com/simple/package2/2.0/releasefile2.tar.gz#md5=12345',
-                 root['package2']['2.0']['releasefile2.tar.gz'].__name__),
+                 root['package2']['2.0']['releasefile2.tar.gz'].filename),
             ],
         )
 
