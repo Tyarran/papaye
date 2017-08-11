@@ -20,9 +20,11 @@ from pyramid.config import ConfigurationError
 from pyramid.interfaces import ISettings
 from pyramid.security import Allow, Everyone, Authenticated
 from pyramid.threadlocal import get_current_registry
+from pyramid.threadlocal import get_current_request
 from pyramid_zodbconn import db_from_uri
 from pytz import utc
 from requests.exceptions import ConnectionError
+from zope.component import getGlobalSiteManager
 
 from papaye.evolve.managers import PapayeEvolutionManager
 from papaye.factories.root import user_root_factory, repository_root_factory
@@ -46,8 +48,9 @@ def get_manager(config):
     return manager
 
 
-def format_key(key):
-    return pkg_resources.safe_name(key.lower())
+# def format_key(key):
+#     safe_name = pkg_resources.safe_name(key.lower())
+#     return safe_name.replace('.', '-')
 
 
 def get_connection(settings):
@@ -119,7 +122,7 @@ class SubscriptableMixin(object):
         super().__init__(name, *args, **kwargs)
         self.name = name
         if kwargs.get(self._parent_name) is not None:
-            self.__parent__[format_key(self.__name__)] = self
+            self.__parent__[self.format_key(self.__name__)] = self
 
     @property
     def __name__(self):
@@ -141,7 +144,7 @@ class SubscriptableMixin(object):
             return default
 
     def child(self, subobject):
-        key = format_key(subobject.__name__)
+        key = self.format_key(subobject.__name__)
         self._subobjects[key] = subobject
         self._subobjects[key].__parent__ = self
         return self
@@ -162,11 +165,14 @@ class SubscriptableMixin(object):
         return len(list(getattr(self, self._subobjects_attr)))
 
     def __delitem__(self, key):
-        key = format_key(key)
+        key = self.format_key(key)
         del(self.subobjects[key])
 
     def keys(self):
         return (elem for elem in self.subobjects)
+
+    def format_key(self, key):
+        return pkg_resources.safe_name(key.lower())
 
 
 SubscriptableBaseModel = SubscriptableMixin
@@ -203,7 +209,7 @@ class Root(ClonableModelMixin, SubscriptableBaseModel, Model):
         if isinstance(name_or_index, int):
             return next(itertools.islice(self.__iter__(), name_or_index, name_or_index + 1))
         keys = [key for key in self.subobjects.keys()
-                if format_key(key) == format_key(name_or_index)]
+                if self.format_key(key) == self.format_key(name_or_index)]
         if len(keys) == 1:
             return self.subobjects[keys[0]]
 
@@ -229,6 +235,10 @@ class Package(SubscriptableMixin, ClonableModelMixin, Model):
         self.root = root
         super().__init__(name, root=root, **kwargs)
 
+    def format_key(self, key):
+        safe_name = pkg_resources.safe_name(key.lower())
+        return safe_name.replace('.', '-')
+
     def __getitem__(self, release_name_or_index):
         try:
             if isinstance(release_name_or_index, int):
@@ -238,7 +248,6 @@ class Package(SubscriptableMixin, ClonableModelMixin, Model):
             return None
 
     def __setitem__(self, key, value):
-        key = format_key(key)
         self.releases[key] = value
 
     @classmethod
@@ -331,12 +340,12 @@ class Release(SubscriptableMixin, ClonableModelMixin, Model):
                         version_or_index + 1
                     )
                 )
-            return self.release_files[format_key(version_or_index)]
+            return self.release_files[version_or_index]
         except (KeyError, IndexError, StopIteration):
             return None
 
     def __setitem__(self, key, value):
-        key = format_key(key)
+        key = self.format_key(key)
         self.release_files[key] = value
 
     @classmethod
@@ -385,7 +394,7 @@ class ReleaseFile(ClonableModelMixin, Model):
             **kwargs,
         )
         if release is not None:
-            self.__parent__[format_key(self.__name__)] = self
+            self.__parent__[self.format_key(self.__name__)] = self
 
     @property
     def __name__(self):
@@ -406,7 +415,9 @@ class ReleaseFile(ClonableModelMixin, Model):
             self.content_type = m.id_buffer(buf.read())
 
     def _packages_directory(self):
-        settings = get_current_registry().getUtility(
+        request = get_current_request()
+        registry = request.registry if request else getGlobalSiteManager()
+        settings = registry.getUtility(
             ISettings,
             name='settings'
         )
@@ -453,7 +464,6 @@ class ReleaseFile(ClonableModelMixin, Model):
         except:
             return None
 
-
     @classmethod
     def clone(cls, model_obj):
         """Return a clone on given object"""
@@ -475,6 +485,9 @@ class ReleaseFile(ClonableModelMixin, Model):
             root = repository_root_factory(request)
         if package in [pkg.__name__ for pkg in root] and root[package].get(release):
             return root[package][release].get(releasefile, None)
+
+    def format_key(self, key):
+        return pkg_resources.safe_name(key.lower())
 
 
 class User(Model):

@@ -87,12 +87,11 @@ class PyPiProxy:
 
     def build_remote_repository(self, package_name, release_name=None, metadata=False, content=False):
         package_name = self.get_remote_package_name(package_name)
+        result = None
         if package_name:
             info = self.get_remote_informations(self.pypi_url.format(package_name))
             package_root = Root('repository')
-            package = Package(package_name)
-            package.root = package_root
-            package_root[package.name] = package
+            package = Package(package_name, root=package_root)
             remote_releases = info['releases'].keys() if not release_name else [release_name, ]
 
             for remote_release in remote_releases:
@@ -102,7 +101,6 @@ class PyPiProxy:
                     deserialize_metadata=metadata,
                     package=package,
                 )
-                package[remote_release] = release
 
                 for remote_release_file in info['releases'][remote_release]:
                     filename = remote_release_file['filename']
@@ -118,8 +116,8 @@ class PyPiProxy:
 
                     setattr(release_file, 'pypi_url', remote_release_file['url'])
                     release[filename] = release_file
-            return package_root
-        return None
+            result = package_root
+        return result
 
     def merged_repository(self, local_package, release_name=None,
                           metadata=False, root=None):

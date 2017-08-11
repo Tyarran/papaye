@@ -1,9 +1,11 @@
 from colander import Invalid
 from pyramid.config import Configurator, ConfigurationError
-from pyramid_beaker import set_cache_regions_from_settings
 from pyramid.interfaces import ISettings
+from pyramid_beaker import set_cache_regions_from_settings
+from zope.component import getGlobalSiteManager
 
 from papaye.config.utils import SettingsReader
+
 from papaye.config.schemas.settings import Settings
 
 
@@ -24,9 +26,13 @@ def deserialize(settings):
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
+    globalreg = getGlobalSiteManager()
     set_cache_regions_from_settings(settings)
     deserialized_settings = deserialize(settings)
-    config = Configurator(settings=settings)
+
+    config = Configurator(registry=globalreg)
+    config.setup_registry(settings=settings)
+
     config.registry.registerUtility(
         deserialized_settings,
         ISettings,

@@ -36,12 +36,29 @@ def proxy_activated(settings):
     return True if proxy and proxy == 'true' else False
 
 
+def parse_matchdict(matchdict):
+    entities = ('package', 'release', 'release_file')
+    traversed = matchdict['traverse']
+    result = {}
+    if len(traversed):
+        desired_entity = entities[len(traversed) - 1]
+        result = {
+            'desired_entity': desired_entity,
+        }
+        for index, entity in enumerate(entities):
+            if index < len(traversed):
+                result[entity] = traversed[index]
+
+    return result
+
+
 @notfound_view_config(route_name="simple", renderer='simple.jinja2')
 def not_found(request, stop=None):
     if not proxy_activated(request.registry.settings) or stop is not None:
         return HTTPNotFound()
     proxy = PyPiProxy()
-    package_name = request.matchdict['traverse'][0]
+    parsed = parse_matchdict(request.matchdict)
+    package_name = parsed['package']
     if package_name in request.root:
         local_package = request.root[package_name]
     else:
@@ -52,18 +69,22 @@ def not_found(request, stop=None):
 
     if merged_repository:
         package = merged_repository[package_name]
-        traversed = len(request.matchdict['traverse'])
-        if traversed == 1:
+        if parsed['desired_entity'] == 'package':
             view = ListReleaseFileView(package, request)
             view.stop = True
-        elif traversed == 2:
+        elif parsed['desired_entity'] == 'release':
             context = package[request.matchdict['traverse'][1]]
             view = ListReleaseFileByReleaseView(context, request)
-        elif traversed == 3:
-            release_file = package[request.matchdict['traverse'][1]][request.matchdict['traverse'][2]]
+        elif parsed['desired_entity'] == 'release_file':
+            release_file = package[parsed['release']][parsed['release_file']]
             filename = request.matchdict['traverse'][2]
             package_name, release_name, _ = request.matchdict['traverse']
-            download_release_from_pypi.delay(request.registry._zodb_databases[''], package_name, release_name, filename)
+            download_release_from_pypi.delay(
+                request.registry._zodb_databases[''],
+                package_name,
+                release_name,
+                filename,
+            )
             return HTTPTemporaryRedirect(location=release_file.pypi_url)
         return view()
     return HTTPNotFound()
@@ -80,8 +101,10 @@ class ListPackagesView(BaseView):
 
     def __call__(self):
         return {
-            'objects': ((self.request.resource_url(package, route_name=self.request.matched_route.name), package)
-                        for package in list(self.context)),
+            'objects': ((self.request.resource_url(
+                package,
+                route_name=self.request.matched_route.name
+            ), package) for package in list(self.context)),
         }
 
 
@@ -113,7 +136,7 @@ class ListReleaseFileView(BaseView):
 
     def __call__(self):
         package = self.context
-        root = self.context
+        root = package.root
         if self.repository is not root:
             self.repository.name = root.name
         rfiles = [
