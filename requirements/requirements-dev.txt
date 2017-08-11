@@ -17,8 +17,8 @@ coverage==4.4.1           # via pytest-cov
 cssmin==0.2.0
 cssselect==1.0.1          # via pyquery
 deform==2.0.4
-docutils==0.13.1
-factory-boy==2.9.1
+docutils==0.14
+factory-boy==2.9.2
 faker==0.7.18             # via factory-boy
 fancycompleter==0.7       # via pdbpp
 filemagic==1.6
@@ -82,8 +82,10 @@ zeo==5.1.0                # via zodburi
 zodb==5.2.4               # via zeo, zodburi
 zodbpickle==0.6.0         # via zodb
 zodburi==2.2.2            # via pyramid-zodbconn
-zope.deprecation==4.2.0   # via deform, pyramid, pyramid-jinja2
-zope.interface==4.4.2     # via btrees, persistent, pyramid, repoze.evolution, transaction, zeo, zodb
+zope.component==4.4.0
+zope.deprecation==4.3.0   # via deform, pyramid, pyramid-jinja2
+zope.event==4.3.0         # via zope.component
+zope.interface==4.4.2     # via btrees, persistent, pyramid, repoze.evolution, transaction, zeo, zodb, zope.component
 
 # The following packages are considered to be unsafe in a requirements file:
 pip==9.0.1

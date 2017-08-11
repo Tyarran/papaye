@@ -13,7 +13,7 @@ colander==1.4
 cornice==2.4.0
 cssmin==0.2.0
 deform==2.0.4
-docutils==0.13.1
+docutils==0.14
 filemagic==1.6
 hupper==1.0               # via pyramid
 idna==2.5                 # via requests
@@ -56,5 +56,7 @@ zeo==5.1.0                # via zodburi
 zodb==5.2.4               # via zeo, zodburi
 zodbpickle==0.6.0         # via zodb
 zodburi==2.2.2            # via pyramid-zodbconn
-zope.deprecation==4.2.0   # via deform, pyramid, pyramid-jinja2
-zope.interface==4.4.2     # via btrees, persistent, pyramid, repoze.evolution, transaction, zeo, zodb
+zope.component==4.4.0
+zope.deprecation==4.3.0   # via deform, pyramid, pyramid-jinja2
+zope.event==4.3.0         # via zope.component
+zope.interface==4.4.2     # via btrees, persistent, pyramid, repoze.evolution, transaction, zeo, zodb, zope.component

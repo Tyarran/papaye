@@ -1,6 +1,7 @@
 colander
 cornice
 cssmin
+deform
 docutils
 filemagic
 jsmin
@@ -17,4 +18,4 @@ requests
 termcolor
 transaction
 waitress
-deform
+zope.component
