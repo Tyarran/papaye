@@ -2,15 +2,23 @@ language: "python"
 
 dist: trusty
 
+env:
+  secure: "L2TKsFswJcy5YAXhusHHny96Wx/VZz5gEbeD6ToK3q51pO7673k2ib43DZcMC6D/kVThy2PL1bXavAhi82b3uDsC8Vh9lvTo9aTU0qEoALHNnRXeSoCS9351WIYXYZv1a15aDWnl5Z9BHPHZ6OY/zLh416Tsmx9CCn2WpZwYtmU="
+
 python:
   - "3.5"
   - "3.6"
+
+before_install:
+  - sudo apt-get install maven openjdk-8-jdk
 
 install:
   - "pip install -r requirements/src/tools.in"
   - "pip-sync requirements/requirements-dev.txt"
 
-script: "tox -e python$TRAVIS_PYTHON_VERSION"
+script: 
+  - "tox -e python$TRAVIS_PYTHON_VERSION"
+  - "mvn clean install sonar:sonar -Dsonar.host.url=https://sonarqube.com -Dsonar.login=$SONAR_TOKEN"
 
 notifications:
   email:
