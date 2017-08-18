@@ -23,8 +23,6 @@ install:
 
 script: 
   - tox -e python$TRAVIS_PYTHON_VERSION
-  - coverage xml -i
-  - sed sed -i 's/filename="/filename=".\//g' coverage.xml
   - docker run -v `pwd`:/data rcommande/sonar-scanner -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.organization=rcommande -Dsonar.sources=/data/. -Dsonar.projectKey=papay
 
 notifications:
