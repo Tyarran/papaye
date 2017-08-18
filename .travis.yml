@@ -2,8 +2,13 @@ language: "python"
 
 dist: trusty
 
+sudo: required
+
+services:
+  - docker
+
 env:
-  secure: "L2TKsFswJcy5YAXhusHHny96Wx/VZz5gEbeD6ToK3q51pO7673k2ib43DZcMC6D/kVThy2PL1bXavAhi82b3uDsC8Vh9lvTo9aTU0qEoALHNnRXeSoCS9351WIYXYZv1a15aDWnl5Z9BHPHZ6OY/zLh416Tsmx9CCn2WpZwYtmU="
+  secure: "LYqcvGSdvfhmE7zjUV3uimYkK2CiBLCmKlY48DClyHPNHSQal/Tgu6jdEjHlHk7nelBgQNTl43FzojCkMl3I1q2tI/jpSOXvapuI4Elc1ps3Bo/oVczCoRHirxBcnmusHQQHKTOixMDO12eLKrYNoVOZ4x5bl+98Bpat81Vw4Oo="
 
 python:
   - "3.5"
@@ -17,8 +22,10 @@ install:
   - "pip-sync requirements/requirements-dev.txt"
 
 script: 
-  - "tox -e python$TRAVIS_PYTHON_VERSION"
-  - "mvn clean install sonar:sonar -Dsonar.host.url=https://sonarqube.com -Dsonar.login=$SONAR_TOKEN"
+  - tox -e python$TRAVIS_PYTHON_VERSION
+  - coverage xml -i
+  - sed sed -i 's/filename="/filename=".\//g' coverage.xml
+  - docker run -v `pwd`:/data rcommande/sonar-scanner -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.organization=rcommande -Dsonar.sources=/data/. -Dsonar.projectKey=papay
 
 notifications:
   email:
