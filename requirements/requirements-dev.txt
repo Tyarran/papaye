@@ -13,7 +13,7 @@ chardet==3.0.4            # via requests
 click==6.7                # via pip-tools
 colander==1.4
 cornice==2.4.0
-coverage==4.4.1           # via pytest-cov
+coverage==4.4.1
 cssmin==0.2.0
 cssselect==1.0.1          # via pyquery
 deform==2.0.4
@@ -24,7 +24,7 @@ fancycompleter==0.7       # via pdbpp
 filemagic==1.6
 first==2.0.1              # via pip-tools
 hupper==1.0               # via pyramid
-idna==2.5                 # via requests
+idna==2.6                 # via requests
 iso8601==0.1.12           # via colander, deform
 jinja2==2.9.6             # via pyramid-jinja2
 jsmin==2.2.2
@@ -53,14 +53,14 @@ pyramid-zodbconn==0.8.1
 pyramid==1.9.1
 pytest-cov==2.5.1
 pytest-mock==1.6.2
-pytest-sugar==0.8.0
-pytest==3.2.0
+pytest-sugar==0.9.0
+pytest==3.2.1
 python-dateutil==2.6.1    # via faker
 pytz==2017.2
 pyzmq==16.0.2
 repoze.evolution==0.6
 repoze.lru==0.6           # via pyramid, pyramid-debugtoolbar
-requests==2.18.3
+requests==2.18.4
 simplejson==3.11.1        # via cornice
 six==1.10.0               # via faker, mock, pip-tools, python-dateutil, webtest, zeo, zodb
 termcolor==1.1.0

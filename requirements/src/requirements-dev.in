@@ -1,5 +1,6 @@
 -r requirements.in
 -r tools.in
+-r ci.in
 
 factory_boy
 mock
@@ -10,6 +11,5 @@ pytest-cov
 pytest-mock
 pytest-sugar
 setuptools
-tox
 webtest
 wheel
