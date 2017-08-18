@@ -20,9 +20,9 @@ install:
 
 script: 
   - tox -e python$TRAVIS_PYTHON_VERSION
-  - coverage xml -i || yes
-  - sed -i 's/filename="/filename=".\//g' coverage.xml || yes
-  - docker run -v `pwd`:/data rcommande/sonar-scanner -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.organization=rcommande -Dsonar.sources=/data/. -Dsonar.projectKey=papay
+  - coverage xml -i || true
+  - sed -i 's/filename="/filename=".\//g' coverage.xml || true
+  - docker run -v `pwd`:/data rcommande/sonar-scanner -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.organization=rcommande -Dsonar.sources=/data/. -Dsonar.projectKey=papaye
 
 notifications:
   email:
