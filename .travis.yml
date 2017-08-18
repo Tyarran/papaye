@@ -15,7 +15,8 @@ python:
   - "3.6"
 
 install:
-  - "pip install -r requirements/src/tools.in"
+  - pip install -r requirements/src/tools.in
+  - pip install tox
   #- "pip-sync requirements/requirements-dev.txt"
 
 script: 
