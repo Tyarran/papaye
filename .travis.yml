@@ -14,15 +14,14 @@ python:
   - "3.5"
   - "3.6"
 
-before_install:
-  - sudo apt-get install maven openjdk-8-jdk
-
 install:
   - "pip install -r requirements/src/tools.in"
-  - "pip-sync requirements/requirements-dev.txt"
+  #- "pip-sync requirements/requirements-dev.txt"
 
 script: 
   - tox -e python$TRAVIS_PYTHON_VERSION
+  - coverage xml -i || yes
+  - sed -i 's/filename="/filename=".\//g' coverage.xml || yes
   - docker run -v `pwd`:/data rcommande/sonar-scanner -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.organization=rcommande -Dsonar.sources=/data/. -Dsonar.projectKey=papay
 
 notifications:
