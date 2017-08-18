@@ -147,9 +147,6 @@ class PapayeEvolutionManager(object):
             sys.modules[module_name] = sys.modules['papaye.models']
             with transaction.manager:
                 root = self._get_root()
-                root['papaye_root'] = root['papaye_root']
-                root['papaye_root']['repository'] = root['papaye_root']['repository']
-                root['papaye_root']['user'] = root['papaye_root']['user']
                 for package in root[APP_ROOT_NAME]['repository']:
                     root[APP_ROOT_NAME]['repository'][package.__name__] = package
                     for release in package:

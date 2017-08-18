@@ -40,7 +40,7 @@ const AppRouter = Backbone.Router.extend({
 
     detail(packageName, version) {
       const model = new PackageModel({ name: packageName, version: version });
-      const promise = Promise.resolve(model)
+      Promise.resolve(model)
         .then((model) => {
           return model.fetch();
       })
