@@ -16,8 +16,7 @@ python:
 
 install:
   - pip install -r requirements/src/tools.in
-  - pip install tox
-  #- "pip-sync requirements/requirements-dev.txt"
+  - pip-sync requirements/requirements-dev.txt
 
 script: 
   - tox -e python$TRAVIS_PYTHON_VERSION
