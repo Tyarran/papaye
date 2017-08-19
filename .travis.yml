@@ -1,28 +1,19 @@
-language: "python"
-
+language: python
 dist: trusty
-
 sudo: required
-
 services:
-  - docker
-
+- docker
 env:
-  secure: "LYqcvGSdvfhmE7zjUV3uimYkK2CiBLCmKlY48DClyHPNHSQal/Tgu6jdEjHlHk7nelBgQNTl43FzojCkMl3I1q2tI/jpSOXvapuI4Elc1ps3Bo/oVczCoRHirxBcnmusHQQHKTOixMDO12eLKrYNoVOZ4x5bl+98Bpat81Vw4Oo="
-
+  secure: LYqcvGSdvfhmE7zjUV3uimYkK2CiBLCmKlY48DClyHPNHSQal/Tgu6jdEjHlHk7nelBgQNTl43FzojCkMl3I1q2tI/jpSOXvapuI4Elc1ps3Bo/oVczCoRHirxBcnmusHQQHKTOixMDO12eLKrYNoVOZ4x5bl+98Bpat81Vw4Oo=
+  global:
+    secure: BOTWOZzc7Do+3lu6h4rxUCVGKhlIA/0gDQojvFS0gxZglRfdHFq/sKn2VWGiLVWS7LWB3t3ygzL1IhFhF1zx5R7LRKaEVq0USYLXgYrs/6zoyuc46goM2oyu8PM4udnFkw5BkrYmPZ6JKGIQZax2ildLz9tU6aMJrFwOgleX8E0=
 python:
-  - "3.5"
-  - "3.6"
-
+- '3.5'
+- '3.6'
 install:
-  - pip install -r requirements/src/ci.in
-
-script: 
-  - tox -e python$TRAVIS_PYTHON_VERSION
-  - coverage xml -i || true
-  - sed -i 's/filename="/filename=".\//g' coverage.xml || true
-  - docker run -v `pwd`:/data rcommande/sonar-scanner -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.organization=rcommande -Dsonar.sources=/data/. -Dsonar.projectKey=papaye
-
+- pip install -r requirements/src/ci.in
+script:
+        travis.sh
 notifications:
   email:
-    - "commande.romain+papaye@gmail.com"
+  - commande.romain+papaye@gmail.com
