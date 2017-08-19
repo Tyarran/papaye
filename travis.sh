@@ -12,5 +12,6 @@ else
               -Dsonar.github.repository=rcommande/papaye \
               -Dsonar.github.oauth=$GITHUB_ACCESS_TOKEN \
               -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.login=$SONAR_TOKEN
+              -Dsonar.login=$SONAR_TOKEN \
+	      -Dsonar.organization=rcommande
 fi
