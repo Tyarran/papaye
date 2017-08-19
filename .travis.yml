@@ -3,17 +3,16 @@ dist: trusty
 sudo: required
 services:
 - docker
-env:
-  secure: LYqcvGSdvfhmE7zjUV3uimYkK2CiBLCmKlY48DClyHPNHSQal/Tgu6jdEjHlHk7nelBgQNTl43FzojCkMl3I1q2tI/jpSOXvapuI4Elc1ps3Bo/oVczCoRHirxBcnmusHQQHKTOixMDO12eLKrYNoVOZ4x5bl+98Bpat81Vw4Oo=
-  global:
-    secure: BOTWOZzc7Do+3lu6h4rxUCVGKhlIA/0gDQojvFS0gxZglRfdHFq/sKn2VWGiLVWS7LWB3t3ygzL1IhFhF1zx5R7LRKaEVq0USYLXgYrs/6zoyuc46goM2oyu8PM4udnFkw5BkrYmPZ6JKGIQZax2ildLz9tU6aMJrFwOgleX8E0=
 python:
 - '3.5'
 - '3.6'
 install:
 - pip install -r requirements/src/ci.in
-script:
-        ./travis.sh
+script: "./travis.sh"
 notifications:
   email:
   - commande.romain+papaye@gmail.com
+env:
+  global:
+  - secure: YGf1+n3kMLlBSCF6n43blJFDkqE61nvf/ucH56e4PGPebf9NmgzQgSmkEzmNWDL5AU0S5VKLJJIHZNHf1+P89MBaO+plFgaTZS8+g1bTuOfqXmkwa+PJT+LlP9kDWRz9Mi+yiejxFHRbmm/iUjSifBkzoYSRngrxpks2ftO9IrQ=
+  - secure: Abnyn5rLr5nSKyrAHRUhIuwfUnBB/xUayf1pbKWBgRV89xQtUXLYevAjcX9M01FelSHEaBJKSsEPeTIoKnh4lBEecB8850Y0zTwgvPcAW5LrxwmQjdvvgPEnA9Yyfgf4Duuplorm+aKb7cTi8PK1VjFN2y6Z0L3HCeKN8OCNRq4=
