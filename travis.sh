@@ -1,6 +1,7 @@
 tox -e python$TRAVIS_PYTHON_VERSION
 coverage xml -i || true
 sed -i 's/filename="/filename=".\//g' coverage.xml || true
+env
 
 if [ "$TRAVIS_PULL_REQUEST" == "false" ]
 then
