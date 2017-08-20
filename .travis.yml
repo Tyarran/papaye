@@ -14,5 +14,5 @@ notifications:
   - commande.romain+papaye@gmail.com
 env:
   global:
-  - secure: YGf1+n3kMLlBSCF6n43blJFDkqE61nvf/ucH56e4PGPebf9NmgzQgSmkEzmNWDL5AU0S5VKLJJIHZNHf1+P89MBaO+plFgaTZS8+g1bTuOfqXmkwa+PJT+LlP9kDWRz9Mi+yiejxFHRbmm/iUjSifBkzoYSRngrxpks2ftO9IrQ=
-  - secure: Abnyn5rLr5nSKyrAHRUhIuwfUnBB/xUayf1pbKWBgRV89xQtUXLYevAjcX9M01FelSHEaBJKSsEPeTIoKnh4lBEecB8850Y0zTwgvPcAW5LrxwmQjdvvgPEnA9Yyfgf4Duuplorm+aKb7cTi8PK1VjFN2y6Z0L3HCeKN8OCNRq4=
+  - secure: D01F55npuCVyIAI4/y4ChpDbdH4SEMxgu7abMPFfFaF/qfXO67qFQgDwsixjvawJIfT2v/ArMu8OTxl3uE+5bQdSOt7NQb58q2aP4al+wlXCokoOs10payhn3TNDpPPR1gMl5l2mThjVODpLq7obQGPjFizmj6Bs/0YYFvnDLK8=
+  - secure: WiiAV0nNr9klADYypum2WgavX0oYk1x30KXUA3pFlvAEejUserWlpm3U6ix/z4GeAmavQavbcY1ZdYmWq+lJc4nFOk0RoIcUBVX+HenYsvXK3a3DcdO6pUtFs27sy5RCRlODXMD305EzgAngf3T6EetyrDO/KJlXBZReKa4PmlE=
