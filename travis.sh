@@ -7,6 +7,11 @@ coverage xml -i || true
 sed -i 's/filename="/filename=".\//g' coverage.xml || true 
 
 
+echo SONAR_TOKEN=$SONAR_TOKEN
+echo GITHUB_TOKEN=$GITHUB_TOKEN
+echo PULL_REQUEST_ID=$PULL_REQUEST_ID
+
+
 if [ "$TRAVIS_PULL_REQUEST" ]
 then
 	echo "sonar-scanner for PR"
