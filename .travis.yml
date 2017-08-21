@@ -1,28 +1,18 @@
-language: "python"
-
+language: python
 dist: trusty
-
 sudo: required
-
 services:
-  - docker
-
-env:
-  secure: "LYqcvGSdvfhmE7zjUV3uimYkK2CiBLCmKlY48DClyHPNHSQal/Tgu6jdEjHlHk7nelBgQNTl43FzojCkMl3I1q2tI/jpSOXvapuI4Elc1ps3Bo/oVczCoRHirxBcnmusHQQHKTOixMDO12eLKrYNoVOZ4x5bl+98Bpat81Vw4Oo="
-
+- docker
 python:
-  - "3.5"
-  - "3.6"
-
+- '3.5'
+- '3.6'
 install:
-  - pip install -r requirements/src/ci.in
-
-script: 
-  - tox -e python$TRAVIS_PYTHON_VERSION
-  - coverage xml -i || true
-  - sed -i 's/filename="/filename=".\//g' coverage.xml || true
-  - docker run -v `pwd`:/data rcommande/sonar-scanner -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.organization=rcommande -Dsonar.sources=/data/. -Dsonar.projectKey=papaye
-
+- pip install -r requirements/src/ci.in
+script: ./travis.sh $SONAR_TOKEN $GITHUB_TOKEN $TRAVIS_PULL_REQUEST $TRAVIS_JOB_NUMBER
 notifications:
   email:
-    - "commande.romain+papaye@gmail.com"
+  - commande.romain+papaye@gmail.com
+env:
+  global:
+  - secure: D01F55npuCVyIAI4/y4ChpDbdH4SEMxgu7abMPFfFaF/qfXO67qFQgDwsixjvawJIfT2v/ArMu8OTxl3uE+5bQdSOt7NQb58q2aP4al+wlXCokoOs10payhn3TNDpPPR1gMl5l2mThjVODpLq7obQGPjFizmj6Bs/0YYFvnDLK8=
+  - secure: WiiAV0nNr9klADYypum2WgavX0oYk1x30KXUA3pFlvAEejUserWlpm3U6ix/z4GeAmavQavbcY1ZdYmWq+lJc4nFOk0RoIcUBVX+HenYsvXK3a3DcdO6pUtFs27sy5RCRlODXMD305EzgAngf3T6EetyrDO/KJlXBZReKa4PmlE=
