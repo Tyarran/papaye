@@ -8,7 +8,7 @@ python:
 - '3.6'
 install:
 - pip install -r requirements/src/ci.in
-script: ./travis.sh $SONAR_TOKEN $GITHUB_TOKEN $TRAVIS_PULL_REQUEST
+script: ./travis.sh $SONAR_TOKEN $GITHUB_TOKEN $TRAVIS_PULL_REQUEST $TRAVIS_JOB_NUMBER
 notifications:
   email:
   - commande.romain+papaye@gmail.com
