@@ -2,7 +2,7 @@ SONAR_TOKEN=$1
 GITHUB_TOKEN=$2
 PULL_REQUEST_ID=$3
 JOB_NUMBER=$4
-TASK_NUMBER=$($JOB_NUMBER | cut -d ';' -f2)
+TASK_NUMBER=$(echo $JOB_NUMBER | cut -d '.' -f2)
 
 tox -e python$TRAVIS_PYTHON_VERSION
 coverage xml -i || true
