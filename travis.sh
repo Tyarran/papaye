@@ -7,6 +7,7 @@ TASK_NUMBER=$(echo $JOB_NUMBER | cut -d '.' -f2)
 tox -e python$TRAVIS_PYTHON_VERSION
 coverage xml -i || true
 sed -i 's/filename="/filename=".\//g' coverage.xml || true 
+env
 
 
 if [ "$TASK_NUMBER" == 1 ]
