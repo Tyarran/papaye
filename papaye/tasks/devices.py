@@ -137,7 +137,10 @@ class MultiThreadScheduler(IScheduler):
     def shutdown(self, signum, frame):
         for worker in self.worker_list:
             worker.stop_worker()
-        sys.exit(0)
+
+        # kill the current thread for prevent server reload blocking
+        current_thread_id = threading.current_thread().ident
+        signal.pthread_kill(current_thread_id, signal.SIGKILL)
 
 
 class ThreadWorker(threading.Thread):
