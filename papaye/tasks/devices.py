@@ -95,7 +95,9 @@ class MultiThreadScheduler(IScheduler):
         signal.signal(signal.SIGTERM, self.shutdown)
 
     def start(self):
-        logging.info('Start {} scheduler with {} workers'.format(self.__class__.__name__, self.workers))
+        logging.info('Start {} scheduler with {} workers'.format(
+            self.__class__.__name__, self.workers)
+        )
         for index in range(1, self.workers + 1):
             worker = ThreadWorker(index, self)
             worker.daemon = True
@@ -111,7 +113,9 @@ class MultiThreadScheduler(IScheduler):
         }
         if task_id not in self.status_history:
             self.status_history[task_id] = []
-        self.status_history[task_id].append((STATUS.PENDING, datetime.datetime.now()))
+        self.status_history[task_id].append(
+            (STATUS.PENDING, datetime.datetime.now())
+        )
 
     def task_id(self, task_tuple):
         return next(self.counter)
@@ -123,7 +127,9 @@ class MultiThreadScheduler(IScheduler):
 
     def add_result(self, task_id, worker_id, result):
         self.results[task_id] = (worker_id, result)
-        self.status_history[task_id].append((STATUS.DONE, datetime.datetime.now()))
+        self.status_history[task_id].append(
+            (STATUS.DONE, datetime.datetime.now())
+        )
 
     def status(self, task_id):
         return self.results[task_id]
@@ -152,7 +158,9 @@ class ThreadWorker(threading.Thread):
                 LOGGER.debug('Task #{} done'.format(task_id))
             except Exception as ex:
                 print(colored(ex, 'red'))
-                LOGGER.error('Error during tasks #{} with worker #{}'.format(task_id, self.id))
+                LOGGER.error('Error during tasks #{} with worker #{}'.format(
+                    task_id, self.id)
+                )
                 self.scheduler.add_result(task_id, self.id, ex)
 
     def run(self):
