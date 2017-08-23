@@ -4,6 +4,7 @@ import itertools
 import logging
 import queue
 import signal
+import sys
 import threading
 import time
 
@@ -22,7 +23,9 @@ COLORS_GEN = itertools.cycle((
 ))
 STATUS_NAMES = ('PENDING', 'WIP', 'DONE', 'ERROR')
 STATUS_TYPE = collections.namedtuple('Status', STATUS_NAMES)
-STATUS = STATUS_TYPE(**dict((name, value) for name, value in zip(STATUS_NAMES, range(0, len(STATUS_NAMES)))))
+STATUS = STATUS_TYPE(**dict((name, value) for name, value in zip(
+    STATUS_NAMES, range(0, len(STATUS_NAMES))))
+)
 LOGGER = logging.getLogger(__name__)
 
 
@@ -92,7 +95,9 @@ class MultiThreadScheduler(IScheduler):
         signal.signal(signal.SIGTERM, self.shutdown)
 
     def start(self):
-        logging.info('Start {} scheduler with {} workers'.format(self.__class__.__name__, self.workers))
+        logging.info('Start {} scheduler with {} workers'.format(
+            self.__class__.__name__, self.workers)
+        )
         for index in range(1, self.workers + 1):
             worker = ThreadWorker(index, self)
             worker.daemon = True
@@ -108,7 +113,9 @@ class MultiThreadScheduler(IScheduler):
         }
         if task_id not in self.status_history:
             self.status_history[task_id] = []
-        self.status_history[task_id].append((STATUS.PENDING, datetime.datetime.now()))
+        self.status_history[task_id].append(
+            (STATUS.PENDING, datetime.datetime.now())
+        )
 
     def task_id(self, task_tuple):
         return next(self.counter)
@@ -120,7 +127,9 @@ class MultiThreadScheduler(IScheduler):
 
     def add_result(self, task_id, worker_id, result):
         self.results[task_id] = (worker_id, result)
-        self.status_history[task_id].append((STATUS.DONE, datetime.datetime.now()))
+        self.status_history[task_id].append(
+            (STATUS.DONE, datetime.datetime.now())
+        )
 
     def status(self, task_id):
         return self.results[task_id]
@@ -128,6 +137,10 @@ class MultiThreadScheduler(IScheduler):
     def shutdown(self, signum, frame):
         for worker in self.worker_list:
             worker.stop_worker()
+
+        # kill the current thread for prevent server reload blocking
+        current_thread_id = threading.current_thread().ident
+        signal.pthread_kill(current_thread_id, signal.SIGKILL)
 
 
 class ThreadWorker(threading.Thread):
@@ -148,7 +161,9 @@ class ThreadWorker(threading.Thread):
                 LOGGER.debug('Task #{} done'.format(task_id))
             except Exception as ex:
                 print(colored(ex, 'red'))
-                LOGGER.error('Error during tasks #{} with worker #{}'.format(task_id, self.id))
+                LOGGER.error('Error during tasks #{} with worker #{}'.format(
+                    task_id, self.id)
+                )
                 self.scheduler.add_result(task_id, self.id, ex)
 
     def run(self):
