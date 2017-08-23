@@ -4,6 +4,7 @@ import itertools
 import logging
 import queue
 import signal
+import sys
 import threading
 import time
 
@@ -22,7 +23,9 @@ COLORS_GEN = itertools.cycle((
 ))
 STATUS_NAMES = ('PENDING', 'WIP', 'DONE', 'ERROR')
 STATUS_TYPE = collections.namedtuple('Status', STATUS_NAMES)
-STATUS = STATUS_TYPE(**dict((name, value) for name, value in zip(STATUS_NAMES, range(0, len(STATUS_NAMES)))))
+STATUS = STATUS_TYPE(**dict((name, value) for name, value in zip(
+    STATUS_NAMES, range(0, len(STATUS_NAMES))))
+)
 LOGGER = logging.getLogger(__name__)
 
 
@@ -128,6 +131,7 @@ class MultiThreadScheduler(IScheduler):
     def shutdown(self, signum, frame):
         for worker in self.worker_list:
             worker.stop_worker()
+        sys.exit(0)
 
 
 class ThreadWorker(threading.Thread):
