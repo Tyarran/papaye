@@ -1,76 +1,61 @@
-import PropTypes from 'prop-types';
+import 'bulma/css/bulma.css';
+import 'open-iconic/font/css/open-iconic.css';
+import Navbar from './components/navbar';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import hljs from 'highlightjs';
-import 'highlightjs/styles/monokai.css';
-import 'bootstrap/dist/css/bootstrap.css';
-import _ from 'lodash';
+import { BrowserRouter, Router, Link, Route, IndexRoute, BrowserHistory } from 'react-router-dom';
+import createBrowserHistory from 'history/createBrowserHistory'
+
+const customHistory = createBrowserHistory();
+console.log(customHistory);
 
 
-class AppComponent extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            name: '',
-            text: '',
-        };
-    }
-
-    formSubmit(event) {
-        event.preventDefault();
-
-        const newState = Object.assign({}, this.state, {name: this.state.text});
-        this.setState(newState);
-    }
-
-    handleOnChange(event) { const newState = Object.assign({}, this.state, {text: event.target.value});
-        this.setState(newState);
-    }
-
+class Dashboard extends React.Component {
     render() {
         return (
-            <div>
-                <h1>Hello {this.state.name} !</h1>
-                <form action="" className="form-inline">
-                    <input
-                        type="text"
-                        onChange={(event) => this.handleOnChange(event)}
-                        placeholder="Enter your name here"
-                    />
-                    <input
-                        type="submit"
-                        onClick={(event) => this.formSubmit(event)}
-                        value='Click !'
-                        className="btn btn-primary"
-                    />
-                </form>
-                <pre className="code">
-                    {`
-class Test(object):
-                        
-                        def __call__(self):
-                            print Hello `}{this.state.name}{` !
-
-                    test = Test()
-                    test()
-
-                      `} </pre>
-                <p>{this.state.name}</p>
-            </div>
+            <div>Dashboard component !!!</div>
         );
-    }
-
-    componentDidMount() {
-        const blocks = document.querySelectorAll('.code');
-        _.each(blocks, (block) =>{
-            hljs.highlightBlock(block);
-        });
     }
 }
 
-AppComponent.propTypes = {
-    name: PropTypes.string,
-};
+class Dashboard2 extends React.Component {
+    render() {
+        return (
+            <div>Dashboard2 component !!!!!</div>
+        );
+    }
+}
+
+class Dashboard3 extends React.Component {
+    render() {
+        return (
+            <div>Dashboard3 component !!!</div>
+        );
+    }
+}
 
 
-ReactDOM.render(<AppComponent name="Romain" />, document.getElementById('root'));
+class AppComponent extends React.Component {
+    render() {
+        return (
+            <div>
+                <Navbar />
+                <div className="container">
+                    <Link to="/dashboard">dashboard</Link>
+                    <Link to="/dashboard2">dashboard2</Link>
+                </div>
+                <Route path ="/" component={Dashboard} />
+                <Route path="/browse" component={Dashboard2} />
+                <Route path="/api" component={Dashboard3} />
+            </div>
+        );
+    }
+}
+
+
+ReactDOM.render(
+    <BrowserRouter>
+        <AppComponent name="Romain" />
+    </BrowserRouter>
+    , document.getElementById('root')
+);
