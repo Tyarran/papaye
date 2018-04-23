@@ -16,9 +16,9 @@ class LoginRequiredTweenFactory(object):
 
     def __call__(self, request):
         response = self.handler(request)
-        if isinstance(response, Response) and response.status_int == 401 \
-                and request.matched_route.name == 'home':
-            return self._redirect_to_login(request)
-        if response.status_int == 403 and request.authenticated_userid is None:
-            return self._redirect_to_login(request)
+        # if isinstance(response, Response) and response.status_int == 401 \
+        #         and request.matched_route.name == 'home':
+        #     return self._redirect_to_login(request)
+        # if response.status_int == 403 and request.authenticated_userid is None:
+        #     return self._redirect_to_login(request)
         return response

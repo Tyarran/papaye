@@ -11,5 +11,4 @@ def includeme(config):
         ISettings,
         name='settings',
     )['papaye']['packages_directory']
-    config.add_static_view('static', 'papaye:static', cache_max_age=3600)
     config.add_static_view('repo', packages_directory, cache_max_age=3600)

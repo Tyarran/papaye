@@ -14,23 +14,52 @@ from papaye.schemas import LoginSchema
 logger = logging.getLogger(__name__)
 
 
+# @view_config(route_name='home', renderer='index.jinja2', request_method='GET')
+# def index_view(context, request):
+#     username = request.session.get('username', '')
+#     app_context = {
+#         'username': username,
+#         'papaye': {
+#             'debug': False,
+#         },
+#         'urls':  {
+#             'login': request.route_url('login'),
+#             'logout': request.route_url('logout'),
+#             'package_resource': request.route_url('packages'),
+#             'api': request.route_url('api'),
+#             'simple': request.route_url('simple', traverse=()),
+#         }
+#     }
+#     return {'app_context': json.dumps(app_context)}
 @view_config(route_name='home', renderer='index.jinja2', request_method='GET')
 def index_view(context, request):
-    username = request.session.get('username', '')
-    app_context = {
-        'username': username,
-        'papaye': {
-            'debug': False,
-        },
-        'urls':  {
-            'login': request.route_url('login'),
-            'logout': request.route_url('logout'),
-            'package_resource': request.route_url('packages'),
-            'api': request.route_url('api'),
-            'simple': request.route_url('simple', traverse=()),
-        }
+    username = request.session.get('username', 'Romain')
+    return {
+        'appState': json.dumps({
+            'simpleUrl': request.route_url('simple', traverse=()),
+            'username': username,
+            'navbarBurgerIsActive': False,
+            'navMenu': ({
+                    'id': 'home',
+                    'title': 'Home',
+                    'href': '/',
+                    'active': False,
+                    'exact': False,
+                },
+                {
+                    'id': 'browse',
+                    'title': 'Browse',
+                    'href': '/browse',
+                    'active': False,
+                },
+                {
+                    'id': 'api',
+                    'title': 'API',
+                    'href': '/api',
+                    'active': False,
+                }),
+        })
     }
-    return {'app_context': json.dumps(app_context)}
 
 
 @view_config(route_name="login", renderer='login.jinja2',

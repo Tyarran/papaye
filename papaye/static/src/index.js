@@ -1,27 +1,21 @@
 import 'bulma/css/bulma.css';
-import 'open-iconic/font/css/open-iconic.css';
-import Navbar from './components/navbar';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter, Router, Link, Route, IndexRoute, BrowserHistory } from 'react-router-dom';
-import createBrowserHistory from 'history/createBrowserHistory'
+import { BrowserRouter, Route, Switch, withRouter } from 'react-router-dom';
+import { Provider, connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
-const customHistory = createBrowserHistory();
-console.log(customHistory);
+import Navbar from './components/navbar';
+import Home from './components/home';
+import store from './reducers';
 
-
-class Dashboard extends React.Component {
-    render() {
-        return (
-            <div>Dashboard component !!!</div>
-        );
-    }
-}
 
 class Dashboard2 extends React.Component {
     render() {
         return (
-            <div>Dashboard2 component !!!!!</div>
+            <div>
+                Dashboard2 component !!!!!
+            </div>
         );
     }
 }
@@ -29,33 +23,62 @@ class Dashboard2 extends React.Component {
 class Dashboard3 extends React.Component {
     render() {
         return (
-            <div>Dashboard3 component !!!</div>
-        );
-    }
-}
-
-
-class AppComponent extends React.Component {
-    render() {
-        return (
             <div>
-                <Navbar />
-                <div className="container">
-                    <Link to="/dashboard">dashboard</Link>
-                    <Link to="/dashboard2">dashboard2</Link>
-                </div>
-                <Route path ="/" component={Dashboard} />
-                <Route path="/browse" component={Dashboard2} />
-                <Route path="/api" component={Dashboard3} />
+                Dashboard3 component !!!
             </div>
         );
     }
 }
 
 
+class AppComponent extends React.Component {
+
+    constructor(props) {
+        super(props);
+        //this.state = window.state;
+    }
+
+    render() {
+        return (
+            <div >
+                <Navbar username={this.props.username}k/>
+                <Switch>
+                    <Route exact path="/" render={() => <Home simpleUrl={this.props.simpleUrl} /> } />
+                    <Route path="/browse" component={Dashboard2} />
+                    <Route path="/api" component={Dashboard3} />
+                </Switch>
+            </div>
+        );
+    }
+}
+
+AppComponent.propTypes = {
+    username: PropTypes.string.isRequired,
+    simpleUrl: PropTypes.string.isRequired,
+};
+
+
+const mapStateToProps = (state) => {
+    return {
+        username: state.testReducer.username,
+        simpleUrl: state.testReducer.simpleUrl
+    };
+};
+
+
+const mapDispatchToProps = () => {
+    return { };
+};
+
+
+const App = withRouter(connect(mapStateToProps, mapDispatchToProps)(AppComponent));
+
+
 ReactDOM.render(
     <BrowserRouter>
-        <AppComponent name="Romain" />
+        <Provider store={store}>
+            <App />
+        </Provider>
     </BrowserRouter>
     , document.getElementById('root')
 );
