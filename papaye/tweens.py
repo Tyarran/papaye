@@ -22,3 +22,16 @@ class LoginRequiredTweenFactory(object):
         # if response.status_int == 403 and request.authenticated_userid is None:
         #     return self._redirect_to_login(request)
         return response
+
+
+class TestTweenFactory(object):
+
+    def __init__(self, handler, registry):
+        self.handler = handler
+        self.registry = registry
+
+    def __call__(self, request):
+        request.state['bidule'] = ';askdjfs;lfjkd'
+        # request.chose = {}
+        return self.handler(request)
+

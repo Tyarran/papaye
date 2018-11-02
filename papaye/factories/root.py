@@ -52,3 +52,10 @@ def default_root_factory(request_or_connection):
 def application_factory(request):
     from papaye.models import Application
     return Application()
+
+
+def request_factory(*args, **kwargs):
+    request = Request(*args, **kwargs)
+    request.state = {}
+    import pdb; pdb.set_trace()
+    return request

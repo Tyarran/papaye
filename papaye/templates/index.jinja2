@@ -1,14 +1,44 @@
 {% extends "base.jinja2" %}
+
 {% block content %}
-<script>
-window.state = JSON.parse('{{ appState | safe }}');
-</script>
-<body>
-    <div id='root'></div>
-</body>
+{{ content | safe }}
 {% endblock %}
 
+{# {% block content %}
+<div class="content container" style="background: red;">
+        <h1>Papaye index repository</h1>
 
-{% block scripts %}
-<script src="static/dist/papaye.bundle.js"></script>
-{% endblock %}
+        <h2>How to use this repository</h2>
+        <h3>In one command line</h3>
+        <p>You can use with repository temporarily on pass PIP command argument </p>
+        <Highlight class="bash">pip install your_package -i http://chose.com</Highlight>
+
+        <h3>Per project configuration</h3>
+        <p>If you want using this repository for only one specific project, you can add this line into the requirements.txt file:</p>
+        <Highlight result.contentclass="dos">-i http://chose.com .</Highlight>
+
+
+        <h3>Permanent configuration</h3>
+        <p>Edit the ~/.pip/pip.conf file like:</p>
+
+        <Highlight class="ini">[install]
+
+[search]
+index = http://chose.com</Highlight>
+
+        <h2>Uploading files</h2>
+
+        Edit your ~/.pypirc file like:
+        <Highlight class="ini" element="code">
+[distutils]
+index-servers =
+papaye
+
+[papaye]
+username: your_papaye_username
+password: your_papaye_password
+repository: http://chose.com</Highlight>
+</div>
+{% endblock %} #}
+
+<div>It's works</div>

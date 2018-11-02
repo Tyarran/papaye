@@ -1,0 +1,49 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+colander = "*"
+cornice = "*"
+cssmin = "*"
+deform = "*"
+docutils = "*"
+filemagic = "*"
+jsmin = "*"
+pyramid = "*"
+pyramid-beaker = "*"
+pyramid-debugtoolbar = "*"
+"pyramid-jinja2" = "*"
+pyramid-tm = "*"
+pyramid-zodbconn = "*"
+pytz = "*"
+pyzmq = "*"
+"repoze.evolution" = "*"
+requests = "*"
+termcolor = "*"
+transaction = "*"
+waitress = "*"
+"zope.component" = "*"
+
+[dev-packages]
+factory-boy = "*"
+mock = "*"
+pdbpp = "*"
+pyquery = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-mock = "*"
+pytest-sugar = "*"
+setuptools = "*"
+webtest = "*"
+wheel = "*"
+tox = "*"
+coverage = "*"
+"autopep8" = "*"
+
+[requires]
+python_version = "3.6"
+
+[scripts]
+psdev = "pserve --reload development.ini"

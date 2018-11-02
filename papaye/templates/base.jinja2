@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head id="head">
-        <title>Papaye Index</title>
-        {# styles  #}
-        <link rel="stylesheet" type="text/css" href="static/style.css" />
-        {# end styles  #}
-    </head>
+	<head id="head">
+		<title>Papaye Index</title>
+		<link rel="stylesheet" type="text/css" href="static/dist/style.css" />
+	</head>
+	<body>
+		<div id='root'>
+			{{ content | safe }}
+		</div>
 
-    {% block content %}
-    {% endblock %}
-
-    {# scripts #}
-    {% block scripts %}
-    {% endblock %}
-    {# end scripts #}
+		<script language='javascript'>
+		window.INITIAL_STATE = JSON.parse('{{ state | safe }}'); </script>
+		<script src="static/dist/client.bundle.js"></script>
+	</body>
 </html>

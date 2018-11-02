@@ -11,12 +11,11 @@ class Highlight extends React.Component {
     }
 
     componentDidMount() {
-        const blocks = document.getElementsByTagName('pre');
+        var blocks = document.getElementsByTagName('pre');
 
         _.forEach(blocks, (block) => {
             hljs.highlightBlock(block);
         });
-
     }
     
     componentDidUpdate() {
@@ -30,15 +29,15 @@ class Highlight extends React.Component {
 
     render() {
         return(
-            <pre className={this.props.className}>{this.props.children}</pre>
+            <pre className={this.props.language}>{this.props.children}</pre>
         );
     }
 
 }
 
 Highlight.propTypes = {
-    className: PropTypes.string,
-    children: PropTypes.array,
+    language: PropTypes.string,
+    // children: PropTypes.bool,
 };
 
 export default Highlight;

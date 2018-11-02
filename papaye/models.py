@@ -514,6 +514,15 @@ class User(Model):
             return root[username]
         return None
 
+    def __json__(self, *args, **kwargs):
+        import pdb; pdb.set_trace()
+        request = args[0]
+        return {
+            'username': self.username,
+            'url': request.url,
+            'groups': self.groups,
+        }
+
 
 class RestrictedContext(object):
 

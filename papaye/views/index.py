@@ -13,7 +13,6 @@ from papaye.schemas import LoginSchema
 
 logger = logging.getLogger(__name__)
 
-
 # @view_config(route_name='home', renderer='index.jinja2', request_method='GET')
 # def index_view(context, request):
 #     username = request.session.get('username', '')
@@ -31,35 +30,44 @@ logger = logging.getLogger(__name__)
 #         }
 #     }
 #     return {'app_context': json.dumps(app_context)}
-@view_config(route_name='home', renderer='index.jinja2', request_method='GET')
+# @view_config(route_name='home', renderer='index.jinja2', request_method='GET')
+@view_config(route_name='home', request_method='GET', renderer='index.jinja2')
 def index_view(context, request):
     username = request.session.get('username', 'Romain')
-    return {
-        'appState': json.dumps({
-            'simpleUrl': request.route_url('simple', traverse=()),
-            'username': username,
-            'navbarBurgerIsActive': False,
-            'navMenu': ({
-                    'id': 'home',
-                    'title': 'Home',
-                    'href': '/',
-                    'active': False,
-                    'exact': False,
-                },
-                {
-                    'id': 'browse',
-                    'title': 'Browse',
-                    'href': '/browse',
-                    'active': False,
-                },
-                {
-                    'id': 'api',
-                    'title': 'API',
-                    'href': '/api',
-                    'active': False,
-                }),
-        })
-    }
+    request.state.update({
+        'simpleUrl': request.route_url('simple', traverse=()),
+        'username': username,
+        'navbarBurgerIsActive': False,
+        'navMenu': ({
+                'id': 'home',
+                'title': 'Home',
+                'href': '/',
+                'active': True,
+                'exact': True,
+            },
+            {
+                'id': 'browse',
+                'title': 'Discover',
+                'href': '/browse',
+                'active': False,
+            },
+            {
+                'id': 'api',
+                'title': 'API',
+                'href': '/api',
+                'active': False,
+            }),
+        'tmpData': {'title': 'original'}
+    })
+    import requests
+    try:
+        result = requests.post(
+            'http://localhost:9009/render',
+            json={'path': request.path, 'state': request.state}
+        ).content.decode('utf-8')
+    except Exception:
+        result = ''
+    return {"content": result, 'state': json.dumps(request.state)}
 
 
 @view_config(route_name="login", renderer='login.jinja2',
@@ -83,7 +91,7 @@ class LoginView(object):
             validated = self.form.validate(controls)
             headers = remember(self.request, validated['username'])
             self.request.session['username'] = validated['username']
-            csrf_token = self.request.session.get_csrf_token()
+            csrf_token = self.request.session.get_csrfkj_token()
             headers.append(('X-CSRF-Token', csrf_token))
             next_value = self.request.GET.get('next')
             location = self.request.route_url('home')

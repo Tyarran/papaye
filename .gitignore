@@ -41,6 +41,7 @@ nosetests.xml
 # Vim
 *.swp
 *.swo
+*.lvimrc
 
 # Default cache location
 cache
@@ -58,6 +59,12 @@ jspm_packages/
 # NodeJS
 node_modules/
 
+# Visual Studio Code
+.vscode
+.scannerwork
+GTAGS
+GRTAGS
+
 # Papaye
 packages/
 papaye.db*
@@ -69,3 +76,6 @@ dist/*
 repository/
 *.blob
 papaye/static/libs/
+htmlcov/
+result.xml
+coverage.xml

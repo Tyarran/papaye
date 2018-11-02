@@ -1,59 +1,37 @@
-import 'open-iconic/font/css/open-iconic.css';
+import 'fork-awesome/css/fork-awesome.css';
+
 import PropTypes from 'prop-types';
 import React from 'react';
+import _ from 'lodash';
 import { connect } from 'react-redux';
-import { NavLink, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-
-class NavbarItem extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    onClick(event) {
-        event.preventDefault();
-        this.props.notifier(this.props.id);
-    }
-
-    render() {
-        return (
-            <NavLink
-                className="navbar-item"
-                to={this.props.href}
-                exact
-                activeClassName="is-active"
-            >
-                {this.props.title}
-            </NavLink>
-        );
-    }
-}
-
-NavbarItem.propTypes = {
-    id: PropTypes.number,
-    title:  PropTypes.string,
-    notifier: PropTypes.func,
-    active: PropTypes.bool,
-    href: PropTypes.string,
-};
 
 
 class Navbar extends React.Component {
+
     constructor(props) {
         super(props);
     }
+
+    isActiveClass(itemId) {
+        const item = _.find(this.props.navMenu, {'id': itemId});
+        return (item.active) ? 'is-active': ''
+    }
+
+
 
     render() {
         return (
             <nav className="navbar is-primary" role="navigation" aria-label="main navigation">
                 <div className="navbar-brand">
-                    <NavLink
+                    <Link
                         className="navbar-item"
                         to="/"
-                        exact
+                        onClick={this.props.activeItem.bind(this)('home')}
                     >
                         Papaye
-                    </NavLink>
+                    </Link>
                 </div>
                 <div 
                     className={`navbar-burger burger ${(this.props.navbarBurgerIsActive) ? 'is-active' : ''}`}
@@ -71,13 +49,27 @@ class Navbar extends React.Component {
                 >
                     <div className="navbar-start">
                         {this.props.navMenu.map((item, key) => {
-                            return <NavbarItem key={key} id={key} title={item.title} href={item.href} />;
+                            return (
+                                <Link key={key} className={`navbar-item ${this.isActiveClass(item.id)}`} to={item.href} onClick={this.props.activeItem.bind(this)(item.id)}>
+                                    {item.title}
+                                </Link>
+                            );
                         })}
+                        <div className="navbar-item">
+                            <div className="field">
+                                <span className="control has-icons-left">
+                                    <span className="icon is-small is-left">
+                                        <i className="fa fa-search"></i>
+                                    </span>
+                                    <input className="input" type="text" placeholder="Search" />
+                                </span>
+                            </div>
+                        </div>
                     </div>
                     <div className="navbar-end">
                         <div className="navbar-item has-dropdown is-hoverable">
                             <a className="navbar-link">
-                                <span className="oi" data-glyph="person"></span>&nbsp;{this.props.username}
+                                <i className="fa fa-user" aria-hidden="true"></i>&nbsp;{this.props.username}
                             </a>
                             <div className="navbar-dropdown">
                                 <a className="navbar-item" href="/logout">Logout</a>
@@ -90,11 +82,12 @@ class Navbar extends React.Component {
     }
 }
 
+
 const mapStateToProps = (state) => {
-    console.log(state);
     return {
-        navMenu: state.testReducer.navMenu,
-        navbarBurgerIsActive: state.testReducer.navbarBurgerIsActive,
+        navMenu: state.get('navMenu'),
+        navbarBurgerIsActive: state.get('navbarBurgerIsActive'),
+        username: state.get('username'),
     };
 };
 
@@ -106,10 +99,16 @@ const mapDispatchToProps = (dispatch) => {
             const value = !(this.navbarBurgerIsActive);
 
             dispatch({type: 'TOGGLE_MENU_BURGER_VISIBILITY', navbarBurgerIsActive: value});
+        },
+
+        activeItem(itemId) {
+            const item = _.find(this.props.navMenu, {id: itemId});
+            return (event) => {
+                dispatch({type: 'ACTIVE_NAVBAR_ITEM', itemId: item.id});
+            }
         }
     };
 };
 
 
-
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Navbar));
+export default connect(mapStateToProps, mapDispatchToProps)(Navbar);

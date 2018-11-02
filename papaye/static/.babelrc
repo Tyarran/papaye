@@ -1,3 +1,15 @@
 {
-  "presets": ["env"]
+  "presets": ["env", "react", "node8"],
+  "env": {
+    "node": {
+      "plugins": [
+        [
+          "babel-plugin-transform-require-ignore",
+          {
+            "extensions": [".less", ".sass", ".css"]
+          }
+        ]
+      ]
+    }
+  }
 }

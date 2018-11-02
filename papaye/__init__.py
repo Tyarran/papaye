@@ -48,12 +48,27 @@ def main(global_config, **settings):
         name='json_api_compat',
         factory='papaye.views.api.compat.renderers.CompatAPIRendererFactory'
     )
+    config.add_request_method(lambda x: {'truc': 'chose'}, name='state', property=True)
     config.commit()
     config.add_tween('papaye.tweens.LoginRequiredTweenFactory')
+    config.add_tween('papaye.tweens.TestTweenFactory')
     config.scan(ignore=['papaye.tests', 'papaye.conftest'])
     config.set_request_property(
         lambda x: deserialized_settings,
         'papaye_settings',
         reify=True
     )
+    config.set_request_property(
+        lambda x: {},
+        'state',
+        reify=True
+    )
+
+    # def get_batch_url():
+    #     return 'http://localhost:3030/batch'
+
+    # config.registry.settings['pyramid_hypernova.get_batch_url'] = get_batch_url
+    # config.add_tween('pyramid_hypernova.tweens.hypernova_tween_factory')
+
+    # config.set_request_factory('papaye.factories.root.request_factory')
     return config.make_wsgi_app()
