@@ -1,5 +1,6 @@
 import json
 import logging
+import requests
 
 from deform import Form
 from deform.exception import ValidationFailure
@@ -9,6 +10,7 @@ from pyramid.security import remember, NO_PERMISSION_REQUIRED
 from pyramid.view import view_config
 
 from papaye.schemas import LoginSchema
+from papaye.views.decorators import state_manager
 
 
 logger = logging.getLogger(__name__)
@@ -31,7 +33,7 @@ logger = logging.getLogger(__name__)
 #     }
 #     return {'app_context': json.dumps(app_context)}
 # @view_config(route_name='home', renderer='index.jinja2', request_method='GET')
-@view_config(route_name='home', request_method='GET', renderer='index.jinja2')
+# @view_config(route_name='home', request_method='GET', renderer='index.jinja2')
 def index_view(context, request):
     username = request.session.get('username', 'Romain')
     request.state.update({
@@ -57,9 +59,8 @@ def index_view(context, request):
                 'href': '/api',
                 'active': False,
             }),
-        'tmpData': {'title': 'original'}
+        'filteredPackageList': requests.get('http://localhost:6543/api/compat/package/json').json()['result'],
     })
-    import requests
     try:
         result = requests.post(
             'http://localhost:9009/render',
@@ -68,6 +69,19 @@ def index_view(context, request):
     except Exception:
         result = ''
     return {"content": result, 'state': json.dumps(request.state)}
+
+
+@view_config(route_name='ssr', request_method='GET', renderer='index.jinja2')
+@state_manager('application')
+def index_ssr(context, request, state):
+    try:
+        result = requests.post(
+            'http://localhost:9009/render',
+            json={'path': request.path, 'state': state}
+        ).content.decode('utf-8')
+    except Exception:
+        result = ''
+    return {"content": result, 'state': json.dumps(state)}
 
 
 @view_config(route_name="login", renderer='login.jinja2',

@@ -26,7 +26,7 @@ class PackageItem extends React.Component {
                             </p>
                         </div>
             
-                        <Link to="/browse/detail" >Details</Link>
+                        <Link to="/browse/detail/" >Details</Link>
 
                     </div>
                 </div>
@@ -42,21 +42,23 @@ class BrowseList extends React.Component {
         super(props);
     }
 
-    componentDidMount() { this.props.fetchdata();
-        fetch('/api/compat/package/json').then((response) => {
+    componentDidMount() {
+        this.props.fetchdata();
+        fetch('http://localhost:6543/api/compat/package/json').then((response) => {
             return response.json();
         }).then((json) => {
-            this.props.getResult(json);
+            this.prop.filteredPackageList = this.props.getResult(json);
         });
     }
+    
 
     handleKeyPress(event) {
         const pattern = event.target.value;
-        console.log(pattern);
         this.props.filterList(pattern);
     }
 
     render() {
+        console.log('render');
         return (
             <div className="section">
                 <div className="container">
@@ -90,7 +92,6 @@ class BrowseList extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
-        data: state.get('tmpData'),
         filteredPackageList: state.get('filteredPackageList', [])
     };
 };
@@ -103,6 +104,7 @@ const mapDispatchToProps = (dispatch) => {
         },
         getResult(response) {
             dispatch({type: 'DATA_READ', response: response.result });
+            return response.result;
         },
         filterList(pattern) {
             dispatch({type: 'DATA_FILTER', pattern});
