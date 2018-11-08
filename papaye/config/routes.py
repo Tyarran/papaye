@@ -21,4 +21,3 @@ def includeme(config):
 
     config.add_static_view('static', 'papaye:static', cache_max_age=3600)
     config.add_route('ssr', '/*path', factory=application_factory)
-    # config.add_route('home', '/', factory=application_factory)

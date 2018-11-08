@@ -47,7 +47,7 @@ class BrowseList extends React.Component {
         fetch('http://localhost:6543/api/compat/package/json').then((response) => {
             return response.json();
         }).then((json) => {
-            this.prop.filteredPackageList = this.props.getResult(json);
+            this.props.getResult(json);
         });
     }
     
@@ -58,7 +58,6 @@ class BrowseList extends React.Component {
     }
 
     render() {
-        console.log('render');
         return (
             <div className="section">
                 <div className="container">
@@ -104,7 +103,6 @@ const mapDispatchToProps = (dispatch) => {
         },
         getResult(response) {
             dispatch({type: 'DATA_READ', response: response.result });
-            return response.result;
         },
         filterList(pattern) {
             dispatch({type: 'DATA_FILTER', pattern});
