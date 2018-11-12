@@ -58,6 +58,7 @@ class RouteResolver(object):
             match = regex.match(route_path)
             if match:
                 return view, match.groupdict()
+        return (None, None)
 
 
 class StateManager(object):
