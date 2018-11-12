@@ -19,7 +19,7 @@ class Main extends React.Component {
                 <Navbar/>
                 <div className="container">
                     <Route exact path="/" component={Home} />
-                    <Route path="/browse/detail" component={Home} />
+                    <Route path="/browse/detail/:appname" component={Home} />
                     <Route path="/browse" component={BrowseList} />
                 </div>
             </div>

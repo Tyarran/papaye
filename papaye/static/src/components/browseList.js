@@ -10,7 +10,6 @@ class PackageItem extends React.Component {
         super(props);
     }
 
-
     render() {
         return (
             <div className="column is-half">
@@ -25,8 +24,7 @@ class PackageItem extends React.Component {
                                 <span className="tag is-warning is-small">Cached</span>
                             </p>
                         </div>
-            
-                        <Link to="/browse/detail/" >Details</Link>
+                        <Link to={`/browse/detail/${this.props.name}`} >Details</Link>
 
                     </div>
                 </div>
