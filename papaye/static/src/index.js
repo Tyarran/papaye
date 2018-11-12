@@ -7,6 +7,18 @@ import Navbar from './components/navbar';
 import BrowseList from './components/browseList';
 
 
+class Detail extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+    render() {
+        return (
+            <h1>Details !!!</h1>
+        );
+    }
+}
+
+
 class Main extends React.Component {
 
     constructor(props) {
@@ -19,8 +31,8 @@ class Main extends React.Component {
                 <Navbar/>
                 <div className="container">
                     <Route exact path="/" component={Home} />
-                    <Route path="/browse/detail/:appname" component={Home} />
-                    <Route path="/browse" component={BrowseList} />
+                    <Route path="/browse/detail/:appname" component={Detail} />
+                    <Route exact path="/browse" component={BrowseList} />
                 </div>
             </div>
         );

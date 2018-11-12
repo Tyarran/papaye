@@ -37,7 +37,6 @@ def test_view(context, request, state):
     return state
 
 
-@route("/browse/detail/:appname")
+@route("/browse/detail/:appname/")
 def package_detail(context, request, state):
-    pass
-    # import pdb; pdb.set_trace()
+    return state

@@ -47,7 +47,7 @@ class RouteResolver(object):
         result = (
             self.pattern_info(pattern)
             for pattern in path.split("/")[1:]
-            if pattern != ""
+            # if pattern != ""
         )
         converted = [self.convert_to_regex(path_info) for path_info in result]
         regex = re.compile("^\/" + "\/".join(converted) + "$")
@@ -57,7 +57,7 @@ class RouteResolver(object):
         for path, (regex, view) in self.route_mapping[identifier].items():
             match = regex.match(route_path)
             if match:
-                return view
+                return view, match.groupdict()
 
 
 class StateManager(object):
@@ -82,8 +82,12 @@ class StateManager(object):
         def wrapper(func):
             @wraps(func)
             def wrapped(context, request, *args, **kwargs):
-                path = f"/{'/'.join(request.matchdict['path'])}"
-                ssr_view = self.route_resolver.resolve(identifier, path)
+                add_slash = "/" if request.path.endswith("/") else ""
+                path = f"/{'/'.join(request.matchdict['path'])}{add_slash}"
+                ssr_view, matchdict = self.route_resolver.resolve(
+                    identifier, path
+                )
+                request.ssr_matchdict = matchdict
                 state = self.factory(context, request, *args, **kwargs)
                 if ssr_view:
                     state = ssr_view(context, request, state)
