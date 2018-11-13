@@ -12,29 +12,13 @@ class RouteResolver(object):
         if not path_part.startswith(":"):
             return {"name": None, "value": path_part}
         elif path_part[-1] == "*":
-            return {
-                "name": path_part[1:-1],
-                "value": path_part,
-                "quantifier": "*",
-            }
+            return {"name": path_part[1:-1], "value": path_part, "quantifier": "*"}
         elif path_part[-1] == "?":
-            return {
-                "name": path_part[1:-1],
-                "value": path_part,
-                "quantifier": "?",
-            }
+            return {"name": path_part[1:-1], "value": path_part, "quantifier": "?"}
         elif path_part[-1] == "+":
-            return {
-                "name": path_part[1:-1],
-                "value": path_part,
-                "quantifier": "+",
-            }
+            return {"name": path_part[1:-1], "value": path_part, "quantifier": "+"}
         else:
-            return {
-                "name": path_part[1:],
-                "value": path_part,
-                "quantifier": None,
-            }
+            return {"name": path_part[1:], "value": path_part, "quantifier": None}
 
     def convert_to_regex(self, path_info):
         if not path_info["name"]:
@@ -85,9 +69,7 @@ class StateManager(object):
             def wrapped(context, request, *args, **kwargs):
                 add_slash = "/" if request.path.endswith("/") else ""
                 path = f"/{'/'.join(request.matchdict['path'])}{add_slash}"
-                ssr_view, matchdict = self.route_resolver.resolve(
-                    identifier, path
-                )
+                ssr_view, matchdict = self.route_resolver.resolve(identifier, path)
                 request.ssr_matchdict = matchdict
                 state = self.factory(context, request, *args, **kwargs)
                 if ssr_view:
