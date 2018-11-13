@@ -6,7 +6,6 @@ from papaye.utils import filter_set
 
 def app_state_factory(context, request):
     username = request.session.get("username", "Romain")
-    # path = f"/{'/'.join(request.matchdict['path'])}"
     state = {
         "simpleUrl": request.route_url("simple", traverse=()),
         "username": username,

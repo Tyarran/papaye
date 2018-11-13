@@ -1,4 +1,5 @@
 import re
+import types
 
 from collections import OrderedDict, defaultdict
 from functools import wraps
@@ -73,7 +74,10 @@ class StateManager(object):
                 request.ssr_matchdict = matchdict
                 state = self.factory(context, request, *args, **kwargs)
                 if ssr_view:
-                    state = ssr_view(context, request, state)
+                    if not isinstance(ssr_view, types.FunctionType):
+                        state = ssr_view(context, request, state)()
+                    else:
+                        state = ssr_view(context, request, state)
                 return func(context, request, state=state, **kwargs)
 
             return wrapped
