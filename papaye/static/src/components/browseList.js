@@ -42,7 +42,7 @@ class BrowseList extends React.Component {
 
     componentDidMount() {
         this.props.fetchdata();
-        fetch('http://localhost:6543/api/compat/package/json').then((response) => {
+        fetch(`${this.props.compatAPIUrl}package/json`).then((response) => {
             return response.json();
         }).then((json) => {
             this.props.getResult(json);
@@ -89,7 +89,8 @@ class BrowseList extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
-        filteredPackageList: state.get('filteredPackageList', [])
+        filteredPackageList: state.get('filteredPackageList', []),
+        compatAPIUrl: state.get('compatAPIUrl'),
     };
 };
 

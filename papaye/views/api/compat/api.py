@@ -15,17 +15,17 @@ packages = Service(
     context='papaye.models.Root',
     factory=repository_root_factory,
     renderer='json_api_compat',
-    pyramid_route='packages',
+    pyramid_route='compat_api_packages',
 )
-# package = Service(
-#     name="package",
-#     path="/api/compat/package/{package_name}/json",
-#     description="Package service",
-#     factory=repository_root_factory,
-#     context="papaye.models.Package",
-#     traverse='{package_name}',
-#     pyramid_route='package',
-# )
+package = Service(
+    name="package",
+    path="/api/compat/package/{package_name}/json",
+    description="Package service",
+    factory=repository_root_factory,
+    context="papaye.models.Package",
+    traverse='{package_name}',
+    pyramid_route='compat_api_package',
+)
 # package_version = Service(
 #     name="package_by_version",
 #     path="/api/compat/package/{package_name}/{version}/json",

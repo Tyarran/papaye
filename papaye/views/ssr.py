@@ -8,6 +8,7 @@ def app_state_factory(context, request):
     username = request.session.get("username", "Romain")
     state = {
         "simpleUrl": request.route_url("simple", traverse=()),
+        "compatAPIUrl": request.route_url("compat_api"),
         "username": username,
         "navbarBurgerIsActive": False,
         "filteredPackageList": [],
@@ -39,7 +40,7 @@ def test_view(context, request, state):
         )
     )
     state["filteredPackageList"] = requests.get(
-        "http://localhost:6543/api/compat/package/json"
+        f"{state['compatAPIUrl']}package/json"
     ).json()["result"]
     return state
 
