@@ -3,6 +3,7 @@ const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const nodeExternals = require('webpack-node-externals');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const webpack = require('webpack');
 
 
 const clientConfig = {
@@ -60,6 +61,9 @@ const clientConfig = {
     //},
 
     plugins: [
+        new webpack.DefinePlugin({
+            'process.env.REACT_SPINKIT_NO_STYLES': false,
+        }),
         //new MinifyPlugin(),
         new MiniCssExtractPlugin({
             filename: 'style.css',
@@ -104,6 +108,9 @@ const serverConfig = {
 
 
     plugins: [
+        new webpack.DefinePlugin({
+            'process.env.REACT_SPINKIT_NO_STYLES': true,
+        }),
         new CleanWebpackPlugin(['dist']),
         //new MinifyPlugin(),
         new MiniCssExtractPlugin({
@@ -123,8 +130,9 @@ const SSRServer = {
         libraryTarget: 'commonjs2',
     },
     mode: 'production',
-    target: 'node',
-    externals: [nodeExternals()], 
+    externals: [nodeExternals({
+        whitelist: ['react-spinkit', 'express', 'http']
+    })],
     module: {
         rules: [
             {
@@ -149,12 +157,10 @@ const SSRServer = {
 
 
     plugins: [
-        new CleanWebpackPlugin(['dist']),
-        //new MinifyPlugin(),
-        new MiniCssExtractPlugin({
-            filename: '[name].css',
-            allChuncks: true,
-        })
+        new webpack.DefinePlugin({
+            'process.env.REACT_SPINKIT_NO_STYLES': true,
+        }),
+        new CleanWebpackPlugin(['dist'])
     ]
 };
 
