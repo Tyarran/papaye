@@ -3,6 +3,9 @@ import types
 
 from collections import OrderedDict, defaultdict
 from functools import wraps
+from pyramid.urldispatch import Route
+
+from munch import Munch
 
 
 class RouteResolver(object):
@@ -13,13 +16,29 @@ class RouteResolver(object):
         if not path_part.startswith(":"):
             return {"name": None, "value": path_part}
         elif path_part[-1] == "*":
-            return {"name": path_part[1:-1], "value": path_part, "quantifier": "*"}
+            return {
+                "name": path_part[1:-1],
+                "value": path_part,
+                "quantifier": "*",
+            }
         elif path_part[-1] == "?":
-            return {"name": path_part[1:-1], "value": path_part, "quantifier": "?"}
+            return {
+                "name": path_part[1:-1],
+                "value": path_part,
+                "quantifier": "?",
+            }
         elif path_part[-1] == "+":
-            return {"name": path_part[1:-1], "value": path_part, "quantifier": "+"}
+            return {
+                "name": path_part[1:-1],
+                "value": path_part,
+                "quantifier": "+",
+            }
         else:
-            return {"name": path_part[1:], "value": path_part, "quantifier": None}
+            return {
+                "name": path_part[1:],
+                "value": path_part,
+                "quantifier": None,
+            }
 
     def convert_to_regex(self, path_info):
         if not path_info["name"]:
@@ -32,7 +51,6 @@ class RouteResolver(object):
         result = (
             self.pattern_info(pattern)
             for pattern in path.split("/")[1:]
-            # if pattern != ""
         )
         converted = [self.convert_to_regex(path_info) for path_info in result]
         regex = re.compile("^\/" + "\/".join(converted) + "$")
@@ -42,8 +60,9 @@ class RouteResolver(object):
         for path, (regex, view) in self.route_mapping[identifier].items():
             match = regex.match(route_path)
             if match:
-                return view, match.groupdict()
-        return (None, None)
+                route = Route(name=route_path, pattern=regex.pattern)
+                return view, match.groupdict(), route
+        return (None, None, None)
 
 
 class StateManager(object):
@@ -67,18 +86,26 @@ class StateManager(object):
     def __call__(self, identifier):
         def wrapper(func):
             @wraps(func)
-            def wrapped(context, request, *args, **kwargs):
-                add_slash = "/" if request.path.endswith("/") else ""
-                path = f"/{'/'.join(request.matchdict['path'])}{add_slash}"
-                ssr_view, matchdict = self.route_resolver.resolve(identifier, path)
-                request.ssr_matchdict = matchdict
-                state = self.factory(context, request, *args, **kwargs)
+            def wrapped(request):
+                if not request.matchdict['path']:
+                    path = "/"
+                else:
+                    add_slash = "/" if request.path.endswith("/") else ""
+                    path = f"/{'/'.join(request.matchdict['path'])}{add_slash}"
+                ssr_view, matchdict, route = self.route_resolver.resolve(
+                    identifier, path
+                )
+                request.ssr = Munch(
+                    matched_route=route,
+                    matchdict=matchdict
+                )
+                state = self.factory(request=request)
                 if ssr_view:
                     if not isinstance(ssr_view, types.FunctionType):
-                        state = ssr_view(context, request, state)()
+                        state = ssr_view(request=request, state=state)()
                     else:
-                        state = ssr_view(context, request, state)
-                return func(context, request, state=state, **kwargs)
+                        state = ssr_view(request=request, state=state)
+                return func(request, state=state)
 
             return wrapped
 

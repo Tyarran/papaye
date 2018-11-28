@@ -1,22 +1,11 @@
 import 'bulma/css/bulma.css';
 import React from 'react';
-import { Route } from 'react-router-dom';
+import { Switch, Route } from 'react-router-dom';
 
 import Home from './components/home';
 import Navbar from './components/navbar';
 import BrowseList from './components/browseList';
-
-
-class Detail extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-    render() {
-        return (
-            <h1>Details !!!</h1>
-        );
-    }
-}
+import PackageDetails from './components/package.detail';
 
 
 class Main extends React.Component {
@@ -29,11 +18,11 @@ class Main extends React.Component {
         return (
             <div>
                 <Navbar/>
-                <div className="container">
-                    <Route exact path="/" component={Home} />
-                    <Route path="/browse/detail/:appname" component={Detail} />
-                    <Route exact path="/browse" component={BrowseList} />
-                </div>
+                <Switch>
+                        <Route exact path="/" component={Home} breadcrumb='/' />
+                        <Route path="/browse/detail/:appname" component={PackageDetails} />
+                        <Route exact path="/browse" component={BrowseList} />
+                </Switch>
             </div>
         );
     }

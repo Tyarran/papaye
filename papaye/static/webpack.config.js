@@ -131,7 +131,7 @@ const SSRServer = {
     },
     mode: 'production',
     externals: [nodeExternals({
-        whitelist: ['react-spinkit', 'express', 'http']
+        whitelist: ['react-spinkit']
     })],
     module: {
         rules: [

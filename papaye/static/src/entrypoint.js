@@ -5,19 +5,23 @@ import { createStore } from 'redux';
 import { BrowserRouter } from 'react-router-dom';
 import { Map } from 'immutable';
 
-window.Map = Map;
-
 import Main from './index.js';
 import appReducer from './reducers';
 
 const store = createStore(
     appReducer,
-    window.Map(window.INITIAL_STATE),
+    Map(window.INITIAL_STATE),
     window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 );
 
+
+function onUpdate() {
+    console.log("onChange");
+};
+
+
 ReactDOM.hydrate(
-    <BrowserRouter>
+    <BrowserRouter onChange={onUpdate.bind(this)}>
         <Provider store={store}>
             <Main/>
         </Provider>

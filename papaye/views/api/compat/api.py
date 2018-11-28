@@ -23,9 +23,10 @@ package = Service(
     description="Package service",
     factory=repository_root_factory,
     context="papaye.models.Package",
-    traverse='{package_name}',
     pyramid_route='compat_api_package',
+    renderer='json_api_compat',
 )
+
 # package_version = Service(
 #     name="package_by_version",
 #     path="/api/compat/package/{package_name}/{version}/json",
@@ -47,9 +48,12 @@ package = Service(
 # )
 
 
-# @package.get(schema=GetPackageSchema(), validators=(colander_validator))
-# def get_package(request):
-#     return request.context.get_last_release()
+@package.get(schema=GetPackageSchema(), validators=(colander_validator))
+def get_package(request):
+    package = request.context
+    # import time
+    # time.sleep(3)
+    return package.get_last_release()
 
 
 @packages.get()

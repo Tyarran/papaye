@@ -3,6 +3,22 @@ import fetch from 'cross-fetch';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
+import Content from './content';
+
+
+const breadcrumb = [
+    {
+        name: 'Home',
+        href: '/',
+        icon: 'fa fa-home',
+    },
+    {
+        name: 'Discover',
+        href: '/browse',
+        icon: 'fa fa-list',
+    },
+];
+
 
 class PackageItem extends React.Component {
 
@@ -57,31 +73,27 @@ class BrowseList extends React.Component {
 
     render() {
         return (
-            <div className="section">
-                <div className="container">
-                    <div className="field is-grouped">
-                        <p className="control is-expanded">
-                            <input type="text" placeholder="Filter by name" className="input" onKeyUp={this.handleKeyPress.bind(this)}/>
-                        </p>
-                        <div className="control">
-                            <div className="buttons has-addons">
-                                <input type="button" className="button is-primary" value="local" />
-                                <input type="button" className="button is-primary" value="public" />
-                                <input type="button" className="button is-primary" value="cached" />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="container">
-                        <div className="columns is-multiline">
-                            {this.props.filteredPackageList.map((item, key) => {
-                                return (
-                                    <PackageItem key={key} name={item.name} summary={item.summary} />
-                                );
-                            })}
+            <Content breadcrumb={breadcrumb}>
+                <div className="field is-grouped">
+                    <p className="control is-expanded">
+                        <input type="text" placeholder="Filter by name" className="input" onKeyUp={this.handleKeyPress.bind(this)}/>
+                    </p>
+                    <div className="control">
+                        <div className="buttons has-addons">
+                            <input type="button" className="button is-primary" value="local" />
+                            <input type="button" className="button is-primary" value="public" />
+                            <input type="button" className="button is-primary" value="cached" />
                         </div>
                     </div>
                 </div>
-            </div>
+                <div className="columns is-multiline">
+                    {this.props.filteredPackageList.map((item, key) => {
+                        return (
+                            <PackageItem key={key} name={item.name} summary={item.summary} />
+                        );
+                    })}
+                </div>
+            </Content>
         );
     }
 }

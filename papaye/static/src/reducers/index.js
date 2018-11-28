@@ -30,6 +30,16 @@ const appReducer = (state, action) => {
             return pkg.name.includes(action.pattern);
         });
         return state.set('filteredPackageList', filtered);
+    case 'DETAIL_DATA_FETCH':
+        return state.set('detail', {package: null});
+    case 'DETAIL_DATA_READ':
+        return state.set('detail', {package: action.package});
+    case 'LOCATION_CHANGE':
+        const navbarItems = state.get('navMenu').map((item) => {
+            item.active = item.href === action.location.pathname;
+            return item;
+        });
+        return state.set('navMenu', navbarItems);
     default:
         return state;
     }

@@ -17,8 +17,10 @@ def includeme(config):
     )
     config.add_route(
         "compat_api_package",
+        # path='',
         "/api/compat/package/{package_name}/json",
-        repository_root_factory,
+        factory=repository_root_factory,
+        traverse='{package_name}',
     )
     # config.add_route('package_version', '/api/compat/package/{package_name}/{version}/json', repository_root_factory)
     # config.add_route('package_version_filename', '/api/compat/package/{package_name}/{version}/{filename}/json', repository_root_factory)
@@ -29,4 +31,4 @@ def includeme(config):
     )
 
     config.add_static_view("static", "papaye:static", cache_max_age=3600)
-    config.add_route("ssr", "/*path", factory=application_factory)
+    config.add_route("ssr", "/*path", factory=repository_root_factory)

@@ -53,15 +53,17 @@ def main(global_config, **settings):
     config.add_tween('papaye.tweens.LoginRequiredTweenFactory')
     config.add_tween('papaye.tweens.TestTweenFactory')
     config.scan(ignore=['papaye.tests', 'papaye.conftest'])
-    config.set_request_property(
+    config.add_request_method(
         lambda x: deserialized_settings,
         'papaye_settings',
-        reify=True
+        reify=True,
+        property=True,
     )
-    config.set_request_property(
+    config.add_request_method(
         lambda x: {},
         'state',
-        reify=True
+        reify=True,
+        property=True,
     )
 
     # def get_batch_url():

@@ -79,3 +79,6 @@ papaye/static/libs/
 htmlcov/
 result.xml
 coverage.xml
+
+# yarn
+yarn-error.log

@@ -33,7 +33,7 @@ from papaye.serializers import ReleaseAPISerializer, PackageListSerializer
 
 
 logger = logging.getLogger(__name__)
-status_type = collections.namedtuple('status', ('local', 'cached', 'distant'))
+status_type = collections.namedtuple("status", ("local", "cached", "distant"))
 SW_VERSION = 8
 STATUS = status_type(*range(0, len(status_type._fields)))
 
@@ -41,9 +41,9 @@ STATUS = status_type(*range(0, len(status_type._fields)))
 def get_manager(config):
     manager = PapayeEvolutionManager(
         config,
-        evolve_packagename='papaye.evolve',
+        evolve_packagename="papaye.evolve",
         sw_version=SW_VERSION,
-        initial_db_version=0
+        initial_db_version=0,
     )
     return manager
 
@@ -54,43 +54,46 @@ def get_manager(config):
 
 
 def get_connection(settings):
-    uri = settings.get('zodbconn.uri', None)
-    db = db_from_uri(uri, 'unamed', None)
+    uri = settings.get("zodbconn.uri", None)
+    db = db_from_uri(uri, "unamed", None)
     return db.open()
 
 
 def chunk(iterable, step):
     for i in range(0, len(iterable), step):
-        yield iterable[i:i+step]
+        yield iterable[i : i + step]
 
 
 class MyOOBTree(OOBTree):
-
     def _p_resolveConflict(self, old_state, stored_state, new_state):
         merged_state = {}
         if old_state is None:
-            old_state = (((tuple(), ), ), )
-        pr_name_old = list(itertools.islice(old_state[0][0], 0, None, 2)) if old_state is not None else []
+            old_state = (((tuple(),),),)
+        pr_name_old = (
+            list(itertools.islice(old_state[0][0], 0, None, 2))
+            if old_state is not None
+            else []
+        )
         try:
             for pr in stored_state[0][0]:
                 if pr[0] not in pr_name_old:
                     merged_state.update(dict(chunk(pr, 2)))
 
             for pr in new_state[0][0]:
-                new_old_state = ((((tuple(itertools.chain(*list(merged_state.items())))), ), ), )  # OOBtree state. Beurk!
-                return super()._p_resolveConflict(new_old_state, stored_state, new_state)
+                new_old_state = (
+                    (((tuple(itertools.chain(*list(merged_state.items())))),),),
+                )  # OOBtree state. Beurk!
+                return super()._p_resolveConflict(
+                    new_old_state, stored_state, new_state
+                )
         except:
             return old_state
 
 
 class Model(Persistent):
-
     def __repr__(self):
         return '<{}.{} "{}" at {}>'.format(
-            self.__module__,
-            self.__class__.__name__,
-            self.__name__,
-            id(self)
+            self.__module__, self.__class__.__name__, self.__name__, id(self)
         )
 
     def __init__(self, *args, **kwargs):
@@ -103,7 +106,6 @@ class Model(Persistent):
 
 
 class ClonableModelMixin(object):
-
     @classmethod
     def clone(cls, model_obj):
         """Return a clone on given object"""
@@ -116,7 +118,7 @@ class ClonableModelMixin(object):
 class SubscriptableMixin(object):
     _subobjects_attr = None
     _parent_name = None
-    _name_attribute = 'name'
+    _name_attribute = "name"
 
     def __init__(self, name, *args, **kwargs):
         super().__init__(name, *args, **kwargs)
@@ -166,7 +168,7 @@ class SubscriptableMixin(object):
 
     def __delitem__(self, key):
         key = self.format_key(key)
-        del(self.subobjects[key])
+        del (self.subobjects[key])
 
     def keys(self):
         return (elem for elem in self.subobjects)
@@ -179,8 +181,8 @@ SubscriptableBaseModel = SubscriptableMixin
 
 
 class Root(ClonableModelMixin, SubscriptableBaseModel, Model):
-    _subobjects_attr = 'packages'
-    __name__ = ''
+    _subobjects_attr = "packages"
+    __name__ = ""
 
     def __init__(self, name):
         self.name = name
@@ -195,11 +197,13 @@ class Root(ClonableModelMixin, SubscriptableBaseModel, Model):
         acl = [
             # (Allow, 'group:installer', 'install'),
             # (Allow, 'group:admin', ALL_PERMISSIONS)
-            (Allow, Authenticated, 'view'),
+            (Allow, Authenticated, "view")
         ]
         registry = get_current_registry()
-        anonymous_install = registry.settings.get('papaye.anonymous_install')
-        acl.append((Allow, Everyone, 'install')) if anonymous_install and anonymous_install == 'true' else False
+        anonymous_install = registry.settings.get("papaye.anonymous_install")
+        acl.append(
+            (Allow, Everyone, "install")
+        ) if anonymous_install and anonymous_install == "true" else False
         return acl
 
     def __iter__(self):
@@ -207,29 +211,33 @@ class Root(ClonableModelMixin, SubscriptableBaseModel, Model):
 
     def __getitem__(self, name_or_index):
         if isinstance(name_or_index, int):
-            return next(itertools.islice(self.__iter__(), name_or_index, name_or_index + 1))
-        keys = [key for key in self.subobjects.keys()
-                if self.format_key(key) == self.format_key(name_or_index)]
+            return next(
+                itertools.islice(
+                    self.__iter__(), name_or_index, name_or_index + 1
+                )
+            )
+        keys = [
+            key
+            for key in self.subobjects.keys()
+            if self.format_key(key) == self.format_key(name_or_index)
+        ]
         if len(keys) == 1:
             return self.subobjects[keys[0]]
 
     def __setitem__(self, key, package):
-        if not hasattr(self, '_p_updated_keys'):
+        if not hasattr(self, "_p_updated_keys"):
             self._p_updated_keys = []
         self._p_updated_keys.append(key)
-        # if isinstance(package, Package):
-        #     package.__parent__ = self
         self.subobjects[key] = package
 
 
 class Package(SubscriptableMixin, ClonableModelMixin, Model):
-    pypi_url = 'http://pypi.python.org/pypi/{}/json'
-    _subobjects_attr = 'releases'
-    _name_atribute = 'name'
-    _parent_name = 'root'
+    pypi_url = "http://pypi.python.org/pypi/{}/json"
+    _subobjects_attr = "releases"
+    _name_atribute = "name"
+    _parent_name = "root"
 
     def __init__(self, name, root=None, **kwargs):
-        # self.__name__ = name
         self.name = name
         self.releases = MyOOBTree()
         self.root = root
@@ -237,12 +245,18 @@ class Package(SubscriptableMixin, ClonableModelMixin, Model):
 
     def format_key(self, key):
         safe_name = pkg_resources.safe_name(key.lower())
-        return safe_name.replace('.', '-')
+        return safe_name.replace(".", "-")
 
     def __getitem__(self, release_name_or_index):
         try:
             if isinstance(release_name_or_index, int):
-                return next(itertools.islice(self.__iter__(), release_name_or_index, release_name_or_index + 1))
+                return next(
+                    itertools.islice(
+                        self.__iter__(),
+                        release_name_or_index,
+                        release_name_or_index + 1,
+                    )
+                )
             return self.releases[release_name_or_index]
         except (KeyError, IndexError, StopIteration):
             return None
@@ -251,17 +265,19 @@ class Package(SubscriptableMixin, ClonableModelMixin, Model):
         self.releases[key] = value
 
     @classmethod
-    @cache_region('pypi', 'get_last_remote_filename')
+    @cache_region("pypi", "get_last_remote_filename")
     def get_last_remote_version(cls, proxy, package_name):
-        logger.debug('Not in cache')
+        logger.debug("Not in cache")
         if not proxy:
             return None
         try:
-            result = requests.get('http://pypi.python.org/pypi/{}/json'.format(package_name))
+            result = requests.get(
+                "http://pypi.python.org/pypi/{}/json".format(package_name)
+            )
             if not result.status_code == 200:
                 return None
-            result = json.loads(result.content.decode('utf-8'))
-            return result['info']['version']
+            result = json.loads(result.content.decode("utf-8"))
+            return result["info"]["version"]
         except ConnectionError:
             pass
         return None
@@ -279,18 +295,24 @@ class Package(SubscriptableMixin, ClonableModelMixin, Model):
 
     @classmethod
     def by_name(cls, name, request):
-        if hasattr(request, 'root') and request.root is not None:
+        if hasattr(request, "root") and request.root is not None:
             root = request.root
         else:
             root = repository_root_factory(request)
-        return root[name] if name in [package.__name__ for package in root] else None
+        return (
+            root[name]
+            if name in [package.__name__ for package in root]
+            else None
+        )
 
     def get_last_release(self):
         if not len(self):
             return None
         elif len(self) == 1:
             return list(self)[0]
-        max_version = max([parse_version(version) for version in self.releases.keys()])
+        max_version = max(
+            [parse_version(version) for version in self.releases.keys()]
+        )
         for version, release in self.releases.items():
             if parse_version(version) == max_version:
                 return release
@@ -309,12 +331,18 @@ class Package(SubscriptableMixin, ClonableModelMixin, Model):
 
 
 class Release(SubscriptableMixin, ClonableModelMixin, Model):
-    _subobjects_attr = 'release_files'
-    _parent_name = 'package'
-    _name_attribute = 'version'
+    _subobjects_attr = "release_files"
+    _parent_name = "package"
+    _name_attribute = "version"
 
-    def __init__(self, version, metadata={},
-                 deserialize_metadata=True, package=None, **kwargs):
+    def __init__(
+        self,
+        version,
+        metadata={},
+        deserialize_metadata=True,
+        package=None,
+        **kwargs,
+    ):
         self.release_files = MyOOBTree()
         self.version = version
         self.package = package
@@ -324,7 +352,8 @@ class Release(SubscriptableMixin, ClonableModelMixin, Model):
             self.metadata = schema.serialize(self.original_metadata)
             self.metadata = schema.deserialize(self.metadata)
         super().__init__(
-            name=version, metadata=metadata,
+            name=version,
+            metadata=metadata,
             deserialize_metadata=True,
             package=package,
             **kwargs,
@@ -335,9 +364,7 @@ class Release(SubscriptableMixin, ClonableModelMixin, Model):
             if isinstance(version_or_index, int):
                 return next(
                     itertools.islice(
-                        self.__iter__(),
-                        version_or_index,
-                        version_or_index + 1
+                        self.__iter__(), version_or_index, version_or_index + 1
                     )
                 )
             return self.release_files[version_or_index]
@@ -357,7 +384,7 @@ class Release(SubscriptableMixin, ClonableModelMixin, Model):
 
     @classmethod
     def by_releasename(cls, package_name, release, request):
-        if hasattr(request, 'root') and request.root is not None:
+        if hasattr(request, "root") and request.root is not None:
             root = request.root
         else:
             root = repository_root_factory(request)
@@ -373,11 +400,18 @@ class ReleaseFile(ClonableModelMixin, Model):
     _packages_directory = None
     _release_file_directory = None
     __parent__ = None
-    _parent_name = 'release'
-    _name_attribute = 'filename'
+    _parent_name = "release"
+    _name_attribute = "filename"
 
-    def __init__(self, filename, content, md5_digest=None,
-                 status=None, release=None, **kwargs):
+    def __init__(
+        self,
+        filename,
+        content,
+        md5_digest=None,
+        status=None,
+        release=None,
+        **kwargs,
+    ):
         self.uuid = uuid.uuid4()
         self.filename = filename
         self.release = release
@@ -417,20 +451,17 @@ class ReleaseFile(ClonableModelMixin, Model):
     def _packages_directory(self):
         request = get_current_request()
         registry = request.registry if request else getGlobalSiteManager()
-        settings = registry.getUtility(
-            ISettings,
-            name='settings'
-        )
-        packages_directory = settings.get('papaye').get('packages_directory')
+        settings = registry.getUtility(ISettings, name="settings")
+        packages_directory = settings.get("papaye").get("packages_directory")
         if not packages_directory:
             raise ConfigurationError(
-                'packages_directory must be correcly configured'
+                "packages_directory must be correcly configured"
             )
         return packages_directory
 
     def set_content(self, content):
         os.makedirs(os.path.dirname(self.path), exist_ok=True)
-        with open(self.path, 'wb') as release_file:
+        with open(self.path, "wb") as release_file:
             release_file.write(content)
             self.relative_path = self._compute_release_file_directory()
             self.size = len(content)
@@ -443,15 +474,11 @@ class ReleaseFile(ClonableModelMixin, Model):
                 packages_directory = self._packages_directory()
                 release_file_directory = self._compute_release_file_directory()
                 self._path = os.path.join(
-                    packages_directory,
-                    release_file_directory
+                    packages_directory, release_file_directory
                 )
             except Exception:
                 return None
-        return os.path.join(
-            self._path,
-            self.filename
-        )
+        return os.path.join(self._path, self.filename)
 
     @path.setter
     def set_path(self, path):
@@ -479,11 +506,13 @@ class ReleaseFile(ClonableModelMixin, Model):
 
     @classmethod
     def by_releasefilename(cls, package, release, releasefile, request):
-        if hasattr(request, 'root') and request.root is not None:
+        if hasattr(request, "root") and request.root is not None:
             root = request.root
         else:
             root = repository_root_factory(request)
-        if package in [pkg.__name__ for pkg in root] and root[package].get(release):
+        if package in [pkg.__name__ for pkg in root] and root[package].get(
+            release
+        ):
             return root[package][release].get(releasefile, None)
 
     def format_key(self, key):
@@ -491,20 +520,21 @@ class ReleaseFile(ClonableModelMixin, Model):
 
 
 class User(Model):
-
     def __init__(self, username, password, **kwargs):
         self.username = username
         self.password = self.hash_password(password)
-        self.groups = kwargs.get('groups', [])
+        self.groups = kwargs.get("groups", [])
 
     def hash_password(self, password):
-        return hashlib.sha512(password.encode('utf-8')).hexdigest()
+        return hashlib.sha512(password.encode("utf-8")).hexdigest()
 
     def password_verify(self, clear_password):
         return self.hash_password(clear_password) == self.password
 
     def __repr__(self):
-        return '<{}.{} "{}" at {}>'.format(self.__module__, self.__class__.__name__, self.username, id(self))
+        return '<{}.{} "{}" at {}>'.format(
+            self.__module__, self.__class__.__name__, self.username, id(self)
+        )
 
     @classmethod
     def by_username(cls, username, request):
@@ -515,26 +545,19 @@ class User(Model):
         return None
 
     def __json__(self, *args, **kwargs):
-        import pdb; pdb.set_trace()
         request = args[0]
         return {
-            'username': self.username,
-            'url': request.url,
-            'groups': self.groups,
+            "username": self.username,
+            "url": request.url,
+            "groups": self.groups,
         }
 
 
 class RestrictedContext(object):
-
     def __acl__(self):
-        return [
-            (Allow, 'user', 'view'),
-        ]
+        return [(Allow, "user", "view")]
 
 
 class Application(object):
-
     def __acl__(self):
-        return [
-            (Allow, Authenticated, 'view'),
-        ]
+        return [(Allow, Authenticated, "view")]

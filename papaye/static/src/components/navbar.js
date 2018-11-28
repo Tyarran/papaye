@@ -5,6 +5,7 @@ import React from 'react';
 import _ from 'lodash';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { withRouter } from 'react-router';
 
 
 
@@ -19,7 +20,11 @@ class Navbar extends React.Component {
         return (item.active) ? 'is-active': ''
     }
 
-
+    componentDidMount() {
+        this.props.history.listen((location) => {
+            this.props.onLocationChange(location);
+        });
+    }
 
     render() {
         return (
@@ -28,7 +33,6 @@ class Navbar extends React.Component {
                     <Link
                         className="navbar-item"
                         to="/"
-                        onClick={this.props.activeItem.bind(this)('home')}
                     >
                         Papaye
                     </Link>
@@ -50,7 +54,7 @@ class Navbar extends React.Component {
                     <div className="navbar-start">
                         {this.props.navMenu.map((item, key) => {
                             return (
-                                <Link key={key} className={`navbar-item ${this.isActiveClass(item.id)}`} to={item.href} onClick={this.props.activeItem.bind(this)(item.id)}>
+                                <Link key={key} className={`navbar-item ${this.isActiveClass(item.id)}`} to={item.href} >
                                     {item.title}
                                 </Link>
                             );
@@ -101,14 +105,12 @@ const mapDispatchToProps = (dispatch) => {
             dispatch({type: 'TOGGLE_MENU_BURGER_VISIBILITY', navbarBurgerIsActive: value});
         },
 
-        activeItem(itemId) {
-            const item = _.find(this.props.navMenu, {id: itemId});
-            return (event) => {
-                dispatch({type: 'ACTIVE_NAVBAR_ITEM', itemId: item.id});
-            }
+        onLocationChange(location) {
+            console.log(location);
+            dispatch({type: 'LOCATION_CHANGE', location});
         }
     };
 };
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(Navbar);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Navbar));

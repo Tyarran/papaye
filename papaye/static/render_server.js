@@ -1,5 +1,3 @@
-console.log("spinkit", process.env.REACT_SPINKIT_NO_STYLES);
-
 import { renderToString } from "react-dom/server";
 import Argv from 'yargs';
 import bodyParser from 'body-parser';
@@ -46,13 +44,13 @@ app.post('/render', (req, res) => {
             </Provider>
         </StaticRouter>
     ));
-    //Console.log(renderToString(
-    //    <StaticRouter location={ {pathname: req.body.path} } context={context}>
-    //        <Provider store={store}>
-    //            <Main/>
-    //        </Provider>
-    //    </StaticRouter>
-    //));
+    Console.log(renderToString(
+        <StaticRouter location={ {pathname: req.body.path} } context={context}>
+            <Provider store={store}>
+                <Main/>
+            </Provider>
+        </StaticRouter>
+    ));
     res.end();
 });
 

@@ -25,6 +25,7 @@ termcolor = "*"
 transaction = "*"
 waitress = "*"
 "zope.component" = "*"
+munch = "*"
 
 [dev-packages]
 factory-boy = "*"
