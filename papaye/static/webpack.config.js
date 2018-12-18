@@ -71,19 +71,69 @@ const clientConfig = {
     ]
 };
 
-const serverConfig = {
-    name: 'server',
-    entry: './src/index.js',
+// const serverConfig = {
+//     name: 'server',
+//     entry: './src/index.js',
+//     output: {
+//         filename: 'server.bundle.js',
+//         path: path.resolve('./dist'),
+//         libraryTarget: 'commonjs2',
+//     },
+//     mode: 'development',
+//     externals: [nodeExternals({
+//         whitelist: ['react', 'lodash', 'react-loading-skeleton'],
+//     })],
+
+//     module: {
+//         rules: [
+//             {
+//                 test: /\.js$/,
+//                 exclude: /(node_modules|bower_components)/,
+//                 use: {
+//                     loader: 'babel-loader',
+//                     options: {
+//                         forceEnv: 'node'
+//                     }
+//                 }
+//             },
+//             {
+//                 test: /\.css$/,
+//                 use: 
+//                 {
+//                     loader: 'ignore-loader'
+//                 }
+//             },
+//         ]
+//     },
+
+
+//     plugins: [
+//         new webpack.DefinePlugin({
+//             'process.env.REACT_SPINKIT_NO_STYLES': true,
+//         }),
+//         new CleanWebpackPlugin(['dist']),
+//         //new MinifyPlugin(),
+//         new MiniCssExtractPlugin({
+//             filename: '[name].css',
+//             allChuncks: true,
+//         })
+//     ]
+// };
+
+
+const SSRServer = {
+    name: 'SSRServer',
+    entry: './render_server.js',
     output: {
-        filename: 'server.bundle.js',
+        filename: 'render_server.bundle.js',
         path: path.resolve('./dist'),
         libraryTarget: 'commonjs2',
     },
-    mode: 'development',
+    mode: 'production',
     externals: [nodeExternals({
-        whitelist: ['react', 'lodash'],
+        whitelist: ['react-spinkit', 'react-loading-skeleton']
     })],
-
+    target: 'node',
     module: {
         rules: [
             {
@@ -97,47 +147,7 @@ const serverConfig = {
                 }
             },
             {
-                test: /\.css$/,
-                use: 
-                {
-                    loader: 'ignore-loader'
-                }
-            },
-        ]
-    },
-
-
-    plugins: [
-        new webpack.DefinePlugin({
-            'process.env.REACT_SPINKIT_NO_STYLES': true,
-        }),
-        new CleanWebpackPlugin(['dist']),
-        //new MinifyPlugin(),
-        new MiniCssExtractPlugin({
-            filename: '[name].css',
-            allChuncks: true,
-        })
-    ]
-};
-
-
-const SSRServer = {
-    name: 'SSRServer',
-    entry: './render_server.js',
-    output: {
-        filename: 'render_server.bundle.js',
-        path: path.resolve('./dist'),
-        libraryTarget: 'commonjs2',
-    },
-    mode: 'production',
-    externals: [nodeExternals({
-        whitelist: ['react-spinkit']
-    })],
-    module: {
-        rules: [
-            {
-                test: /\.js$/,
-                exclude: /(node_modules|bower_components)/,
+                test: /node_modules\/react-loading-skeleton \/.*\.js$/,
                 use: {
                     loader: 'babel-loader',
                     options: {
@@ -164,4 +174,5 @@ const SSRServer = {
     ]
 };
 
-module.exports = [clientConfig, serverConfig, SSRServer];
+// module.exports = [clientConfig, serverConfig, SSRServer];
+module.exports = [clientConfig, SSRServer];

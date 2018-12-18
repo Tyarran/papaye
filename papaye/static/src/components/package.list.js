@@ -1,9 +1,10 @@
 import React from 'react';
 import fetch from 'cross-fetch';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
 import Content from './content';
+import PackageListItem from './package.list.item';
 
 
 const breadcrumb = [
@@ -20,37 +21,7 @@ const breadcrumb = [
 ];
 
 
-class PackageItem extends React.Component {
-
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        return (
-            <div className="column is-half">
-                <div className="box">
-                    <div className="media-content">
-                        <div className="content">
-                            <strong>{this.props.name}</strong> <small>{this.props.name}</small>
-                            <p>{this.props.summary}</p>
-                            <p>
-                                <span className="tag is-info is-small">Local</span>
-                                <span className="tag is-success is-small">Public</span>
-                                <span className="tag is-warning is-small">Cached</span>
-                            </p>
-                        </div>
-                        <Link to={`/browse/detail/${this.props.name}`} >Details</Link>
-
-                    </div>
-                </div>
-            </div>
-        );
-    }
-}
-
-
-class BrowseList extends React.Component {
+class PackageList extends React.Component {
 
     constructor(props) {
         super(props);
@@ -89,7 +60,7 @@ class BrowseList extends React.Component {
                 <div className="columns is-multiline">
                     {this.props.filteredPackageList.map((item, key) => {
                         return (
-                            <PackageItem key={key} name={item.name} summary={item.summary} />
+                            <PackageListItem key={key} name={item.name} summary={item.summary} />
                         );
                     })}
                 </div>
@@ -98,6 +69,13 @@ class BrowseList extends React.Component {
     }
 }
 
+PackageList.propTypes = {
+    fetchdata: PropTypes.func.isRequired,
+    getResult: PropTypes.func.isRequired,
+    filterList: PropTypes.func.isRequired,
+    compatAPIUrl: PropTypes.string.isRequired,
+    filteredPackageList: PropTypes.array.isRequired,
+};
 
 const mapStateToProps = (state) => {
     return {
@@ -122,4 +100,4 @@ const mapDispatchToProps = (dispatch) => {
 };
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(BrowseList);
+export default connect(mapStateToProps, mapDispatchToProps)(PackageList);

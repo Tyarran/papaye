@@ -7,8 +7,11 @@
 	<body>
 		<div id='root'>{{ content | safe }}</div>
 
+		{{routes}}
+
 		<script language='javascript'>
-		window.INITIAL_STATE = JSON.parse(window.atob("{{ state | safe }}")); </script>
+			window.INITIAL_STATE = JSON.parse(window.atob("{{ state | safe }}"));
+		</script>
 		<script src="http://localhost:6543/static/dist/client.bundle.js"></script>
 	</body>
 </html>

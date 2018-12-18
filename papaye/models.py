@@ -86,7 +86,7 @@ class MyOOBTree(OOBTree):
                 return super()._p_resolveConflict(
                     new_old_state, stored_state, new_state
                 )
-        except:
+        except Exception:
             return old_state
 
 

@@ -2,9 +2,8 @@ import 'fork-awesome/css/fork-awesome.css';
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import _ from 'lodash';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { withRouter } from 'react-router';
 
 
@@ -13,17 +12,6 @@ class Navbar extends React.Component {
 
     constructor(props) {
         super(props);
-    }
-
-    isActiveClass(itemId) {
-        const item = _.find(this.props.navMenu, {'id': itemId});
-        return (item.active) ? 'is-active': ''
-    }
-
-    componentDidMount() {
-        this.props.history.listen((location) => {
-            this.props.onLocationChange(location);
-        });
     }
 
     render() {
@@ -54,9 +42,7 @@ class Navbar extends React.Component {
                     <div className="navbar-start">
                         {this.props.navMenu.map((item, key) => {
                             return (
-                                <Link key={key} className={`navbar-item ${this.isActiveClass(item.id)}`} to={item.href} >
-                                    {item.title}
-                                </Link>
+                                <NavLink key={ key } exact={ item.exact } activeClassName="is-active" className="navbar-item" to={ item.href } >{ item.title }</NavLink>
                             );
                         })}
                         <div className="navbar-item">
@@ -87,6 +73,15 @@ class Navbar extends React.Component {
 }
 
 
+console.log(PropTypes);
+Navbar.propTypes = {
+    navbarBurgerIsActive: PropTypes.bool.isRequired,
+    menuBurgerToggle: PropTypes.func.isRequired,
+    navMenu: PropTypes.array.isRequired,
+    username: PropTypes.string.isRequired,
+};
+
+
 const mapStateToProps = (state) => {
     return {
         navMenu: state.get('navMenu'),
@@ -105,10 +100,6 @@ const mapDispatchToProps = (dispatch) => {
             dispatch({type: 'TOGGLE_MENU_BURGER_VISIBILITY', navbarBurgerIsActive: value});
         },
 
-        onLocationChange(location) {
-            console.log(location);
-            dispatch({type: 'LOCATION_CHANGE', location});
-        }
     };
 };
 

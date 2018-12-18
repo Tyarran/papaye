@@ -82,7 +82,12 @@ def index_ssr(request, state):
         ).content.decode("utf-8")
     except Exception:
         result = ""
-    return {"content": result, "state": base64.b64encode(json.dumps(state).encode('utf-8')).decode('utf-8')}
+
+    result = {
+        "content": result,
+        "state": base64.b64encode(json.dumps(state).encode("utf-8")).decode("utf-8"),
+    }
+    return result
 
 
 @view_config(

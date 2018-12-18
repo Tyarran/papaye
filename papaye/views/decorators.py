@@ -3,9 +3,25 @@ import types
 
 from collections import OrderedDict, defaultdict
 from functools import wraps
-from pyramid.urldispatch import Route
+from pyramid.urldispatch import Route as PyramidRoute
 
 from munch import Munch
+
+
+class Route(object):
+
+    def __init__(self, name, pattern, factory=None, exact=False):
+        self.name = name
+        self.pattern = pattern
+        self.factory = factory
+        self.exact = exact
+
+    def __json__(self):
+        return {
+            "name": self.name,
+            "pattern": self.pattern,
+            "exact": self.exact,
+        }
 
 
 class RouteResolver(object):
@@ -60,17 +76,26 @@ class RouteResolver(object):
         for path, (regex, view) in self.route_mapping[identifier].items():
             match = regex.match(route_path)
             if match:
-                route = Route(name=route_path, pattern=regex.pattern)
+                route = PyramidRoute(name=route_path, pattern=regex.pattern)
                 return view, match.groupdict(), route
         return (None, None, None)
+
+
+class Router(object):
+    routes = []
+
+    def add_route(self, name, pattern, factory=None, exact=False):
+        route = Route(name, pattern, factory, exact)
+        self.routes.append(route)
 
 
 class StateManager(object):
     def __init__(self):
         self.route_mapping = defaultdict(OrderedDict)
         self.route_resolver = RouteResolver(self.route_mapping)
+        self.router = Router()
 
-    def router(self, identifier, factory):
+    def route_factory(self, identifier, factory):
         self.factory = factory
 
         def decorator(path):
@@ -100,6 +125,7 @@ class StateManager(object):
                     matchdict=matchdict
                 )
                 state = self.factory(request=request)
+                state["routes"] = [route.__json__() for route in self.router.routes]
                 if ssr_view:
                     if not isinstance(ssr_view, types.FunctionType):
                         state = ssr_view(request=request, state=state)()

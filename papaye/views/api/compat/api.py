@@ -52,7 +52,7 @@ package = Service(
 def get_package(request):
     package = request.context
     # import time
-    # time.sleep(3)
+    # time.sleep(2)
     return package.get_last_release()
 
 

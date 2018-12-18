@@ -1,30 +1,15 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import Spinner from 'react-spinkit';
 
 import { connect } from 'react-redux';
-
-//import hljs from 'highlightjs';
+import { withRouter } from 'react-router';
 
 import Content from './content';
+import PackageHero from './package.hero';
+import LoadingArea from './loading.area';
+import PackageMetadata from './package.metadata';
+import Safe from './safe';
 
-
-class PackageDetailsLoad extends React.Component {
-
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        return (
-            <section className="section">
-                <div className="container">
-                <Spinner name='double-bounce' />
-                </div>
-            </section>
-        );
-    }
-}
 
 
 class PackageDetailContent extends React.Component {
@@ -33,89 +18,18 @@ class PackageDetailContent extends React.Component {
         super(props);
     }
 
-    breadcrumb() {
-        return [
-            {
-                name: 'Home',
-                href: '/',
-                icon: 'fa fa-home',
-            },
-            {
-                name: 'Discover',
-                href: '/browse',
-                icon: 'fa fa-list',
-            },
-            {
-                name: this.props.package.name,
-                href: '#',
-                icon: 'fa fa-puzzle-piece',
-            },
-        ];
-
-    }
-
     render() {
         return (
-            <div>
-                <section className="hero is-primary">
-                    <div className="hero-body">
-                        <div className="container">
-                        <h1 className="title">
-                            {this.props.package.name}
-                        </h1>
-                        <h2 className="subtitle">
-                            {this.props.package.metadata.summary}
-                        </h2>
-                        </div>
+            <section className="section">
+                <div className="columns">
+                    <div className="column">
+                        <Safe className="content" htmlText={ this.props.package.metadata.description.content } />
                     </div>
-                </section>
-                <Content breadcrumb={this.breadcrumb()}>
-                    <section className="section">
-                        <div className="columns">
-                            <div className="column">
-                                <div className="content" dangerouslySetInnerHTML={{__html: this.props.package.metadata.description.content}} />
-                            </div>
-                            <div className="column is-one-quarter">
-                                <aside className="menu">
-                                <p className="menu-label">
-                                    General
-                                </p>
-                                <ul className="menu-list">
-                                    <li><a>Dashboard</a></li>
-                                    <li><a>Customers</a></li>
-                                </ul>
-                                <p className="menu-label">
-                                    Administration
-                                </p>
-                                <ul className="menu-list">
-                                    <li><a>Team Settings</a></li>
-                                    <li>
-                                    <a className="is-active">Manage Your Team</a>
-                                    <ul>
-                                        <li><a>Members</a></li>
-                                        <li><a>Plugins</a></li>
-                                        <li><a>Add a member</a></li>
-                                    </ul>
-                                    </li>
-                                    <li><a>Invitations</a></li>
-                                    <li><a>Cloud Storage Environment Settings</a></li>
-                                    <li><a>Authentication</a></li>
-                                </ul>
-                                <p className="menu-label">
-                                    Transactions
-                                </p>
-                                <ul className="menu-list">
-                                    <li><a>Payments</a></li>
-                                    <li><a>Transfers</a></li>
-                                    <li><a>Balance</a></li>
-                                </ul>
-                                </aside>
-                                    <div className="box">test</div>
-                                </div>
-                        </div>
-                    </section>
-                </Content>
-            </div>
+                    <div className="column is-one-quarter">
+                        <PackageMetadata />
+                    </div>
+                </div>
+            </section>
         );
     }
 }
@@ -136,22 +50,55 @@ class PackageDetails extends React.Component {
         });
     }
 
-    render() {
+    breadcrumb() {
+        return [
+            {
+                name: 'Home',
+                href: '/',
+                icon: 'fa fa-home',
+            },
+            {
+                name: 'Discover',
+                href: '/browse',
+                icon: 'fa fa-list',
+            },
+            {
+                name: (this.props.package !== null) ? this.props.package.name : this.props.match.params.appname,
+                href: '#',
+                icon: 'fa fa-puzzle-piece',
+            },
+        ];
+
+    }
+
+
+    getContent() {
+        return (this.props.package !== null) ? <PackageDetailContent package={this.props.package} /> : <LoadingArea />;
+    }
+
+    getHero() {
         if (this.props.package) {
-            return (
-                <PackageDetailContent package={this.props.package} />
-            );
+            return <PackageHero name={ this.props.package.name } summary={ this.props.package.metadata.summary } />;
         } else {
-            return (
-                <PackageDetailsLoad />
-            );
+            return <PackageHero name={ this.props.match.params.appname } summary={ '' } />;
         }
+    }
+
+    render() {
+        return (
+            <div>
+                { this.getHero() }
+                <Content breadcrumb={this.breadcrumb()}>
+                    { this.getContent() }
+                </Content>
+            </div>
+        );
     }
 }
 
 
 PackageDetails.propTypes = {
-    package: PropTypes.object.isRequired,
+    package: PropTypes.object,
 };
 
 
@@ -175,4 +122,4 @@ const mapStateToProps = (state) => {
 };
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(PackageDetails);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(PackageDetails));

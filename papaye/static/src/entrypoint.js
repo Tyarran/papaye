@@ -5,7 +5,7 @@ import { createStore } from 'redux';
 import { BrowserRouter } from 'react-router-dom';
 import { Map } from 'immutable';
 
-import Main from './index.js';
+import Main from './index';
 import appReducer from './reducers';
 
 const store = createStore(
@@ -15,13 +15,8 @@ const store = createStore(
 );
 
 
-function onUpdate() {
-    console.log("onChange");
-};
-
-
 ReactDOM.hydrate(
-    <BrowserRouter onChange={onUpdate.bind(this)}>
+    <BrowserRouter>
         <Provider store={store}>
             <Main/>
         </Provider>

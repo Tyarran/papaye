@@ -1,11 +1,21 @@
 import 'bulma/css/bulma.css';
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Switch, Route } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 
 import Home from './components/home';
 import Navbar from './components/navbar';
-import BrowseList from './components/browseList';
+import PackageList from './components/package.list';
 import PackageDetails from './components/package.detail';
+
+
+const COMPONENTS = {
+    home: Home,
+    browse: PackageList,
+    detail: PackageDetails,
+};
 
 
 class Main extends React.Component {
@@ -19,9 +29,16 @@ class Main extends React.Component {
             <div>
                 <Navbar/>
                 <Switch>
-                        <Route exact path="/" component={Home} breadcrumb='/' />
-                        <Route path="/browse/detail/:appname" component={PackageDetails} />
-                        <Route exact path="/browse" component={BrowseList} />
+                    {this.props.routes.map((item, key) => {
+                        return (
+                            <Route
+                                key={ key }
+                                name={item.name}
+                                exact={item.exact}
+                                path={item.pattern}
+                                component={COMPONENTS[item.name]}
+                            />);
+                    })}
                 </Switch>
             </div>
         );
@@ -29,4 +46,16 @@ class Main extends React.Component {
 }
 
 
-export default Main;
+Main.propTypes = {
+    routes: PropTypes.array.isRequired
+};
+
+
+const mapStateToProps = (state) => {
+    return {
+        routes: state.get('routes', []),
+    };
+};
+
+
+export default withRouter(connect(mapStateToProps, null)(Main));

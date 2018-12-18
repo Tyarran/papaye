@@ -1,14 +1,12 @@
 import actions from '../actions';
 
-import _ from 'lodash';
-
 
 const appReducer = (state, action) => {
     switch (action.type) {
     case actions.TOGGLE_MENU_BURGER_VISIBILITY.type:
         return state.set('navbarBurgerIsActive', action.navbarBurgerIsActive);
     case actions.ACTIVE_NAVBAR_ITEM.type:
-        const newNavBarItems = _.map(state.get('navMenu'), (item) => {
+        const newNavBarItems = state.get('navenu').map((item) => {
             item.active = item.id === action.itemId;
             return item;
         });
@@ -34,12 +32,6 @@ const appReducer = (state, action) => {
         return state.set('detail', {package: null});
     case 'DETAIL_DATA_READ':
         return state.set('detail', {package: action.package});
-    case 'LOCATION_CHANGE':
-        const navbarItems = state.get('navMenu').map((item) => {
-            item.active = item.href === action.location.pathname;
-            return item;
-        });
-        return state.set('navMenu', navbarItems);
     default:
         return state;
     }

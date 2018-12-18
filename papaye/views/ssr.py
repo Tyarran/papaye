@@ -22,11 +22,13 @@ def app_state_factory(request):
     return state
 
 
-# router = state_manager.router('application, app_state_factory')
-# router.add_route('home', 'pattern')
+router = state_manager.router
+router.add_route('home', '/', exact=True)
+router.add_route('browse', '/browse', exact=True)
+router.add_route('detail', '/browse/detail/:appname')
 
 
-route = state_manager.router("application", app_state_factory)
+route = state_manager.route_factory("application", app_state_factory)
 
 
 @route("/")
