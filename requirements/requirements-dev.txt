@@ -42,7 +42,7 @@ plaster-pastedeploy==0.4.1  # via pyramid
 plaster==0.5              # via plaster-pastedeploy, pyramid
 pluggy==0.4.0             # via tox
 py==1.4.34                # via pytest, tox
-pygments==2.2.0           # via pdbpp, pyramid-debugtoolbar
+pygments==2.7.4           # via pdbpp, pyramid-debugtoolbar
 pyquery==1.2.17
 pyramid-beaker==0.8
 pyramid-debugtoolbar==4.3
