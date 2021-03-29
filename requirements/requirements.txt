@@ -27,7 +27,7 @@ peppercorn==0.5           # via deform
 persistent==4.2.4.2       # via btrees, zeo, zodb
 plaster-pastedeploy==0.4.1  # via pyramid
 plaster==0.5              # via plaster-pastedeploy, pyramid
-pygments==2.2.0           # via pyramid-debugtoolbar
+pygments==2.7.4           # via pyramid-debugtoolbar
 pyramid-beaker==0.8
 pyramid-debugtoolbar==4.3
 pyramid-jinja2==2.7
