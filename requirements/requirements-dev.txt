@@ -28,7 +28,7 @@ idna==2.6                 # via requests
 iso8601==0.1.12           # via colander, deform
 jinja2==2.9.6             # via pyramid-jinja2
 jsmin==2.2.2
-lxml==3.8.0               # via pyquery
+lxml==4.6.3               # via pyquery
 mako==1.0.7               # via pyramid-mako
 markupsafe==1.0           # via jinja2, mako, pyramid-jinja2
 mock==2.0.0
