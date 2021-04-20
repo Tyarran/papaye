@@ -41,7 +41,7 @@ pip-tools==1.9.0
 plaster-pastedeploy==0.4.1  # via pyramid
 plaster==0.5              # via plaster-pastedeploy, pyramid
 pluggy==0.4.0             # via tox
-py==1.4.34                # via pytest, tox
+py==1.10.0                # via pytest, tox
 pygments==2.2.0           # via pdbpp, pyramid-debugtoolbar
 pyquery==1.2.17
 pyramid-beaker==0.8
