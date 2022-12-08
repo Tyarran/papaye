@@ -6,7 +6,7 @@
 #
 beaker==1.9.0             # via pyramid-beaker
 btrees==4.4.1             # via zodb
-certifi==2017.7.27.1      # via requests
+certifi==2022.12.7      # via requests
 chameleon==3.1            # via deform
 chardet==3.0.4            # via requests
 colander==1.4
