@@ -73,7 +73,7 @@ virtualenv==15.1.0        # via tox
 waitress==1.0.2
 webob==1.7.3              # via pyramid, webtest
 webtest==2.0.28
-wheel==0.29.0
+wheel==0.38.1
 wmctrl==0.3               # via pdbpp
 zc.lockfile==1.2.1        # via zeo, zodb
 zconfig==3.2.0            # via zdaemon, zeo, zodb, zodburi
