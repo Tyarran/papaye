@@ -89,4 +89,4 @@ zope.interface==4.4.2     # via btrees, persistent, pyramid, repoze.evolution, t
 
 # The following packages are considered to be unsafe in a requirements file:
 pip==9.0.1
-setuptools==36.2.7
+setuptools==65.5.1
